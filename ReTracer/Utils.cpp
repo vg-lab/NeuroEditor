@@ -21,8 +21,56 @@
 #include "Utils.h"
 #include "imppsimpl.h"
 
+#include <PyGEmSManager/StrategyFrameworkBPModule.h>
+
+
 namespace retracer //Probably this code must be in nsol in the future
 {
+  Utils * Utils::instance = nullptr;
+  NSPGManager::PyGEmSManager *  Utils::myPyGEmSManager= nullptr;
+
+  Utils* Utils::getInstance()
+  {
+    if (instance == nullptr)
+    {
+      instance = new Utils;
+      //Python initialization
+//BPCode
+#ifdef PYGEMS_USE_PYTHON3
+        //Python >=3
+        myPyGEmSManager = new NSPGManager::PyGEmSManager("StrFramework", &NSPGManager::PyInit_StrFramework,
+                                                         "Strategies", "Strategies-Python3.py");
+#else
+        //Python 2.7
+      myPyGEmSManager = new NSPGManager::PyGEmSManager("StrFramework", &NSPGManager::initStrFramework,
+                                                        "Strategies",  "Strategies-Python2.py");
+#endif
+    }
+    return instance;
+  }
+
+  void Utils::reloadInstance()
+  {
+    if (instance == nullptr)
+    {
+      delete myPyGEmSManager;
+      delete instance;
+
+      instance = new Utils;
+      //Python initialization
+//BPCode
+#ifdef PYGEMS_USE_PYTHON3
+      //Python >=3
+      myPyGEmSManager = new NSPGManager::PyGEmSManager( "StrFramework", &NSPGManager::PyInit_StrFramework,
+                                                        "Strategies", "Strategies-Python3.py" );
+#else
+      //Python 2.7
+      myPyGEmSManager = new NSPGManager::PyGEmSManager("StrFramework", &NSPGManager::initStrFramework,
+                                                        "Strategies",  "Strategies-Python2.py");
+#endif
+    }
+  }
+
   void Utils::Simplify ( nsol::NeuronMorphologyPtr& morphology_, std::map < std::string, float > params_,
                          int objectId_, OBJECT_TYPE objectType)
   {
@@ -40,7 +88,6 @@ namespace retracer //Probably this code must be in nsol in the future
               objectId_ )) //Specific neurite
         )
       {
-        //std::cout<<"Simplifying onle the neurite:"<<objectId_<<std::endl;
         for ( auto section: neurite->sections ( ))
         {
           if ( ( objectId_ == -1 )  //Full Neuron
@@ -133,14 +180,15 @@ namespace retracer //Probably this code must be in nsol in the future
                                                               std::back_inserter (
                                                                 simplifiedCoords ));
                 break;
-                //### Custom simplification.
+              case SIMP_METHOD::CUSTOM_SIMP:
+                customSimplification(section, simplifiedCoords);
+                break;
 
               default:std::cout << "Unhandeled method!" << std::endl;
             }
 
             //Traverse to apply simplification to the morphology
             unsigned int j = 3;
-            //nsol::Nodes* nodes = &section->nodes( );
             auto &nodes = section->nodes ( );
             for ( i = 2; i < nodes.size ( ); ++i )
             {
@@ -163,17 +211,16 @@ namespace retracer //Probably this code must be in nsol in the future
       }
       ++actNeurite;
     }
-
-    //Update ids for connectivity
     Autofix ( morphology_, params_ );
   }
 
   void Utils::Enhance ( nsol::NeuronMorphologyPtr& morphology_, std::map < std::string, float > params_,
                         int objectId_, OBJECT_TYPE objectType )
   {
-    //nsol::NeuronMorphologyPtr morphology = morphology_->clone ( );
-
     std::vector < glm::vec3 > originalPoints;
+    std::vector < glm::vec3 > simplifiedPoints;
+    std::vector < NSPyGEmS::StrategyParams > simplifiedPoints2;
+
     std::vector < float > radiuses;
     std::vector < float > times;
     int actNeurite = 0;
@@ -298,9 +345,28 @@ namespace retracer //Probably this code must be in nsol in the future
                 section->nodes ( ).push_back ( nodeFin );
               }
                 break;
-              case ENHANCE_METHOD::CUSTOM_ENHANCE:std::cout << "Custom pythom method for enhancement!" << std::endl;
-                break;
-              default:std::cout << "Unhandeled method!" << std::endl;
+              case ENHANCE_METHOD::CUSTOM_ENHANCE:
+              {
+                std::cout << "Custom pythom method for enhancement!" << std::endl;
+                customEnhance( section, simplifiedPoints2 );
+
+                nsol::NodePtr nodeIni = section->nodes()[0];
+                nsol::NodePtr nodeFin = section->nodes()[section->nodes().size() - 1];
+                section->nodes().clear();
+                section->nodes().push_back( nodeIni );
+                for ( unsigned int i = 1; i < simplifiedPoints2.size()-1; ++i)
+                {
+                  nsol::Vec3f postion( simplifiedPoints2[i].node.position.x, simplifiedPoints2[i].node.position.y,
+                                       simplifiedPoints2[i].node.position.z );
+                  nsol::NodePtr newNode = new nsol::Node( postion, ++nodeId, simplifiedPoints2[i].node.radius );
+                  section->nodes().push_back( newNode );
+                }
+                section->nodes().push_back( nodeFin );
+              }
+              break;
+
+              default:
+                std::cout << "Unhandeled method!" << std::endl;
             }
           }
           ++actSection;
@@ -332,6 +398,118 @@ namespace retracer //Probably this code must be in nsol in the future
         }
         firstSection = false;
       }
+    }
+  }
+
+  void Utils::customSimplification(const nsol::SectionPtr  & section,
+                                   std::vector < float > & simplifiedCoords)
+  {
+    try
+    {
+      simplifiedCoords.clear();
+      bp::object Strategy = myPyGEmSManager->getModuleAttrib( "Strategy" );
+      Container _Container;
+      StrategyParams lStrategyParams;
+
+      //Prepare data for Python
+      for ( auto node: section->nodes ( ))
+      {
+        lStrategyParams.stringParam = "MyTest_" + std::to_string( lStrategyParams.intParam ) + "_";
+        lStrategyParams.intParam++;
+
+        lStrategyParams.node.id = node->id ( );
+        lStrategyParams.node.parent= -1; //danger!!!, tmp test
+        lStrategyParams.node.position.x = node->point ( ).x ( );
+        lStrategyParams.node.position.y = node->point ( ).y ( );
+        lStrategyParams.node.position.z = node->point ( ).z ( );
+        lStrategyParams.node.radius = node->radius ( );
+
+        _Container.addElement( lStrategyParams );
+      }
+      bp::object _strategy = Strategy( _Container );
+
+      std::string injectedVarName = "originalNodes";
+      std::string injectedVarName3 = "simplifiedNodes";
+
+      //Initialization of vectors on Python.
+      myPyGEmSManager->getModule().attr( injectedVarName.c_str()) = _Container.getContainer();
+      myPyGEmSManager->getModule().attr( injectedVarName3.c_str()) = 0;
+
+      _strategy.attr( "simplify" )();
+
+      std::cout << "Recovering new container from Python." << std::endl;
+      bp::list result = myPyGEmSManager->extractListFromModule( injectedVarName3.c_str());
+      int n = bp::len( result );
+      std::cout << "Container recovered dimensions Value:" << n << std::endl;
+
+      std::cout << "Showing received string value (modified on python):" << std::endl;
+      for ( int t = 0; t < n; ++t )
+      {
+        StrategyParams val = bp::extract<StrategyParams>(result[t] );
+        simplifiedCoords.push_back(val.node.position.x);
+        simplifiedCoords.push_back(val.node.position.y);
+        simplifiedCoords.push_back(val.node.position.z);
+      }
+    }
+    catch ( const bp::error_already_set & )
+    {
+      std::cerr << ">>> Error! Uncaught exception:\n";
+      PyErr_Print();
+    }
+  }
+
+  void Utils::customEnhance(const nsol::SectionPtr & section,
+                            std::vector < NSPyGEmS::StrategyParams > & simplifiedCoords)
+  {
+    try
+    {
+      simplifiedCoords.clear();
+      bp::object Strategy = myPyGEmSManager->getModuleAttrib( "Strategy" );
+      Container _Container;
+      StrategyParams lStrategyParams;
+
+      //Prepare data for Python
+      for ( auto node: section->nodes ( ))
+      {
+        lStrategyParams.stringParam = "MyTest_" + std::to_string( lStrategyParams.intParam ) + "_";
+        lStrategyParams.intParam++;
+
+        lStrategyParams.node.id = node->id ( );
+        lStrategyParams.node.parent= -1; //### danger!!!, tmp test
+        lStrategyParams.node.position.x = node->point ( ).x ( );
+        lStrategyParams.node.position.y = node->point ( ).y ( );
+        lStrategyParams.node.position.z = node->point ( ).z ( );
+        lStrategyParams.node.radius = node->radius ( );
+
+        _Container.addElement( lStrategyParams );
+      }
+      bp::object _strategy = Strategy( _Container );
+
+      std::string injectedVarName = "originalNodes";
+      std::string injectedVarName3 = "simplifiedNodes";
+
+      //Initialization of vectors on Python.
+      myPyGEmSManager->getModule().attr( injectedVarName.c_str()) = _Container.getContainer();
+      myPyGEmSManager->getModule().attr( injectedVarName3.c_str()) = 0;
+
+      _strategy.attr( "enhance" )();
+
+      std::cout << "Recovering new container from Python." << std::endl;
+      bp::list result = myPyGEmSManager->extractListFromModule( injectedVarName3.c_str());
+      int n = bp::len( result );
+      std::cout << "Container recovered dimensions Value:" << n << std::endl;
+
+      std::cout << "Showing received string value (modified on python):" << std::endl;
+      for ( int t = 0; t < n; ++t )
+      {
+        StrategyParams val = bp::extract<StrategyParams>(result[t] );
+        simplifiedCoords.push_back(val);
+      }
+    }
+    catch ( const bp::error_already_set & )
+    {
+      std::cerr << ">>> Error! Uncaught exception:\n";
+      PyErr_Print();
     }
   }
 }

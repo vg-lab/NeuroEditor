@@ -1,2 +1,3 @@
 #-*- mode: cmake -*-
-git_subproject(nsol https://github.com/gmrvvis/nsol.git b9d9b548)
+git_subproject(nsol https://github.com/gmrvvis/nsol.git b4142d64)
+git_subproject(PyGEmS https://gitlab.gmrv.es/gmrv/PyGEmS.git 504d8044)

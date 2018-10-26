@@ -1,13 +1,13 @@
 cmake_minimum_required (VERSION 3.2)
-project (ReTracer VERSION 0.0.1)
+project (ReTracer VERSION 0.0.2)
 set( ReTracer_VERSION_ABI 1 )
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-#  set(CMAKE_BUILD_TYPE Debug)
+  set(CMAKE_BUILD_TYPE Debug)
 endif(NOT CMAKE_BUILD_TYPE)
 
-# Disable in source building
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC ")
+
 if( "${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}" )
  message( FATAL "no in source building allowed." )
 endif( )
@@ -29,7 +29,7 @@ set( COMMON_PROJECT_DOMAIN es.gmrv )
 
 include( Common )
 
-#add_definitions(-DQT_NO_KEYWORDS)
+add_definitions(-DQT_NO_KEYWORDS)
 
 common_find_package(Qt5Widgets SYSTEM REQUIRED)
 common_find_package(Qt5Core SYSTEM REQUIRED)
@@ -45,25 +45,34 @@ common_find_package(Boost REQUIRED COMPONENTS
   date_time filesystem iostreams program_options regex system unit_test_framework
   python${USE_BOOST_PYTHON_VERSION})
 
-#common_find_package(PyGEmS REQUIRED)
+common_find_package(PyGEmS REQUIRED)
 common_find_package(nsol REQUIRED)
 common_find_package(Eigen3 REQUIRED SYSTEM)
-
-#list(APPEND COMMON_FIND_PACKAGE_DEFINES
-#  RETRACER_USE_PYTHON${USE_BOOST_PYTHON_VERSION})
 
 common_find_package_post( )
 
 # Needed because this var is set by PythonLibs and does
 # not follow conventional naming
-include_directories (# ${Boost_INCLUDE_DIRS}
+include_directories (
+  ${Boost_INCLUDE_DIRS}
   ${PYTHON_INCLUDE_DIRS})
 
 if ( nsol_FOUND )
   set(RETRACER_DEPENDENT_LIBRARIES nsol ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 endif( )
 
+###Force Python3 compilation
+add_definitions( -DPYGEMS_USE_PYTHON3 )
 add_subdirectory( ReTracer )
+
+file(GLOB ICONS "ReTracer/icons/*")
+file(COPY ${ICONS} DESTINATION "${CMAKE_BINARY_DIR}/bin/icons")
+
+if ( ${USE_BOOST_PYTHON_VERSION} EQUAL 3 )
+  file(COPY "PyGEmS/scripts/Strategies-Python3.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+elseif()
+  file(COPY "PyGEmS/scripts/Strategies-Python2.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+endif( )
 
 set(DOCS README.md LICENSE.txt)
 install(FILES ${DOCS} DESTINATION share/ReTracer COMPONENT dev)

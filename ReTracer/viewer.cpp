@@ -315,7 +315,7 @@ void Viewer::setModificationInterval ( unsigned int pIniValue,
 void Viewer::simplify ( std::map < std::string, float > &optParams,
                         int objectId, OBJECT_TYPE objectType )
 {
-  retracer::Utils::Simplify ( modifiedMorphology, optParams, objectId, objectType );
+  util->getInstance()->Simplify ( modifiedMorphology, optParams, objectId, objectType );
   createSelectors ( modifiedMorphology );
   if ( _autoSaveState ) saveState ( );
   updateGL ( );
@@ -356,10 +356,8 @@ void Viewer::attachMorphology ( const nsol::NeuronMorphologyPtr &morphology_ )
 {
   //mNeuronGraphOptimizer->copyGraph();
   //mNeuronGraphOptimizer->getOptimizedGraph().attachSWCImporter(pSWCImporter);
-
-  //## development pourposes
+  //### under development
   ( void ) morphology_;
-
 }
 
 //Manipulated methods
@@ -388,7 +386,6 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
 {
   if ( selectionMode_ != NONE )
   {
-    // Updates rectangle_ coordinates and redraws rectangle
     rectangle_.setBottomRight ( e->pos ( ) );
     updateGL ( );
   }
@@ -433,7 +430,6 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
 {
   if ( e->key ( ) == Qt::Key_Escape )
   {
-    //std::cout<<"You pressed ESC"<<std::endl;
     selection_.clear ( );
   }
   else
@@ -459,8 +455,6 @@ void Viewer::endSelection ( const QPoint & )
   GLint nbHits = glRenderMode ( GL_RENDER );
   if ( nbHits > 0 )
   {
-    // Interpret results : each object created 4 values in the selectBuffer().
-    // (selectBuffer())[4*i+3] is the id pushed on the stack.
     for ( int i = 0; i < nbHits; ++i )
       switch ( selectionMode_ )
       {
@@ -569,7 +563,6 @@ void Viewer::setRenderModifiedMorphology ( bool renderModifiedMorphology_ )
   updateGL ( );
 };
 
-//## It is not necessary
 void Viewer::middlePosition ( )
 {
   if ( selection_.size ( ) > 0 )
@@ -591,8 +584,8 @@ void Viewer::middlePosition ( )
             {
               initialPoint = ( *nodes )[i]->point ( );
             }
-
-            if ((( *nodes )[i]->id ( ) - 1 ) == objects_[*it]->id )
+            //### Problem with non consecutive nodes.
+            if ( (i > 0) && ( (( *nodes )[i]->id ( ) - 1 ) == objects_[*it]->id ) )
             {
               endPoint = ( *nodes )[i]->point ( );
               ( *nodes )[i - 1]->point (( initialPoint + endPoint )/2.0 );
@@ -623,7 +616,6 @@ void Viewer::ExtractNeurite ( QString pFile )
 //			{
 //				mOriginalGraph->ExtractNeurite(*it, pFile.toStdString());
 //			}
-      //### avoid warning
       ( void ) pFile;
     }
     updateGL ( );
@@ -633,7 +625,7 @@ void Viewer::ExtractNeurite ( QString pFile )
 void Viewer::enhance ( std::map < std::string, float > &optParams,
                        int objectId, OBJECT_TYPE objectType )
 {
-  retracer::Utils::Enhance ( modifiedMorphology, optParams, objectId, objectType );
+  util->getInstance()->Enhance ( modifiedMorphology, optParams, objectId, objectType );
   createSelectors ( modifiedMorphology );
   if ( _autoSaveState ) saveState ( );
   updateGL ( );
@@ -685,7 +677,6 @@ void Viewer::setLink ( )
   if ( selection_.size ( ) == 2 )
   {
     QList < int >::const_iterator it = selection_.begin ( );
-    //QList<int>::const_iterator it2=selection_.begin();
     ++it;
     if (( *it >= 2 ))
     {
@@ -718,7 +709,7 @@ void Viewer::selectDendrite ( unsigned int dendriteId_ )
       {
         for ( auto node: section->nodes ( ))
         {
-          //Avoid repetitions of nodes
+          //Avoid node repetition 
           if (node->id ( )>actNodeId)
           {
             addIdToSelection ( node->id ( ) - 1);
@@ -729,6 +720,41 @@ void Viewer::selectDendrite ( unsigned int dendriteId_ )
     }
     ++actDendId;
   }
+  updateGL ( );
+}
+
+void Viewer::selectSection ( unsigned int sectionId_ )
+{
+  selection_.clear ( );
+  unsigned int actSectionId = 0;
+  int actNodeId = 0;
+
+  for ( auto neurite: modifiedMorphology->neurites ( ))
+  {
+    for ( auto section: neurite->sections ( ))
+    {
+      if ( actSectionId  == sectionId_ )
+      {
+        for ( auto node: section->nodes ( ))
+        {
+          //Avoid node repetition
+          if ( node->id() > actNodeId )
+          {
+            addIdToSelection( node->id() - 1 );
+            actNodeId = node->id();
+          }
+        }
+      }
+      ++actSectionId;
+    }
+  }
+  updateGL ( );
+}
+
+void Viewer::selectNode ( unsigned int nodeId_ )
+{
+  selection_.clear ( );
+  addIdToSelection ( nodeId_ - 1);
   updateGL ( );
 }
 
@@ -747,7 +773,7 @@ void Viewer::undoState ( )
   //Always store the original morphology
   if ( _stack.size ( ) > 1 )
   {
-    //### Memory needs to be released explicity?
+    //### Memory analyze after pop
     //delete modifiedMorphology;
     _stack.pop ( );
     modifiedMorphology = _stack.top ( );

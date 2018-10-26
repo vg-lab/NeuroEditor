@@ -11,7 +11,6 @@ Editor of neuromorphological tracings.
     * NSOL
     * glm
     * libQGLViewer
-    
 
 ## Building
 

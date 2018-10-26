@@ -67,7 +67,9 @@ void BatchBuilder::selectOutputDirectory ( )
 void BatchBuilder::generateNeurons ( )
 {
   if (( !_inputDir.isNull ( )) && ( !_outputDir.isNull ( )))
-    emit directoriesReadies ( );
+  {
+    Q_EMIT directoriesReadies ( );
+  }
 }
 
 void BatchBuilder::cancel ( )

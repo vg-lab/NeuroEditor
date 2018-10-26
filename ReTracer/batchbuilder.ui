@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>535</width>
-    <height>113</height>
+    <width>698</width>
+    <height>134</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>BatchBuilder</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
+  <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QPushButton" name="pushButton_inputDirectory">
      <property name="text">
@@ -21,33 +21,38 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEdit_inputDirectory">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QPushButton" name="pushButton_outputDirectory">
+   <item row="2" column="0">
+    <widget class="QRadioButton" name="radioButton_applySimplification">
      <property name="text">
-      <string>Output Directory</string>
+      <string>Apply Simplification</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEdit_outputDirectory">
-     <property name="readOnly">
+     <property name="checked">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="2" column="2">
+    <widget class="QRadioButton" name="radioButton_applyFix">
+     <property name="text">
+      <string>Apply Fix</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="3">
     <layout class="QHBoxLayout">
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -92,6 +97,34 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="pushButton_outputDirectory">
+     <property name="text">
+      <string>Output Directory</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QRadioButton" name="radioButton_applyEnhance">
+     <property name="text">
+      <string>Apply Enhance</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="lineEdit_outputDirectory">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="lineEdit_inputDirectory">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

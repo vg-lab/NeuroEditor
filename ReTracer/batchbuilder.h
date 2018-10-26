@@ -38,10 +38,13 @@ class BatchBuilder: public QWidget
     QString getInputDir ( ) { return _inputDir; }
     QString getOutputDir ( ) { return _outputDir; }
 
-//	unsigned int	getNumberOfSmooths()	{return ui.spinBox_Subdivisions->value();}
     QString getBaseName ( ) { return ui.lineEdit_baseName->text ( ); }
 
-  signals:
+    bool applySimplify ( ) { return ui.radioButton_applySimplification->isChecked(); }
+    bool applyEnhance ( ) { return ui.radioButton_applyEnhance->isChecked(); }
+    bool applyFix ( ) { return ui.radioButton_applyFix->isChecked(); }
+
+  Q_SIGNALS:
 
     void directoriesReadies ( );
 
@@ -49,7 +52,7 @@ class BatchBuilder: public QWidget
 
     Ui::BatchBuilder ui;
 
-  public slots:
+  public Q_SLOTS://slots:
 
     void selectInputDirectory ( );
     void selectOutputDirectory ( );
