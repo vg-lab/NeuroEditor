@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
-
 #include "viewer.h"
+
 #include "Utils.h"
 
 #include <QMouseEvent>
@@ -30,16 +30,17 @@
 #include <QGLViewer/manipulatedFrame.h>
 #include <limits>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
 Viewer::Viewer ( QWidget *parent )
   : QGLViewer ( parent )
+  , _scene( nullptr )
+  , originalMorphology( nullptr )
+  , modifiedMorphology( nullptr )
 {
   selectionMode_ = NONE;
-
-  originalMorphologyRenderer = nullptr;
-  modifiedMorphologyRenderer = nullptr;
 
   _TreeModel = nullptr;
 
@@ -57,19 +58,29 @@ Viewer::Viewer ( QWidget *parent )
     = true;
 
   _autoSaveState = true;
+
+  _firstLayout.renderModifiedStructure = true;
+  _firstLayout.renderModifiedMesh = true;
+  _firstLayout.renderOriginalStructure = false;
+  _firstLayout.renderOriginalMesh = false;
+
+  _secondLayout.renderModifiedStructure = false;
+  _secondLayout.renderModifiedMesh = false;
+  _secondLayout.renderOriginalStructure = true;
+  _secondLayout.renderOriginalMesh = true;
 }
 
 Viewer::~Viewer ( )
 {
-  if ( originalMorphologyRenderer != nullptr )
-    delete originalMorphologyRenderer;
-  if ( modifiedMorphologyRenderer != nullptr )
-    delete modifiedMorphologyRenderer;
+  if ( _scene )
+    delete _scene;
 }
 
 void Viewer::init ( )
 {
-  //Configure the camera
+  nlrender::Config::init( );
+  _scene = new Scene( 0, 600, 600 );
+
   camera ( )->setZClippingCoefficient ( 500.0 );
   camera ( )->setZNearCoefficient ( 0.0001 );
 
@@ -79,16 +90,19 @@ void Viewer::init ( )
   manipulatedFrame ( )->setConstraint ( new ManipulatedFrameSetConstraint ( ));
 
   glBlendFunc ( GL_ONE, GL_ONE );
+
 }
 
 void Viewer::setupViewer ( )
 {
-  camera ( )->setZClippingCoefficient ( 500.0 );
   selectionMode_ = SelectionMode::NONE;
   int argc = 0;
   char **argv = nullptr;
   glutInit ( &argc, argv );
-  updateGL ( );
+}
+
+void Viewer::initScene( void )
+{
 }
 
 void Viewer::animate ( )
@@ -98,81 +112,92 @@ void Viewer::animate ( )
 //  D r a w i n g   f u n c t i o n
 void Viewer::draw ( )
 {
-#if QT_VERSION < 0x040000
-  for (QValueList<int>::const_iterator it=selection_.begin(), end=selection_.end(); it != end; ++it)
-#endif
+  glLineWidth( 1.0f );
+  std::vector< float > viewVec( 16 );
+  camera( )->getModelViewMatrix( viewVec.data( ));
+  std::vector< float > projectionVec( 16 );
+  camera( )->getProjectionMatrix( projectionVec.data( ));
+  Eigen::Matrix4f view( viewVec.data( ));
+  _scene->viewMatrix( view );
+  Eigen::Matrix4f projection( projectionVec.data( ));
+  _scene->projectionMatrix( projection );
 
-  //Place light at camera position
-  const qglviewer::Vec cameraPos = camera ( )->position ( );
-  const GLfloat pos[4] =
-    { ( float ) cameraPos[0], ( float ) cameraPos[1], ( float ) cameraPos[2],
-      1.0 };
-  glLightfv ( GL_LIGHT1, GL_POSITION, pos );
-
-  // Orientate light along view direction
-  glLightfv ( GL_LIGHT1, GL_SPOT_DIRECTION, camera ( )->viewDirection ( ));
-
+  nsol::NeuronMorphologyPtr morphologyInfo;
+  switch( _morphologyInfoToShow )
+  {
+  case 1:
+    morphologyInfo = originalMorphology;
+    break;
+  case 2:
+    morphologyInfo = modifiedMorphology;
+    break;
+  default:
+    morphologyInfo = nullptr;
+    break;
+  }
   if ( !mSplitScreen )
   {
-    if (( _renderOriginalMorphology )
-      && ( originalMorphologyRenderer != nullptr ))
-    {
-      originalMorphologyRenderer->renderMorphology ( );
-      if (( _morphologyInfoToShow == 1 ) || ( _morphologyInfoToShow == 3 ))
-        renderMorphologyInfo ( originalMorphology );
-    }
-    if (( _renderModifiedMorphology )
-      && ( modifiedMorphologyRenderer != nullptr ))
-    {
-      modifiedMorphologyRenderer->renderMorphology ( );
-      if (( _morphologyInfoToShow == 2 ) || ( _morphologyInfoToShow == 3 ))
-        renderMorphologyInfo ( modifiedMorphology );
-    }
+    glViewport ( 0, 0, width ( ), height( ));
+    _scene->render( _firstLayout.renderModifiedStructure,
+                    _firstLayout.renderModifiedMesh,
+                    _firstLayout.renderOriginalStructure,
+                    _firstLayout.renderOriginalMesh );
+    renderMorphologyInfo ( morphologyInfo );
   }
   else
   {
-    if (( _renderOriginalMorphology )
-      && ( originalMorphologyRenderer != nullptr ))
-    {
-      glViewport ( 0.5*width ( ), 0, 0.5*width ( ), height ( ));
-      originalMorphologyRenderer->renderMorphology ( );
-      if (( _morphologyInfoToShow == 2 ) || ( _morphologyInfoToShow == 3 ))
-        renderMorphologyInfo ( originalMorphology );
-    }
+    glViewport ( 0, 0, width ( )*0.5, height( ));
+    _scene->render( _firstLayout.renderModifiedStructure,
+                    _firstLayout.renderModifiedMesh,
+                    _firstLayout.renderOriginalStructure,
+                    _firstLayout.renderOriginalMesh );
+    renderMorphologyInfo ( morphologyInfo );
 
-    if (( _renderModifiedMorphology )
-      && ( modifiedMorphologyRenderer != nullptr ))
-    {
-      glViewport ( 0, 0, 0.5*width ( ), height ( ));
-      modifiedMorphologyRenderer->renderMorphology ( );
-      if (( _morphologyInfoToShow == 1 ) || ( _morphologyInfoToShow == 3 ))
-        renderMorphologyInfo ( modifiedMorphology );
-    }
+    glViewport ( width( )*0.5, 0, width( )*0.5, height( ));
+    _scene->render( _secondLayout.renderModifiedStructure,
+                    _secondLayout.renderModifiedMesh,
+                    _secondLayout.renderOriginalStructure,
+                    _secondLayout.renderOriginalMesh );
+    renderMorphologyInfo ( morphologyInfo, true );
   }
 
-  glEnable ( GL_LIGHTING );
-
-  for ( QList < int >::const_iterator it = selection_.begin ( ),
-          end = selection_.end ( ); it != end; ++it )
-    objects_.at ( *it )->draw ( );
-
+  float axisSize = camera( )->distanceToSceneCenter( ) / 10.0f;
   if ( manipulatedFrame ( )->isManipulated ( ))
   {
-    glPushMatrix ( );
-    glMultMatrixd ( manipulatedFrame ( )->matrix ( ));
-    drawAxis ( 25 );
-    glPopMatrix ( );
+    if ( mSplitScreen)
+    {
+      glPushMatrix ( );
+      glMultMatrixd ( manipulatedFrame ( )->matrix ( ));
+      if ( _firstLayout.renderModifiedStructure )
+      {
+        glViewport ( 0, 0, width( )*0.5, height( ));
+        drawAxis ( axisSize );
+      }
+      if ( _secondLayout.renderModifiedStructure )
+      {
+        glViewport ( width( )*0.5, 0, width( )*0.5, height( ));
+        drawAxis ( axisSize );
+      }
+      glPopMatrix ( );
+    }
+    else if ( _firstLayout.renderModifiedStructure )
+    {
+      glPushMatrix ( );
+      glMultMatrixd ( manipulatedFrame ( )->matrix ( ));
+      drawAxis ( axisSize );
+      glPopMatrix ( );
+    }
   }
 
-  //restore viewport
   if ( mSplitScreen ) glViewport ( 0, 0, width ( ), height ( ));
 
   if ( selectionMode_ != NONE )
     drawSelectionRectangle ( );
 
+  glColor3f ( 0, 0, 0 );
   drawText ( 15, 15, "Selected:" + QString::number ( selection_.size ( )));
-}
 
+}
 //  S L O T S  F U N C T I O N S
 void Viewer::reset ( )
 {
@@ -186,7 +211,8 @@ QString Viewer::helpString ( ) const
   return text;
 }
 
-void Viewer::renderMorphologyInfo ( const nsol::NeuronMorphologyPtr &morphology_ )
+void Viewer::renderMorphologyInfo ( nsol::NeuronMorphologyPtr morphology_,
+                                    bool secondView_ )
 {
   int lIterIni = -1;
   int lIterFin = -1;
@@ -217,8 +243,17 @@ void Viewer::renderMorphologyInfo ( const nsol::NeuronMorphologyPtr &morphology_
             pos.y = node->point ( ).y ( );
             pos.z = node->point ( ).z ( );
             proj = camera ( )->projectedCoordinatesOf ( pos );
-            if (mSplitScreen) proj.x = proj.x/2.0;
-            drawText ( proj.x, proj.y, QString::number ( node->id ( )));
+            if ( mSplitScreen )
+            {
+              if ( proj.x > 0 && proj.x < width( )/2 - 20 )
+              {
+                if ( secondView_ )
+                  proj.x = proj.x + width( )/2;
+                drawText ( proj.x, proj.y, QString::number ( node->id ( )));
+              }
+            }
+            else
+              drawText ( proj.x, proj.y, QString::number ( node->id ( )));
           }
         }
       }
@@ -227,52 +262,41 @@ void Viewer::renderMorphologyInfo ( const nsol::NeuronMorphologyPtr &morphology_
   }
 }
 
-void Viewer::createSelectors ( const nsol::NeuronMorphologyPtr &morphology_ )
+void Viewer::createSelectorsAndStructure(
+  const nsol::NeuronMorphologyPtr &morphology_ )
 {
   selectionMode_ = NONE;
-  objects_.clear ( );
-  selection_.clear ( );
-  Object *o = nullptr;
+  objects_.clear( );
+  idToNode_.clear( );
+  idToObject_.clear( );
 
-  //Soma
-  unsigned int  numSomaNodes = morphology_->soma ()->nodes ().size ();
-  nsol::Vec3f somaPos = morphology_->soma ( )->center ( );
-  float radius = morphology_->soma ( )->minRadius ( );
-  for (unsigned int i=0;i<numSomaNodes;++i)
+  for ( auto node: morphology_->soma( )->nodes( ))
   {
-    o = new Object ( );
-    o->frame.setPosition ( somaPos.x ( ),
-                           somaPos.y ( ),
-                           somaPos.z ( )
-    );
-    o->id = i;
-    o->radius = radius + 0.2f;
-    objects_.append ( o );
+    auto object = new Object( );
+    object->frame.setPosition( node->point( ).x( ),
+                               node->point( ).y( ),
+                               node->point( ).z( ));
+    object->id = node->id( );
+    object->radius = node->radius( );
+    objects_.append( object );
+    idToNode_[node->id( )] = node;
+    idToObject_[node->id( )] = object;
   }
 
-  //Neurites
-  int actNodeId=0;
-  for ( auto neurite: morphology_->neurites ( ))
-  {
-    for ( auto section: neurite->sections ( ))
-    {
-      for ( auto node: section->nodes ( ))
+  for ( auto neurite: morphology_->neurites( ))
+    for ( auto section: neurite->sections( ))
+      for ( auto node: section->nodes( ))
       {
-        if (node->id ( )>actNodeId)
-        {
-          o = new Object ( );
-          o->frame.setPosition ( node->point ( ).x ( ),
-                                 node->point ( ).y ( ),
-                                 node->point ( ).z ( )
-          );
-          o->id = node->id ( );
-          o->radius = node->radius ( ) + 0.2f;
-          objects_.append ( o );
-          actNodeId = node->id ( );
-        }
+        auto object = new Object ( );
+        object->frame.setPosition( node->point( ).x( ),
+                                   node->point( ).y( ),
+                                   node->point( ).z( ));
+        object->id = node->id ( );
+        object->radius = node->radius( );
+        objects_.append ( object );
+        idToNode_[node->id( )] = node;
+        idToObject_[node->id( )] = object;
       }
-    }
-  }
 }
 
 void Viewer::loadMorphology ( QString pSWCFile )
@@ -280,14 +304,18 @@ void Viewer::loadMorphology ( QString pSWCFile )
   originalMorphology = swcReader.readMorphology ( pSWCFile.toStdString ( ));
   modifiedMorphology = originalMorphology->clone ( );
 
-  originalMorphologyRenderer = new nsolRenderer ( originalMorphology );
-  modifiedMorphologyRenderer = new nsolRenderer ( modifiedMorphology );
-  modifiedMorphologyRenderer->setNodeColor ( nsol::Vec3f ( 0, 0, 1 ));
-  modifiedMorphologyRenderer->setLinkColor ( nsol::Vec3f ( 0, 1, 0 ));
+  _scene->originalMorphology( originalMorphology );
+  _scene->modifiedMorphology( modifiedMorphology );
 
-  modifiedMorphologyRenderer->setIncrement ( 0.1 );
+  auto aabb = _scene->aabb( );
 
-  createSelectors ( modifiedMorphology );
+  Vec center( aabb.center( ).x( ), aabb.center( ).y( ),
+              aabb.center( ).z( ));
+  setSceneCenter( center );
+  setSceneRadius( aabb.radius( ));
+  camera( )->fitSphere( center, aabb.radius( ));
+
+  createSelectorsAndStructure( modifiedMorphology );
   while ( !_stack.empty ( ))
     _stack.pop ( );
   saveState ( );
@@ -301,8 +329,8 @@ void Viewer::loadMorphology ( QString pSWCFile )
 
 void Viewer::exportMorphology ( QString pFile )
 {
-  swcWriter
-    .writeMorphology ( pFile.toStdString ( ).c_str ( ), modifiedMorphology );
+  swcWriter.writeMorphology( pFile.toStdString( ).c_str( ),
+                             modifiedMorphology );
 }
 
 void Viewer::setModificationInterval ( unsigned int pIniValue,
@@ -315,16 +343,21 @@ void Viewer::setModificationInterval ( unsigned int pIniValue,
 void Viewer::simplify ( std::map < std::string, float > &optParams,
                         int objectId, OBJECT_TYPE objectType )
 {
-  util->getInstance()->Simplify ( modifiedMorphology, optParams, objectId, objectType );
-  createSelectors ( modifiedMorphology );
-  if ( _autoSaveState ) saveState ( );
-  updateGL ( );
+  util->getInstance( )->Simplify( modifiedMorphology, optParams,
+                                  objectId, objectType );
+  createSelectorsAndStructure( modifiedMorphology );
+  _scene->updateModifiedStructure( );
+  _scene->updateModifiedMesh( );
+  if ( _autoSaveState )
+    saveState( );
+  updateGL( );
 }
 
 void Viewer::setModifiedAsOriginal ( )
 {
   originalMorphology = modifiedMorphology->clone ( );
-  originalMorphologyRenderer->setMorphology ( originalMorphology );
+  _scene->originalMorphology( originalMorphology );
+  updateGL( );
 }
 
 void Viewer::interpolateRadius ( float pInitDendriteRadius,
@@ -347,6 +380,9 @@ void Viewer::interpolateRadius ( float pInitDendriteRadius,
         }
       }
     }
+    createSelectorsAndStructure( modifiedMorphology );
+    _scene->updateModifiedStructure( );
+    _scene->updateModifiedMesh( );
     if ( _autoSaveState ) saveState ( );
   }
   updateGL ( );
@@ -390,6 +426,8 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
     updateGL ( );
   }
   else
+    if ( e->modifiers ( ) == Qt::ControlModifier )
+      whileManipulation( );
     QGLViewer::mouseMoveEvent ( e );
 }
 
@@ -397,33 +435,70 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 {
   if ( selectionMode_ != NONE )
   {
-    // Actual selection on the rectangular area.
-    // Possibly swap left/right and top/bottom to make rectangle_ valid.
     rectangle_ = rectangle_.normalized ( );
-
-    // Define selection window dimensions
-    setSelectRegionWidth ( rectangle_.width ( ));
-    setSelectRegionHeight ( rectangle_.height ( ));
-
-    // Compute rectangle center and perform selection
     QPoint center = rectangle_.center ( );
-    if (mSplitScreen)
+    int selectWidth = rectangle_.width( );
+    int selectHeight = rectangle_.height( );
+
+    if ( !mSplitScreen )
     {
-      float desp = ( rectangle_.bottomRight ().x () + rectangle_.bottomLeft().x( ) ) /2.0;
-      center.setX ( rectangle_.center ( ).x ( ) + desp );
+      if ( _firstLayout.renderModifiedStructure )
+      {
+        adjustSelecRegion( width( ), height( ), center,
+                           selectWidth, selectHeight );
+        setSelectRegionWidth ( selectWidth );
+        setSelectRegionHeight ( selectHeight );
+        if ( selectWidth != 0 && selectHeight != 0 )
+          select( center );
+      }
+    }
+    else
+    {
+      int auxSelectWidth = selectWidth;
+      int auxSelectHeight = selectHeight;
+      QPoint auxCenter = center;
+      if ( _firstLayout.renderModifiedStructure )
+      {
+        adjustSelecRegion( width( )*0.5, height( ), auxCenter,
+                           auxSelectWidth, auxSelectHeight );
+        setSelectRegionWidth ( auxSelectWidth );
+        setSelectRegionHeight ( auxSelectHeight );
+        if ( auxSelectWidth != 0 && auxSelectHeight != 0 )
+          select( auxCenter );
+      }
+      if ( _secondLayout.renderModifiedStructure )
+      {
+        auxSelectWidth = selectWidth;
+        auxSelectHeight = selectHeight;
+        auxCenter = center;
+        auxCenter.setX( center.x( ) - width( ) * 0.5 );
+        adjustSelecRegion( width( )*0.5, height( ), auxCenter,
+                           auxSelectWidth, auxSelectHeight );
+        setSelectRegionWidth ( auxSelectWidth );
+        setSelectRegionHeight ( auxSelectHeight );
+        if ( auxSelectWidth != 0 && auxSelectHeight != 0 )
+          select( auxCenter );
+      }
     }
 
-    select ( center );
-    // Update display to show new selected objects
+    selectionMode_ = NONE;
     updateGL ( );
   }
   else
   {
     if ( e->modifiers ( ) == Qt::ControlModifier )
-      startManipulation ( );
+      endManipulation( );
 
     QGLViewer::mouseReleaseEvent ( e );
   }
+}
+
+void Viewer::resizeGL( int width, int height )
+{
+  QGLViewer::resizeGL( width, height );
+  _scene->size( width, height );
+  if ( mSplitScreen )
+    camera( )->setScreenWidthAndHeight( width/2, height );
 }
 
 void Viewer::keyPressEvent ( QKeyEvent *e )
@@ -431,6 +506,7 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
   if ( e->key ( ) == Qt::Key_Escape )
   {
     selection_.clear ( );
+    _scene->setSelection( selection_ );
   }
   else
     QGLViewer::keyPressEvent ( e );
@@ -440,97 +516,115 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
 //   C u s t o m i z e d   s e l e c t i o n   p r o c e s s
 void Viewer::drawWithNames ( )
 {
-  for ( int i = 0; i < int ( objects_.size ( )); i++ )
+  for ( int i = 0; i < objects_.size( ); i++ )
   {
-    glPushName ( i );
-    objects_.at ( i )->draw ( );
-    glPopName ( );
+    glPushName( i );
+    objects_[i]->draw( );
+    glPopName( );
   }
 }
 
 void Viewer::endSelection ( const QPoint & )
 {
   glFlush ( );
-  // Get the number of objects that were seen through the pick matrix frustum. Reset GL_RENDER mode.
+
   GLint nbHits = glRenderMode ( GL_RENDER );
+
   if ( nbHits > 0 )
   {
     for ( int i = 0; i < nbHits; ++i )
       switch ( selectionMode_ )
       {
-        case ADD    : addIdToSelection (( selectBuffer ( ))[4*i + 3] );
+        case ADD    :
+          selection_.insert( objects_[ selectBuffer( )[4*i + 3]]->id );
           break;
-        case REMOVE : removeIdFromSelection (( selectBuffer ( ))[4*i + 3] );
+        case REMOVE :
+          selection_.erase( objects_[ selectBuffer( )[4*i + 3]]->id );
           break;
         default : break;
       }
   }
-  selectionMode_ = NONE;
+  _scene->setSelection( selection_ );
 }
 
-void Viewer::startManipulation ( )
+void Viewer::startManipulation( )
 {
-  Vec averagePosition;
-  ManipulatedFrameSetConstraint *mfsc =
-    ( ManipulatedFrameSetConstraint * ) ( manipulatedFrame ( )->constraint ( ));
-  mfsc->clearSet ( );
-
-  for ( QList < int >::const_iterator it = selection_.begin ( ),
-          end = selection_.end ( ); it != end; ++it )
+  if ( selection_.size( ) > 0 )
   {
-    mfsc->addObjectToSet ( objects_[*it] );
-    averagePosition += objects_[*it]->frame.position ( );
+    Vec averagePosition;
+    ManipulatedFrameSetConstraint *mfsc =
+      ( ManipulatedFrameSetConstraint* )( manipulatedFrame( )->constraint( ));
+    mfsc->clearSet( );
+
+    for ( auto select: selection_ )
+    {
+      auto object = idToObject_[select];
+      mfsc->addObjectToSet( object );
+      averagePosition += object->frame.position( );
+    }
+    averagePosition /= selection_.size ( );
+    manipulatedFrame( )->setPosition( averagePosition );
   }
+}
+
+void Viewer::whileManipulation( )
+{
+  Vec lAuxVec;
+
+  if ( selection_.size ( ) > 0 )
+  {
+    for ( auto select: selection_ )
+    {
+      auto object = idToObject_[select];
+      auto node = idToNode_[select];
+      if ( object && node )
+      {
+        lAuxVec = object->frame.position( );
+        node->point( nsol::Vec3f( lAuxVec ));
+      }
+    }
+    _scene->updateModifiedStructure( );
+    updateGL( );
+  }
+}
+
+void Viewer::endManipulation( )
+{
+  ManipulatedFrameSetConstraint *mfsc =
+    ( ManipulatedFrameSetConstraint* )( manipulatedFrame( )->constraint( ));
+  mfsc->clearSet( );
 
   Vec lAuxVec;
 
   if ( selection_.size ( ) > 0 )
   {
-    averagePosition = averagePosition/selection_.size ( );
-    manipulatedFrame ( )->setPosition ( averagePosition );
-
-    //### Hard traverse!!! -> Change it by direct indexation
-    for ( auto neurite: modifiedMorphology->neurites ( ))
+    for ( auto select: selection_ )
     {
-      for ( auto section: neurite->sections ( ))
+      auto object = idToObject_[select];
+      auto node = idToNode_[select];
+      if ( object && node )
       {
-        for ( auto node: section->nodes ( ))
-        {
-          for ( QList < int >::const_iterator it = selection_.begin ( ),
-                  end = selection_.end ( ); it != end; ++it )
-          {
-            if ( node->id ( ) == objects_[*it]->id )
-            {
-              lAuxVec = objects_[*it]->frame.position ( );
-              node->point ( nsol::Vec3f ( lAuxVec.x, lAuxVec.y, lAuxVec.z ));
-            }
-
-          }
-        }
+        lAuxVec = object->frame.position( );
+        node->point( nsol::Vec3f( lAuxVec ));
       }
     }
-    if ( _autoSaveState ) saveState ( );
+    _scene->updateModifiedStructure( );
+    _scene->updateModifiedMesh( );
+    if ( _autoSaveState )
+      saveState( );
+    updateGL( );
   }
 }
 
 //   S e l e c t i o n   t o o l s
-void Viewer::addIdToSelection ( int id )
-{
-  if ( !selection_.contains ( id ))
-    selection_.push_back ( id );
-}
-
-void Viewer::removeIdFromSelection ( int id )
-{
-  selection_.removeAll ( id );
-}
 
 void Viewer::drawSelectionRectangle ( ) const
 {
   startScreenCoordinatesSystem ( );
   glDisable ( GL_LIGHTING );
   glEnable ( GL_BLEND );
-  glColor4f ( 0.8, 0.8, 0.8f, 1.9f );
+  glBlendFunc ( GL_ONE, GL_ONE );
+  glColor4f ( 0.3, 0.3, 0.3f, 1.0f );
   glBegin ( GL_QUADS );
     glVertex2i ( rectangle_.left ( ), rectangle_.top ( ));
     glVertex2i ( rectangle_.right ( ), rectangle_.top ( ));
@@ -565,196 +659,176 @@ void Viewer::setRenderModifiedMorphology ( bool renderModifiedMorphology_ )
 
 void Viewer::middlePosition ( )
 {
-  if ( selection_.size ( ) > 0 )
-  {
-    nsol::Vec3f initialPoint ( 0, 0, 0 );
-    nsol::Vec3f endPoint ( 0, 0, 0 );
+  // if ( selection_.size ( ) > 0 )
+  // {
+  //   nsol::Vec3f initialPoint ( 0, 0, 0 );
+  //   nsol::Vec3f endPoint ( 0, 0, 0 );
 
-    for ( QList < int >::const_iterator it = selection_.begin ( ),
-            end = selection_.end ( ); it != end; ++it )
-    {
-      for ( auto neurite: modifiedMorphology->neurites ( ))
-      {
-        for ( auto section: neurite->sections ( ))
-        {
-          nsol::Nodes *nodes = &section->nodes ( );
-          for ( unsigned int i = 0; i < nodes->size ( ); ++i )
-          {
-            if ((( *nodes )[i]->id ( ) + 1 ) == objects_[*it]->id )
-            {
-              initialPoint = ( *nodes )[i]->point ( );
-            }
-            //### Problem with non consecutive nodes.
-            if ( (i > 0) && ( (( *nodes )[i]->id ( ) - 1 ) == objects_[*it]->id ) )
-            {
-              endPoint = ( *nodes )[i]->point ( );
-              ( *nodes )[i - 1]->point (( initialPoint + endPoint )/2.0 );
-              Vec objPos (( *nodes )[i - 1]->point ( ).x ( ),
-                          ( *nodes )[i - 1]->point ( ).y ( ),
-                          ( *nodes )[i - 1]->point ( ).z ( )
-              );
+  //   for ( QList < int >::const_iterator it = selection_.begin ( ),
+  //           end = selection_.end ( ); it != end; ++it )
+  //   {
+  //     for ( auto neurite: modifiedMorphology->neurites ( ))
+  //     {
+  //       for ( auto section: neurite->sections ( ))
+  //       {
+  //         nsol::Nodes *nodes = &section->nodes ( );
+  //         for ( unsigned int i = 0; i < nodes->size ( ); ++i )
+  //         {
+  //           if ((( *nodes )[i]->id ( ) + 1 ) == objects_[*it]->id )
+  //           {
+  //             initialPoint = ( *nodes )[i]->point ( );
+  //           }
+  //           //### Problem with non consecutive nodes.
+  //           if ( (i > 0) && ( (( *nodes )[i]->id ( ) - 1 ) == objects_[*it]->id ) )
+  //           {
+  //             endPoint = ( *nodes )[i]->point ( );
+  //             ( *nodes )[i - 1]->point (( initialPoint + endPoint )/2.0 );
+  //             Vec objPos (( *nodes )[i - 1]->point ( ).x ( ),
+  //                         ( *nodes )[i - 1]->point ( ).y ( ),
+  //                         ( *nodes )[i - 1]->point ( ).z ( )
+  //             );
 
-              objects_[*it]->frame.setPosition ( objPos );
-            }
-          }
-        }
-      }
-    }
-    if ( _autoSaveState ) saveState ( );
-  }
-  updateGL ( );
+  //             objects_[*it]->frame.setPosition ( objPos );
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  //   if ( _autoSaveState ) saveState ( );
+  // }
+  // updateGL ( );
 }
 
-void Viewer::ExtractNeurite ( QString pFile )
+void Viewer::ExtractNeurite ( QString // pFile
+  )
 {
-  if ( selection_.size ( ) > 0 )
-  {
-    for ( QList < int >::const_iterator it = selection_.begin ( ),
-            end = selection_.end ( ); it != end; ++it )
-    {
-//			if ( (*it>2) && (!mOriginalGraph->getNodeInfo(*it).isTermination) )
-//			{
-//				mOriginalGraph->ExtractNeurite(*it, pFile.toStdString());
-//			}
-      ( void ) pFile;
-    }
-    updateGL ( );
-  }
+//   if ( selection_.size ( ) > 0 )
+//   {
+//     for ( QList < int >::const_iterator it = selection_.begin ( ),
+//             end = selection_.end ( ); it != end; ++it )
+//     {
+// //			if ( (*it>2) && (!mOriginalGraph->getNodeInfo(*it).isTermination) )
+// //			{
+// //				mOriginalGraph->ExtractNeurite(*it, pFile.toStdString());
+// //			}
+//       ( void ) pFile;
+//     }
+//     updateGL ( );
+// }
 }
 
 void Viewer::enhance ( std::map < std::string, float > &optParams,
                        int objectId, OBJECT_TYPE objectType )
 {
   util->getInstance()->Enhance ( modifiedMorphology, optParams, objectId, objectType );
-  createSelectors ( modifiedMorphology );
+  createSelectorsAndStructure( modifiedMorphology );
+  _scene->updateModifiedStructure( );
+  _scene->updateModifiedMesh( );
   if ( _autoSaveState ) saveState ( );
   updateGL ( );
 }
 
-void Viewer::setRadiusToSelectedNode ( float lRadius )
+void Viewer::setRadiusToSelectedNode ( float // lRadius
+  )
 {
-  if ( selection_.size ( ) > 0 )
-  {
-    //### Hard traverse
-    for ( auto neurite: modifiedMorphology->neurites ( ))
-    {
-      for ( auto section: neurite->sections ( ))
-      {
-        for ( auto node: section->nodes ( ))
-        {
-          for ( QList < int >::const_iterator it = selection_.begin ( ),
-                  end = selection_.end ( ); it != end; ++it )
-          {
-            if (( *it > 0 ) && ( node->id ( ) == objects_[*it]->id ))
-              node->radius ( lRadius );
-          }
-        }
-      }
-    }
-    if ( _autoSaveState ) saveState ( );
-    updateGL ( );
-  }
+  // if ( selection_.size ( ) > 0 )
+  // {
+  //   //### Hard traverse
+  //   for ( auto neurite: modifiedMorphology->neurites ( ))
+  //   {
+  //     for ( auto section: neurite->sections ( ))
+  //     {
+  //       for ( auto node: section->nodes ( ))
+  //       {
+  //         for ( QList < int >::const_iterator it = selection_.begin ( ),
+  //                 end = selection_.end ( ); it != end; ++it )
+  //         {
+  //           if (( *it > 0 ) && ( node->id ( ) == objects_[*it]->id ))
+  //             node->radius ( lRadius );
+  //         }
+  //       }
+  //     }
+  //   }
+  //   if ( _autoSaveState ) saveState ( );
+  //   updateGL ( );
+  // }
 }
 
 void Viewer::brokeLink ( )
 {
-  if ( selection_.size ( ) > 0 )
-  {
-    for ( QList < int >::const_iterator it = selection_.begin ( ),
-            end = selection_.end ( ); it != end; ++it )
-    {
-      if (( *it >= 2 ))
-      {
-        //mOriginalGraph->brokeLink(*it);
-      }
-    }
-    updateGL ( );
-  }
+  // if ( selection_.size ( ) > 0 )
+  // {
+  //   for ( QList < int >::const_iterator it = selection_.begin ( ),
+  //           end = selection_.end ( ); it != end; ++it )
+  //   {
+  //     if (( *it >= 2 ))
+  //     {
+  //       //mOriginalGraph->brokeLink(*it);
+  //     }
+  //   }
+  //   updateGL ( );
+  // }
 }
 
 void Viewer::setLink ( )
 {
-  if ( selection_.size ( ) == 2 )
-  {
-    QList < int >::const_iterator it = selection_.begin ( );
-    ++it;
-    if (( *it >= 2 ))
-    {
-      //mOriginalGraph->setRadiusToSelectedNode(*it, lRadius);
-      //###mOriginalGraph->setLink(*it,*it2);
-    }
-    updateGL ( );
-  }
+  // if ( selection_.size ( ) == 2 )
+  // {
+  //   QList < int >::const_iterator it = selection_.begin ( );
+  //   ++it;
+  //   if (( *it >= 2 ))
+  //   {
+  //     //mOriginalGraph->setRadiusToSelectedNode(*it, lRadius);
+  //     //###mOriginalGraph->setLink(*it,*it2);
+  //   }
+  //   updateGL ( );
+  // }
 }
 
 void Viewer::changeToDualView ( )
 {
   mSplitScreen = !mSplitScreen;
+
   if ( !mSplitScreen )
-    glViewport ( 0, 0, width ( ), height ( ));
+    camera( )->setScreenWidthAndHeight( width( ), height( ));
+  else
+    camera( )->setScreenWidthAndHeight( width( )/2, height( ));
+
   updateGL ( );
 }
 
 void Viewer::selectDendrite ( unsigned int dendriteId_ )
 {
-  selection_.clear ( );
-  unsigned int actDendId = 0;
-  int actNodeId = 0;
+  unsigned int currentDendId = 0;
 
-  for ( auto neurite: modifiedMorphology->neurites ( ))
+  for ( auto neurite: modifiedMorphology->neurites( ))
   {
-    if ( actDendId == dendriteId_ )
-    {
-      for ( auto section: neurite->sections ( ))
-      {
-        for ( auto node: section->nodes ( ))
-        {
-          //Avoid node repetition 
-          if (node->id ( )>actNodeId)
-          {
-            addIdToSelection ( node->id ( ) - 1);
-            actNodeId = node->id ( );
-          }
-        }
-      }
-    }
-    ++actDendId;
+    if ( currentDendId == dendriteId_ )
+      for ( auto section: neurite->sections( ))
+        for ( auto node: section->nodes( ))
+          selection_.insert( node->id( ));
+    ++currentDendId;
   }
   updateGL ( );
 }
 
 void Viewer::selectSection ( unsigned int sectionId_ )
 {
-  selection_.clear ( );
-  unsigned int actSectionId = 0;
-  int actNodeId = 0;
-
+  unsigned int currentSectionId = 0;
   for ( auto neurite: modifiedMorphology->neurites ( ))
-  {
     for ( auto section: neurite->sections ( ))
     {
-      if ( actSectionId  == sectionId_ )
-      {
+      if ( currentSectionId  == sectionId_ )
         for ( auto node: section->nodes ( ))
-        {
-          //Avoid node repetition
-          if ( node->id() > actNodeId )
-          {
-            addIdToSelection( node->id() - 1 );
-            actNodeId = node->id();
-          }
-        }
-      }
-      ++actSectionId;
+          selection_.insert( node->id( ));
+      ++currentSectionId;
     }
-  }
   updateGL ( );
 }
 
 void Viewer::selectNode ( unsigned int nodeId_ )
 {
-  selection_.clear ( );
-  addIdToSelection ( nodeId_ - 1);
+  selection_.insert( nodeId_ );
   updateGL ( );
 }
 
@@ -777,8 +851,30 @@ void Viewer::undoState ( )
     //delete modifiedMorphology;
     _stack.pop ( );
     modifiedMorphology = _stack.top ( );
-    modifiedMorphologyRenderer->setMorphology ( modifiedMorphology );
-    createSelectors ( modifiedMorphology );
+    createSelectorsAndStructure( modifiedMorphology );
+    _scene->modifiedMorphology( modifiedMorphology );
+    _scene->setSelection( selection_ );
+    updateGL ( );
   }
-  updateGL ( );
+}
+
+void Viewer::adjustSelecRegion( int windowWidth_, int windowHeight_,
+                                QPoint& regionCenter_, int& regionWidth_,
+                                int& regionHeight_ )
+{
+  int minWidth = regionCenter_.x( ) - regionWidth_ * 0.5;
+  int maxWidth = regionCenter_.x( ) + regionWidth_ * 0.5;
+  int minHeight = regionCenter_.y( ) - regionHeight_ * 0.5;
+  int maxHeight = regionCenter_.y( ) + regionHeight_ * 0.5;
+
+  minWidth = std::max( 0, std::min( minWidth, windowWidth_ ));
+  maxWidth = std::max( 0, std::min( maxWidth, windowWidth_ ));
+  minHeight = std::max( 0, std::min( minHeight, windowHeight_ ));
+  maxHeight = std::max( 0, std::min( maxHeight, windowHeight_ ));
+
+  regionWidth_ = maxWidth - minWidth;
+  regionHeight_ = maxHeight - minHeight;
+
+  regionCenter_.setX( regionWidth_ * 0.5f + minWidth );
+  regionCenter_.setY( regionHeight_ * 0.5f + minHeight );
 }

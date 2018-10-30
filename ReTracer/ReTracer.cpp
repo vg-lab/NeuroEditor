@@ -27,16 +27,16 @@
 ReTracer::ReTracer ( QWidget* parent )
   : QMainWindow ( parent )
 {
+
   ui.setupUi ( this );
-
   viewer = new Viewer ( this );
-
+  viewer->setupViewer ( );
+  viewer->show( );
+ 
+  viewer->initScene( );
   ui.verticalLayout_Viewer->addWidget ( viewer );
-
   _simplificationMode = SIMP_METHOD::RADIAL;
   _enhanceMode = ENHANCE_METHOD::LINEAR;
-
-  viewer->setupViewer ( );
 
   _batchBuilder = nullptr;
 
@@ -492,74 +492,73 @@ void ReTracer::changeToDualView ( )
 
 void ReTracer::setResolutionToNodes ( )
 {
-  viewer->getOriginalMorphologyRenderer ( )
-        ->setResolution ( ui.spinBox_resolution->value ( ));
-  viewer->getModifiedMorphologyRenderer ( )
-        ->setResolution ( ui.spinBox_resolution->value ( ));
+  // viewer->getOriginalMorphologyRenderer ( )
+  //       ->setResolution ( ui.spinBox_resolution->value ( ));
+  // viewer->getModifiedMorphologyRenderer ( )
+  //       ->setResolution ( ui.spinBox_resolution->value ( ));
 }
 
 void ReTracer::setNodeIncToMorphology ( )
 {
-  viewer->getModifiedMorphologyRenderer ( )
-        ->setIncrement ( ui.doubleSpinBox_desp->value ( ));
+  // viewer->getModifiedMorphologyRenderer ( )
+  //       ->setIncrement ( ui.doubleSpinBox_desp->value ( ));
 }
 
 void ReTracer::setNodeColorToOriginalMorphology ( )
 {
-  QColor color = QColorDialog::getColor ( Qt::black, this );
-  if ( color.isValid ( ))
-  {
-    viewer->getOriginalMorphologyRenderer ( )
-          ->setNodeColor ( nsol::Vec3f ( color.redF ( ),
-                                         color.greenF ( ),
-                                         color.blueF ( )));
+  // QColor color = QColorDialog::getColor ( Qt::black, this );
+  // if ( color.isValid ( ))
+  // {
+  //   viewer->getOriginalMorphologyRenderer ( )
+  //         ->setNodeColor ( nsol::Vec3f ( color.redF ( ),
+  //                                        color.greenF ( ),
+  //                                        color.blueF ( )));
 
-    QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
-    ui.pushButton_OriginalNodeColor->setStyleSheet ( qss );
-  }
+  //   QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
+  //   ui.pushButton_OriginalNodeColor->setStyleSheet ( qss );
+  // }
 }
 
 void ReTracer::setNodeColorToModifiedMorphology ( )
 {
-  QColor color = QColorDialog::getColor ( Qt::black, this );
-  if ( color.isValid ( ))
-  {
-    viewer->getOriginalMorphologyRenderer ( )
-          ->setLinkColor ( nsol::Vec3f ( color.redF ( ),
-                                         color.greenF ( ),
-                                         color.blueF ( )));
-    QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
-    ui.pushButton_OriginalLinkColor->setStyleSheet ( qss );
-  }
-
+  // QColor color = QColorDialog::getColor ( Qt::black, this );
+  // if ( color.isValid ( ))
+  // {
+  //   viewer->getOriginalMorphologyRenderer ( )
+  //         ->setLinkColor ( nsol::Vec3f ( color.redF ( ),
+  //                                        color.greenF ( ),
+  //                                        color.blueF ( )));
+  //   QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
+  //   ui.pushButton_OriginalLinkColor->setStyleSheet ( qss );
+  // }
 }
 
 void ReTracer::setLinkColorToOriginalMorphology ( )
 {
-  QColor color = QColorDialog::getColor ( Qt::black, this );
-  if ( color.isValid ( ))
-  {
-    viewer->getModifiedMorphologyRenderer ( )
-          ->setNodeColor ( nsol::Vec3f ( color.redF ( ),
-                                         color.greenF ( ),
-                                         color.blueF ( )));
-    QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
-    ui.pushButton_ModifiedNodeColor->setStyleSheet ( qss );
-  }
+  // QColor color = QColorDialog::getColor ( Qt::black, this );
+  // if ( color.isValid ( ))
+  // {
+  //   viewer->getModifiedMorphologyRenderer ( )
+  //         ->setNodeColor ( nsol::Vec3f ( color.redF ( ),
+  //                                        color.greenF ( ),
+  //                                        color.blueF ( )));
+  //   QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
+  //   ui.pushButton_ModifiedNodeColor->setStyleSheet ( qss );
+  // }
 }
 
 void ReTracer::setLinkColorToModifiedMorphology ( )
 {
-  QColor color = QColorDialog::getColor ( Qt::black, this );
-  if ( color.isValid ( ))
-  {
-    viewer->getModifiedMorphologyRenderer ( )
-          ->setLinkColor ( nsol::Vec3f ( color.redF ( ),
-                                         color.greenF ( ),
-                                         color.blueF ( )));
-    QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
-    ui.pushButton_ModifiedLinkColor->setStyleSheet ( qss );
-  }
+  // QColor color = QColorDialog::getColor ( Qt::black, this );
+  // if ( color.isValid ( ))
+  // {
+  //   viewer->getModifiedMorphologyRenderer ( )
+  //         ->setLinkColor ( nsol::Vec3f ( color.redF ( ),
+  //                                        color.greenF ( ),
+  //                                        color.blueF ( )));
+  //   QString qss = QString ( "background-color: %1" ).arg ( color.name ( ));
+  //   ui.pushButton_ModifiedLinkColor->setStyleSheet ( qss );
+  // }
 }
 
 void ReTracer::colorToButtons ( )

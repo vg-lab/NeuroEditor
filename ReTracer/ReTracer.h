@@ -30,7 +30,6 @@ class ReTracer: public QMainWindow
 {
   Q_OBJECT
 
-    Viewer* viewer;
     SIMP_METHOD _simplificationMode;
     ENHANCE_METHOD _enhanceMode;
 
@@ -43,6 +42,8 @@ class ReTracer: public QMainWindow
     BatchBuilder* _batchBuilder;
 
   public:
+
+  Viewer* viewer;
 
     ReTracer ( QWidget* parent = 0 );
 

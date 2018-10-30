@@ -35,163 +35,183 @@ using namespace qglviewer;
 #include "object.h"
 #include "nsolRenderer.h"
 #include "TreeModel.h"
+#include "Scene.h"
+
+typedef struct tLayout{
+  bool renderModifiedStructure;
+  bool renderModifiedMesh;
+  bool renderOriginalStructure;
+  bool renderOriginalMesh;
+} tLayout;
 
 class Viewer: public QGLViewer
 {
   Q_OBJECT        // must include this if you use Qt signals/slots
 
-    nsol::SwcReader swcReader;
-    nsol::SwcWriter swcWriter;
+public:
 
-    nsol::NeuronMorphologyPtr originalMorphology;
-    nsol::NeuronMorphologyPtr modifiedMorphology;
+  Viewer ( QWidget* parent );
 
-    bool _autoSaveState;
-    std::stack < nsol::NeuronMorphologyPtr > _stack;
+  virtual ~Viewer ( );
 
-    TreeModel* _TreeModel;
+  void setupViewer ( );
 
-    nsolRenderer* originalMorphologyRenderer;
-    nsolRenderer* modifiedMorphologyRenderer;
+  void initScene( );
 
-    SIMP_METHOD _simpMethod;
+  void loadMorphology ( QString pSWCFile );
+  void exportMorphology ( QString pFile );
 
-    retracer::Utils * util;
+  //Shows
+  void setMorphologyInfoToShow ( short int morphologyInfoToShow_ )
+  {
+    _morphologyInfoToShow = morphologyInfoToShow_;
+    updateGL( );
+  };
+  void setShowText ( bool pShowText ) { _ShowText = pShowText; };
+  void setShowTextValues ( int pShowTextIniValue, int pShowTextFinValue )
+  {
+    _ShowTextIniValue = pShowTextIniValue;
+    _ShowTextFinValue = pShowTextFinValue;
+  };
 
-    short int _morphologyInfoToShow;
-    bool _ShowText;
-    int _ShowTextIniValue;
-    int _ShowTextFinValue;
+  void setModificationInterval ( unsigned int pIniValue,
+                                 unsigned int pFinalValue );
 
-    unsigned int _procInitialValue;
-    unsigned int _procFinalValue;
+  void saveState ( );
+  void setAutoSaveState ( bool );
 
-    bool _renderOriginalMorphology;
-    bool _renderModifiedMorphology;
+  void undoState ( );
 
-    bool mSplitScreen;
+  //Render
+  void setRenderOriginalMorphology ( bool renderOriginalMorphology_ );
+  void setRenderModifiedMorphology ( bool renderModifiedMorphology_ );
 
-    //Manipulation functions
-    //----------------------
-    // Selection functions
-    virtual void drawWithNames ( );
-    virtual void endSelection ( const QPoint& );
 
-    // Mouse events functions
-    virtual void mousePressEvent ( QMouseEvent* e );
-    virtual void mouseMoveEvent ( QMouseEvent* e );
-    virtual void mouseReleaseEvent ( QMouseEvent* e );
+  //Operations
+  void simplify ( std::map < std::string, float >& optParams,
+                  int objectId = -1, OBJECT_TYPE objectType =
+                  OBJECT_TYPE::NEURITE );
 
-    virtual void keyPressEvent ( QKeyEvent* e );
+  void interpolateRadius ( float pInitDendriteRadius,
+                           float pFinalDendriteRadius,
+                           float pInitApicalRadius,
+                           float pFinalApicalRadius );
+  unsigned int getNumNeurites ( )
+  {
+    return modifiedMorphology->neurites ( ).size ( );
+  }
+  void attachMorphology ( const nsol::NeuronMorphologyPtr& morphology_ );
+  void enhance (  std::map < std::string, float >& optParams,
+                  int objectId = -1, OBJECT_TYPE objectType =
+                  OBJECT_TYPE::NEURITE );
 
-    virtual QString helpString ( ) const;
+  void setRadiusToSelectedNode ( float lRadius );
+  void brokeLink ( );
+  void setLink ( );
 
-    void startManipulation ( );
-    void drawSelectionRectangle ( ) const;
-    void addIdToSelection ( int id );
-    void removeIdFromSelection ( int id );
+  //Others
+  void setModifiedAsOriginal ( );
+  void middlePosition ( );
+  void ExtractNeurite ( QString pFile );
 
-    // Current rectangular selection
-    QRect rectangle_;
+  void changeToDualView ( );
+  void selectDendrite ( unsigned int dendriteId_ );
+  void selectSection ( unsigned int sectionId_ );
+  void selectNode ( unsigned int nodeId_ );
 
-    // Different selection modes
-    enum SelectionMode { NONE, ADD, REMOVE };
-    SelectionMode selectionMode_;
+  TreeModel* getTreeModel ( ) { return _TreeModel; }
 
-    QList < Object* > objects_;
-    QList < int > selection_;
+  retracer::Utils * getUtils ( ) { return util; };
 
-  public:
+public Q_SLOTS://slots:
 
-    Viewer ( QWidget* parent );
+  // reset application
+  void reset ( );
+protected:
 
-    virtual ~Viewer ( );
+  // initialize - update - draw functions
+  virtual void init ( );
+  virtual void animate ( );
+  virtual void draw ( );
 
-    void setupViewer ( );
+  //Manipulation functions
+  //----------------------
+  // Selection functions
+  virtual void drawWithNames ( );
+  virtual void endSelection ( const QPoint& );
 
-    void loadMorphology ( QString pSWCFile );
-    void exportMorphology ( QString pFile );
+  // Mouse events functions
+  virtual void mousePressEvent ( QMouseEvent* e );
+  virtual void mouseMoveEvent ( QMouseEvent* e );
+  virtual void mouseReleaseEvent ( QMouseEvent* e );
 
-    //Shows
-    void setMorphologyInfoToShow ( short int morphologyInfoToShow_ )
-    {
-      _morphologyInfoToShow = morphologyInfoToShow_;
-    };
-    void setShowText ( bool pShowText ) { _ShowText = pShowText; };
-    void setShowTextValues ( int pShowTextIniValue, int pShowTextFinValue )
-    {
-      _ShowTextIniValue = pShowTextIniValue;
-      _ShowTextFinValue = pShowTextFinValue;
-    };
+  virtual void keyPressEvent ( QKeyEvent* e );
 
-    void setModificationInterval ( unsigned int pIniValue,
-                                   unsigned int pFinalValue );
+  virtual void resizeGL( int width, int height );
 
-    void saveState ( );
-    void setAutoSaveState ( bool );
+  virtual QString helpString ( ) const;
 
-    void undoState ( );
+  void startManipulation( );
+  void whileManipulation( );
+  void endManipulation( );
+  void drawSelectionRectangle ( ) const;
+  void addIdToSelection( int id );
+  void removeIdFromSelection ( int id );
 
-    //Render
-    void setRenderOriginalMorphology ( bool renderOriginalMorphology_ );
-    void setRenderModifiedMorphology ( bool renderModifiedMorphology_ );
+  void renderMorphologyInfo( nsol::NeuronMorphologyPtr morphology_,
+                             bool secondView_ = false );
 
-    nsolRenderer* getOriginalMorphologyRenderer ( ) { return originalMorphologyRenderer; };
-    nsolRenderer* getModifiedMorphologyRenderer ( ) { return modifiedMorphologyRenderer; };
+  void createSelectorsAndStructure(
+    const nsol::NeuronMorphologyPtr& morphology_ );
 
-    //Operations
-    void simplify ( std::map < std::string, float >& optParams,
-                    int objectId = -1, OBJECT_TYPE objectType =
-                    OBJECT_TYPE::NEURITE );
+  void adjustSelecRegion( int windowWidth_, int windowHeigth_,
+                          QPoint& regionCenter_, int& regionWidth_,
+                          int& regionHegiht_ );
 
-    void interpolateRadius ( float pInitDendriteRadius,
-                             float pFinalDendriteRadius,
-                             float pInitApicalRadius,
-                             float pFinalApicalRadius );
-    unsigned int getNumNeurites ( )
-    {
-      return modifiedMorphology->neurites ( ).size ( );
-    }
-    void attachMorphology ( const nsol::NeuronMorphologyPtr& morphology_ );
-    void enhance (  std::map < std::string, float >& optParams,
-                    int objectId = -1, OBJECT_TYPE objectType =
-                    OBJECT_TYPE::NEURITE );
 
-    void setRadiusToSelectedNode ( float lRadius );
-    void brokeLink ( );
-    void setLink ( );
 
-    //Others
-    void setModifiedAsOriginal ( );
-    void middlePosition ( );
-    void ExtractNeurite ( QString pFile );
+  Scene* _scene;
+  nsol::SwcReader swcReader;
+  nsol::SwcWriter swcWriter;
 
-    void changeToDualView ( );
-    void selectDendrite ( unsigned int dendriteId_ );
-    void selectSection ( unsigned int sectionId_ );
-    void selectNode ( unsigned int nodeId_ );
+  nsol::NeuronMorphologyPtr originalMorphology;
+  nsol::NeuronMorphologyPtr modifiedMorphology;
 
-    TreeModel* getTreeModel ( ) { return _TreeModel; }
+  bool _autoSaveState;
+  std::stack < nsol::NeuronMorphologyPtr > _stack;
 
-    retracer::Utils * getUtils ( ) { return util; };
+  TreeModel* _TreeModel;
 
-  protected:
+  SIMP_METHOD _simpMethod;
 
-    // initialize - update - draw functions
-    virtual void init ( );
-    virtual void animate ( );
-    virtual void draw ( );
+  retracer::Utils * util;
 
-  private :
+  short int _morphologyInfoToShow;
+  bool _ShowText;
+  int _ShowTextIniValue;
+  int _ShowTextFinValue;
+  unsigned int _procInitialValue;
+  unsigned int _procFinalValue;
 
-    void renderMorphologyInfo ( const nsol::NeuronMorphologyPtr& morphology_ );
+  bool _renderOriginalMorphology;
+  bool _renderModifiedMorphology;
+  bool mSplitScreen;
 
-    void createSelectors ( const nsol::NeuronMorphologyPtr& morphology_ );
+  // Current rectangular selection
+  QRect rectangle_;
 
-  public Q_SLOTS://slots:
+  // Different selection modes
+  enum SelectionMode { NONE, ADD, REMOVE };
+  SelectionMode selectionMode_;
 
-    // reset application
-    void reset ( );
+  QList < Object* > objects_;
+  std::unordered_set< int > selection_;
+  std::unordered_map< int, nsol::NodePtr > idToNode_;
+  std::unordered_map< int, Object* > idToObject_;
+
+  tLayout _firstLayout;
+  tLayout _secondLayout; 
+
 };
 
 #endif /* VIEWERINTERFACE_H_ */

@@ -36,7 +36,7 @@ common_find_package(Qt5Core SYSTEM REQUIRED)
 common_find_package(Qt5Gui SYSTEM REQUIRED)
 common_find_package(OpenGL SYSTEM REQUIRED)
 common_find_package(GLUT SYSTEM REQUIRED)
-common_find_package(OpenMesh SYSTEM REQUIRED)
+# common_find_package(OpenMesh SYSTEM REQUIRED)
 common_find_package(QGLViewer SYSTEM REQUIRED)
 
 common_find_package(PythonInterp REQUIRED)
@@ -47,6 +47,7 @@ common_find_package(Boost REQUIRED COMPONENTS
 
 common_find_package(PyGEmS REQUIRED)
 common_find_package(nsol REQUIRED)
+common_find_package(neurolots REQUIRED)
 common_find_package(Eigen3 REQUIRED SYSTEM)
 
 common_find_package_post( )
