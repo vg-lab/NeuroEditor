@@ -31,11 +31,8 @@ void Object::draw ( ) const
 
   glPushMatrix ( );
   glMultMatrixd ( frame.matrix ( ));
-  //gluSphere(quad, 0.03, 10, 6);
-  //gluCylinder(quad, 0.03, 0.0, 0.09, 10, 1);
   glColor3f ( 1, 1, 0 );
   gluSphere ( quad, radius, 10, 6 );
   gluCylinder ( quad, 0.03, 0.0, 0.09, 10, 1 );
-  //glutSolidSphere(0.1,4,4);
   glPopMatrix ( );
 }

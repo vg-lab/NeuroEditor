@@ -56,7 +56,7 @@ class Viewer: public QGLViewer
 
     SIMP_METHOD _simpMethod;
 
-    //std::map<std::string,float> _simpParams;
+    retracer::Utils * util;
 
     short int _morphologyInfoToShow;
     bool _ShowText;
@@ -168,8 +168,12 @@ class Viewer: public QGLViewer
 
     void changeToDualView ( );
     void selectDendrite ( unsigned int dendriteId_ );
+    void selectSection ( unsigned int sectionId_ );
+    void selectNode ( unsigned int nodeId_ );
 
     TreeModel* getTreeModel ( ) { return _TreeModel; }
+
+    retracer::Utils * getUtils ( ) { return util; };
 
   protected:
 
@@ -184,7 +188,7 @@ class Viewer: public QGLViewer
 
     void createSelectors ( const nsol::NeuronMorphologyPtr& morphology_ );
 
-  public slots:
+  public Q_SLOTS://slots:
 
     // reset application
     void reset ( );

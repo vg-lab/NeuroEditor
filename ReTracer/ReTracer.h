@@ -52,7 +52,7 @@ class ReTracer: public QMainWindow
 
     Ui::ReTracerClass ui;
 
-  private slots:
+  private Q_SLOTS://slots:
     //Main
     void importMorphology ( );
     void exportMorphology ( );
@@ -82,7 +82,7 @@ class ReTracer: public QMainWindow
     void brokeLink ( );
     void setLink ( );
 
-    //Melt
+    //Fine Selection
     void attachMorphology ( );
     void selectNeuronObject ( );
     void simplifyNeuronObject ( );

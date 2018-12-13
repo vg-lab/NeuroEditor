@@ -1,6 +1,24 @@
-//
-// Created by juanpebm on 29/06/18.
-//
+/*
+ * Copyright (c) 2018 CCS/UPM - GMRV/URJC.
+ *
+ * Authors: Juan Pedro Brito Méndez <juanpedro.brito@upm.es>
+ * Based on Qt TreeModel example from Qt SDK.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License version 3.0 as published
+ * by the Free Software Foundation.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * 
+ * 
+ */
 
 #include "TreeModel.h"
 
@@ -122,9 +140,7 @@ void TreeModel::setupModelData ( const nsol::NeuronMorphologyPtr& morphology_,
     neuriteList << neuriteId_;
     ++neuriteId_;
 
-    //parents << parents.last()->child(parents.last()->childCount()-1);
-    parents.last ( )
-           ->appendChild ( new TreeItem ( neuriteList, parents.last ( )));
+    parents.last ( )->appendChild ( new TreeItem ( neuriteList, parents.last ( )));
     for ( auto section: neurite->sections ( ))
     {
       QList < QVariant > sectionList;

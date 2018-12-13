@@ -60,8 +60,9 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionImport_MOrphology"/>
+    <addaction name="actionImport_Morphology"/>
     <addaction name="actionExport_Morphology"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -79,6 +80,7 @@
     <property name="title">
      <string>About</string>
     </property>
+    <addaction name="actionHelp"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -225,6 +227,13 @@
              </widget>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="PushButton_reloadPythonModule">
+           <property name="text">
+            <string>Reload Python Module</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -504,13 +513,6 @@
                  <widget class="QRadioButton" name="radioButton_pythonSimplification">
                   <property name="text">
                    <string>Custom Simplification</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="21" column="0" colspan="2">
-                 <widget class="QPushButton" name="PushButton_testPythonIntegration">
-                  <property name="text">
-                   <string>test Python Integration</string>
                   </property>
                  </widget>
                 </item>
@@ -1236,7 +1238,7 @@
     <string>Split Screen</string>
    </property>
   </action>
-  <action name="actionImport_MOrphology">
+  <action name="actionImport_Morphology">
    <property name="text">
     <string>Import Morphology</string>
    </property>
@@ -1254,6 +1256,16 @@
   <action name="actionTake_snapshot">
    <property name="text">
     <string>Take snapshot</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>

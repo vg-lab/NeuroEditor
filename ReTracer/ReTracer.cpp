@@ -18,11 +18,11 @@
  *
  */
 
-#include "ReTracer.h"
-
 #include <QColorDialog>
 #include <QDirIterator>
 #include <QMessageBox>
+
+#include "ReTracer.h"
 
 ReTracer::ReTracer ( QWidget* parent )
   : QMainWindow ( parent )
@@ -31,18 +31,23 @@ ReTracer::ReTracer ( QWidget* parent )
 
   viewer = new Viewer ( this );
 
-  //Add the viewer component to the interface
   ui.verticalLayout_Viewer->addWidget ( viewer );
 
   _simplificationMode = SIMP_METHOD::RADIAL;
   _enhanceMode = ENHANCE_METHOD::LINEAR;
 
-  //Configure the compnent
   viewer->setupViewer ( );
 
   _batchBuilder = nullptr;
 
   //Actions
+  QObject::connect(ui.actionImport_Morphology	,SIGNAL(triggered())	,this,	SLOT(importMorphology()));
+  QObject::connect(ui.actionExport_Morphology	,SIGNAL(triggered())	,this,	SLOT(exportMorphology()));
+  QObject::connect(ui.actionDual_view	,SIGNAL(triggered())	,this,	SLOT(changeToDualView()));
+  QObject::connect(ui.actionTake_snapshot	,SIGNAL(triggered())	,this,	SLOT( takeSnapshot()));
+  QObject::connect(ui.actionHelp	,SIGNAL(triggered())	,this,	SLOT( help()));
+  QObject::connect(ui.actionExit	,SIGNAL(triggered())	,this,	SLOT( quit()));
+
   QObject::connect(ui.actionOpen_morphological_tracing	,SIGNAL(triggered())	,this,	SLOT(importMorphology()));
   QObject::connect(ui.action_splitScreen	,SIGNAL(triggered())	,this,	SLOT(changeToDualView()));
   QObject::connect(ui.action_takeSnapshot	,SIGNAL(triggered())	,this,	SLOT( takeSnapshot()));
@@ -77,6 +82,8 @@ ReTracer::ReTracer ( QWidget* parent )
   QObject::connect ( ui.radioButton_DouglasPeucker, SIGNAL( clicked ( )),
                      this, SLOT( setSimplificationMethod ( )));
   QObject::connect ( ui.radioButton_DouglasPueckerModif, SIGNAL( clicked ( )),
+                     this, SLOT( setSimplificationMethod ( )));
+  QObject::connect ( ui.radioButton_pythonSimplification, SIGNAL( clicked ( )),
                      this, SLOT( setSimplificationMethod ( )));
   QObject::connect ( ui.pushButton_ApplySimplification, SIGNAL( clicked ( )),
                      this, SLOT( simplify ( )));
@@ -150,7 +157,7 @@ ReTracer::ReTracer ( QWidget* parent )
   //Others
   QObject::connect ( ui.pushButton_SetModifiedAsOriginal, SIGNAL( clicked ( )),
                      this, SLOT( setModifiedAsOriginal ( )));
-  QObject::connect ( ui.PushButton_testPythonIntegration, SIGNAL( clicked ( )),
+  QObject::connect ( ui.PushButton_reloadPythonModule, SIGNAL( clicked ( )),
                      this, SLOT( testPythonIntegration ( )));
 
   //Default parameters
@@ -210,8 +217,6 @@ void ReTracer::exportMorphology ( )
 
 void ReTracer::setModificationInterval ( )
 {
-//	viewer->setSimplificationInterval(ui.spinBoxManualIniParam->value()
-//                                    ,ui.spinBoxManualFinParam->value());
 }
 
 void ReTracer::setModifiedAsOriginal ( )
@@ -401,7 +406,6 @@ void ReTracer::insertNode ( )
 
 void ReTracer::deleteNode ( )
 {
-  //###viewer->getNeuronGraphOptimizer()->directDeleteVertexs( ui.spinBox_ManualStep->value() );
 }
 
 void ReTracer::insertEdge ( )
@@ -591,30 +595,12 @@ void ReTracer::showBatchBuilder ( )
   }
 
   _batchBuilder->show ( );
-  //QObject::connect(mBatchBuilder, SIGNAL(fileReady(QString pFile)), this, SLOT(mSomaCreatorWidget->loadSWCFile(pFile)));
 }
 
 void ReTracer::genetareNeuronsInBatch ( )
 {
   _inputFilePath = _batchBuilder->getInputDir ( );
   _ouputFilePath = _batchBuilder->getOutputDir ( );
-
-  /*
-  setOptimizeMethod();
-  viewer->setOptimizeParams(
-                ui.spinBox_NthPoints->value()
-                ,ui.doubleSpinBox_RadialDistance->value()
-                ,ui.doubleSpinBox_PerpendicularDistance->value()
-                ,ui.doubleSpinBox_ReumannWitkam->value()
-                ,ui.doubleSpinBox_OpheinMinThreshold->value()
-                ,ui.doubleSpinBox__OpheinMaxThreshold->value()
-                ,ui.doubleSpinBox_Lang_Threshold->value()
-                ,ui.doubleSpinBox_Lang_Size->value()
-                ,ui.doubleSpinBox_DouglasPeuckerThreshold->value()
-                ,ui.spinBox_DouglasPeucker_NumPoints->value()
-              );
-   */
-
   this->copyRecursively ( _inputFilePath,
                           _ouputFilePath );
 }
@@ -641,31 +627,23 @@ bool ReTracer::copyRecursively ( const QString& sourceFolder,
     QString path = sourceFolder + QDir::separator ( ) + files[i];
     viewer->loadMorphology ( path );
 
-    //NO funciona si se saca fuera del bucle ...
-    setSimplificationMethod ( );
-//      viewer->setOptimizeParams(
-//                    ui.spinBox_NthPoints->value()
-//                    ,ui.doubleSpinBox_RadialDistance->value()
-//                    ,ui.doubleSpinBox_PerpendicularDistance->value()
-//                    ,ui.doubleSpinBox_ReumannWitkam->value()
-//                    ,ui.doubleSpinBox_OpheinMinThreshold->value()
-//                    ,ui.doubleSpinBox__OpheinMaxThreshold->value()
-//                    ,ui.doubleSpinBox_Lang_Threshold->value()
-//                    ,ui.doubleSpinBox_Lang_Size->value()
-//                    ,ui.doubleSpinBox_DouglasPeuckerThreshold->value()
-//                    ,ui.spinBox_DouglasPeucker_NumPoints->value()
-//
-//                  );
-    simplify ( );
-    path = destFolder + QDir::separator ( ) + _batchBuilder->getBaseName ( )
-      + files[i];
+    //###Does not work out of the loop    
+    if (_batchBuilder->applySimplify ( ))
+    {
+      setSimplificationMethod ( );
+      simplify ( );    
+    } else if (_batchBuilder->applyEnhance ( ) )
+    {
+      setEnhanceMethod ( );
+      enhance ( );
+    } 
+    else
+    {
+      //###Fix methods needs to be developed
+    }
+    
+    path = destFolder + QDir::separator ( ) + _batchBuilder->getBaseName ( ) + files[i];
     viewer->exportMorphology ( path );
-
-    //QString srcName = sourceFolder + QDir::separator() + files[i];
-    //QString destName = destFolder + QDir::separator() + files[i];
-    //success = QFile::copy(srcName, destName);
-    //if(!success)
-    //    return false;
   }
 
   files.clear ( );
@@ -683,8 +661,7 @@ bool ReTracer::copyRecursively ( const QString& sourceFolder,
 }
 
 
-//Melt
-
+//Fine detail selecction
 void ReTracer::setTreeModel ( )
 {
   ui.treeView_morphologyThree->setModel ( viewer->getTreeModel ( ));
@@ -696,14 +673,9 @@ void ReTracer::attachMorphology ( )
                                                     tr ( "Open File" ),
                                                     "./",
                                                     tr ( "NeuroMorpho(*.swc)" ));
-
   if ( !fileName.isNull ( ))
   {
-    //###NSSWCImporter::SWCImporter * lSWCImporter = new NSSWCImporter::SWCImporter(fileName.toStdString());
-    //###viewer->attachMorphology(*lSWCImporter);
-    //###delete lSWCImporter;
   }
-
 }
 
 void ReTracer::extractNeurite ( )
@@ -735,8 +707,8 @@ void ReTracer::removeNeurite ( )
 void ReTracer::selectNeuronObject ( )
 {
   QModelIndex index = ui.treeView_morphologyThree->currentIndex ( );
-  QVariant
-    extractedData = ui.treeView_morphologyThree->model ( )->data ( index );
+  QVariant extractedData = ui.treeView_morphologyThree->model ( )->data ( index );
+  unsigned int value = extractedData.toInt ( );
   unsigned int deph = 0;
 
   while (index.isValid ())
@@ -744,18 +716,28 @@ void ReTracer::selectNeuronObject ( )
     ++deph;
     index = index.parent();
   }
+  --deph;
 
-  unsigned int value = extractedData.toInt ( );
-  viewer->selectDendrite ( value );
+  switch ( deph )
+  {
+    case OBJECT_TYPE::NEURITE:
+      viewer->selectDendrite ( value );
+      break;
+
+    case OBJECT_TYPE::NODE:
+      viewer->selectNode ( value );
+      break;
+    case OBJECT_TYPE::SECTION:
+      viewer->selectSection ( value );
+      break;
+  }
 }
 
 void ReTracer::simplifyNeuronObject ( )
 {
   QModelIndex index = ui.treeView_morphologyThree->currentIndex ( );
-  QVariant
-    extractedData = ui.treeView_morphologyThree->model ( )->data ( index );
+  QVariant extractedData = ui.treeView_morphologyThree->model ( )->data ( index );
   unsigned int value = extractedData.toInt ( );
-
   unsigned int deph = 0;
 
   while (index.isValid ())
@@ -787,73 +769,7 @@ void ReTracer::enhanceNeuronObject ( )
 
 //Other
 void ReTracer::testPythonIntegration ( )
-{
-//  using namespace NSPyGEmS;
-//  const unsigned int vecSize            = 10;
-//  unsigned int numResizedNodesInPython  = 15;
-//  
-//  try
-//  {
-//	  //BPCode
-//    PyGEmSManager myPyGEmSManager("StrFramework", &initStrFramework, "Strategies", "Strategies.py");    
-//    bp::object Strategy   = myPyGEmSManager.getModuleAttrib( "Strategy" );    
-//
-//    Container       _Container;    
-//    StrategyParams  lStrategyParams;    
-//    for (unsigned int i=0;i<vecSize;++i) 
-//    {
-//      lStrategyParams.stringParam = "MyTest_" + std::to_string(lStrategyParams.intParam) + "_";      
-//      lStrategyParams.intParam++;
-//      _Container.addElement ( lStrategyParams );      
-//    }
-//    bp::object _strategy  = Strategy( _Container );    
-//    
-//    std::cout<<"Initial vector (Showing only string (from base class) parameter)."<<std::endl;
-//    for (unsigned int i=0;i<vecSize;++i) std::cout<<_Container.getContainer()[i].stringParam <<std::endl;
-//    
-//    std::string injectedVarName   = "vecIn";
-//    std::string injectedVarName3  = "listOut";
-//    
-//    //BPCode
-//    myPyGEmSManager.getModule().attr(injectedVarName.c_str())   = _Container.getContainer();
-//    myPyGEmSManager.getModule().attr(injectedVarName3.c_str())  = 0;
-//
-//    std::cout <<"Initial vector dimensions. Value:" <<_Container.getContainer().size() <<std::endl;
-//    
-//    std::cout <<"Set new dimensions of the vector to python. Value:" <<numResizedNodesInPython <<std::endl;    
-//    _strategy.attr("setContainerResizeDimension")(numResizedNodesInPython);
-//
-//    std::cout <<"Calling python methods from CPP."<<std::endl;
-//    
-//    _strategy.attr("simplify")();
-//    _strategy.attr("fix")();
-//    _strategy.attr("enhance")();
-//
-//    std::cout <<"Recovering new container from Python."<<std::endl;            
-//    bp::list result = myPyGEmSManager.extractListFromModule(injectedVarName3.c_str());    
-//
-//    //int n = bp::extract<int>(result.attr("__len__")());    
-//    int n = bp::len(result);
-//    std::cout <<"Container recovered dimensions Value:" <<n <<std::endl;
-//
-//    std::cout <<"Showing received string value (modified on python):"<<std::endl;    
-//    for (int  i=0;i<n;++i) 
-//    {
-//        StrategyParams val = bp::extract<StrategyParams>(result[i]);
-//        //StrategyParams val = myPyGEmSManager.extractObjectFromList(mStrategyParams,result,i);
-//        std::cout <<val.stringParam <<std::endl;;
-//    }
-//
-//    //Ping pong test
-//    std::cout <<"Starting ping-pong test:"<<std::endl;
-//    _strategy.attr("eval")();
-//
-//    std::cout <<std::endl;
-//  }
-//  catch ( const bp::error_already_set & )
-//  {
-//    std::cerr << ">>> Error! Uncaught exception:\n";
-//    PyErr_Print();
-//  }
+{  
+  viewer->getUtils ( )->reloadInstance ( );
 }
 
