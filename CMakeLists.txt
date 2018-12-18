@@ -70,9 +70,9 @@ file(GLOB ICONS "ReTracer/icons/*")
 file(COPY ${ICONS} DESTINATION "${CMAKE_BINARY_DIR}/bin/icons")
 
 if ( ${USE_BOOST_PYTHON_VERSION} EQUAL 3 )
-  file(COPY "PyGEmS/scripts/Strategies-Python3.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+  file(COPY "${COMMON_SOURCE_DIR}/PyGEmS/scripts/Strategies-Python3.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
 elseif()
-  file(COPY "PyGEmS/scripts/Strategies-Python2.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+  file(COPY "${COMMON_SOURCE_DIR}/PyGEmS/scripts/Strategies-Python2.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
 endif( )
 
 set(DOCS README.md LICENSE.txt)
