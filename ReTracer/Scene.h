@@ -64,12 +64,16 @@ public:
 
   nlgeometry::AxisAlignedBoundingBox aabb( void ){ return _aabb; }
 
+  void changeBackgroundColor( Eigen::Vector3f color_ );
+  void changeOriginalStructureColor( const Eigen::Vector3f& color_ );
+  void changeOriginalMeshColor( const Eigen::Vector3f& color_ );
+  void changeModifiedStructureColor( const Eigen::Vector3f& color_ );
+  void changeModifiedMeshColor( const Eigen::Vector3f& color_ );
+
 protected:
 
-  void updateSelectedNodes( const Eigen::Vector3f& unselectedColor_ =
-                            Eigen::Vector3f( 0.0f, 0.2f, 0.2f ),
-                            const Eigen::Vector3f& selectedColor_ =
-                            Eigen::Vector3f( 0.8f, 0.8f, 0.0f ));
+  void _updateSelectedNodes( void );
+  Eigen::Vector3f _convertToSelected( Eigen::Vector3f color_ );
 
   unsigned int _defaultFbo;
 
@@ -98,6 +102,13 @@ protected:
   nlgeometry::AxisAlignedBoundingBox _aabb;
 
   std::vector< unsigned int > _selection;
+
+  Eigen::Vector3f _backgroundColor;
+  Eigen::Vector3f _originalStructureColor;
+  Eigen::Vector3f _originalMeshColor;
+  Eigen::Vector3f _modifiedStructureColor;
+  Eigen::Vector3f _modifiedStructureSelectedColor;
+  Eigen::Vector3f _modifiedMeshColor;
 };
 
 #endif

@@ -26,6 +26,76 @@
 
 namespace retracer //Probably this code must be in nsol in the future
 {
+
+  MorphologyStructure::MorphologyStructure(
+    nsol::NeuronMorphologyPtr morphology_ )
+    : morphology( morphology_ )
+  {
+    somaNeurite = new nsol::Neurite( );
+    somaSection = new nsol::NeuronMorphologySection( );
+    somaNeurite->firstSection( somaSection );
+    somaSection->neurite( somaNeurite );
+    update( );
+  }
+
+  MorphologyStructure::~MorphologyStructure( void )
+  {
+    clear( );
+    delete somaNeurite;
+    delete somaSection;
+  }
+
+  void MorphologyStructure::clear( void )
+  {
+    objects.clear( );
+    idToNode.clear( );
+    nodeToSection.clear( );
+    somaSection->nodes( ).clear( );
+  }
+
+  void MorphologyStructure::update( void )
+  {
+    clear( );
+
+    for ( auto node: morphology->soma( )->nodes( ))
+    {
+      auto object = new Object( );
+      object->frame.setPosition( node->point( ).x( ),
+                                 node->point( ).y( ),
+                                 node->point( ).z( ));
+      object->id = node->id( );
+      object->radius = node->radius( );
+      objects.append( object );
+      idToNode[node->id( )] = node;
+      idToObject[node->id( )] = object;
+      somaSection->addNode( node );
+      nodeToSection[node] = somaSection;
+    }
+
+    for ( auto neurite: morphology->neurites( ))
+      for ( auto section: neurite->sections( ))
+        for ( auto node: section->nodes( ))
+        {
+          auto object = new Object ( );
+          object->frame.setPosition( node->point( ).x( ),
+                                     node->point( ).y( ),
+                                     node->point( ).z( ));
+          object->id = node->id ( );
+          object->radius = node->radius( );
+          objects.append ( object );
+          idToNode[node->id( )] = node;
+          idToObject[node->id( )] = object;
+          nodeToSection[node] = section;
+        }
+  }
+
+  void MorphologyStructure::changeMorphology(
+    nsol::NeuronMorphologyPtr morphology_ )
+  {
+    morphology = morphology_;
+    update( );
+  }
+
   Utils * Utils::instance = nullptr;
   NSPGManager::PyGEmSManager *  Utils::myPyGEmSManager= nullptr;
 

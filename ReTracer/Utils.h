@@ -27,6 +27,7 @@
 #include <nsol/nsol.h>
 #include <glm/glm.hpp>
 #include "glmSpline.hpp"
+#include "object.h"
 
 enum SIMP_METHOD
 {
@@ -45,8 +46,40 @@ enum SIMP_METHOD
 enum ENHANCE_METHOD { LINEAR, SPLINE, CUSTOM_ENHANCE };
 enum OBJECT_TYPE { NEURITE, SECTION, NODE, SOMA };
 
+typedef std::unordered_map< int, nsol::NodePtr > IdToNode;
+typedef std::unordered_map< nsol::NodePtr, nsol::SectionPtr > NodeToSection;
+
 namespace retracer //Probably this code must be in nsol in the future
 {
+
+  class MorphologyStructure
+  {
+
+  public:
+
+    typedef QList< Object* > Objects;
+    typedef std::unordered_map< int, Object* > IdToObject;
+    typedef std::unordered_map< int, nsol::NodePtr > IdToNode;
+    typedef std::unordered_map< nsol::NodePtr, nsol::SectionPtr > NodeToSection;
+
+    MorphologyStructure( nsol::NeuronMorphologyPtr morphology_ );
+
+    ~MorphologyStructure( void );
+
+    void clear( void );
+    void update( void );
+    void changeMorphology( nsol::NeuronMorphologyPtr morphology_ );
+
+    nsol::NeuronMorphologyPtr morphology;
+    nsol::NeuritePtr somaNeurite;
+    nsol::NeuronMorphologySectionPtr somaSection;
+    Objects objects;
+    IdToObject idToObject;
+    IdToNode idToNode;
+    NodeToSection nodeToSection;
+  };
+
+
   class Utils
   {
       static Utils * instance;

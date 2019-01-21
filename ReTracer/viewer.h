@@ -50,14 +50,28 @@ class Viewer: public QGLViewer
 
 public:
 
-  Viewer ( QWidget* parent );
+  typedef enum {
+    NONE = 0,
+    ADD,
+    REMOVE
+  } tSelectionMode;
+
+  typedef enum {
+    INCLUSIVE = 0,
+    EXCLUSIVE
+  } tSelectionInclusionMode;
+
+  typedef enum {
+    NODE = 0,
+    SECTION,
+    NEURITE
+  } tSelectionType;
+
+  Viewer ( QWidget* parent = 0 );
 
   virtual ~Viewer ( );
 
   void setupViewer ( );
-
-  void initScene( );
-
   void loadMorphology ( QString pSWCFile );
   void exportMorphology ( QString pFile );
 
@@ -79,13 +93,6 @@ public:
 
   void saveState ( );
   void setAutoSaveState ( bool );
-
-  void undoState ( );
-
-  //Render
-  void setRenderOriginalMorphology ( bool renderOriginalMorphology_ );
-  void setRenderModifiedMorphology ( bool renderModifiedMorphology_ );
-
 
   //Operations
   void simplify ( std::map < std::string, float >& optParams,
@@ -114,19 +121,65 @@ public:
   void middlePosition ( );
   void ExtractNeurite ( QString pFile );
 
-  void changeToDualView ( );
   void selectDendrite ( unsigned int dendriteId_ );
   void selectSection ( unsigned int sectionId_ );
   void selectNode ( unsigned int nodeId_ );
 
-  TreeModel* getTreeModel ( ) { return _TreeModel; }
+  TreeModel* getTreeModel ( ) { return _treeModel; }
 
   retracer::Utils * getUtils ( ) { return util; };
 
 public Q_SLOTS://slots:
 
-  // reset application
+  void updateSideBySide( bool sideBySideState_ );
+
+  void updateFLROriginalStructure( bool state_ );
+  void updateFLROriginalMesh( bool state_ );
+  void updateFLRModifiedStructure( bool state_ );
+  void updateFLRModifiedMesh( bool state_ );
+
+  void updateSLROriginalStructure( bool state_ );
+  void updateSLROriginalMesh( bool state_ );
+  void updateSLRModifiedStructure( bool state_ );
+  void updateSLRModifiedMesh( bool state_ );
+
+  void changeBackgroundColor( QColor color_ );
+  void changeOriginalStructureColor( QColor color_ );
+  void changeOriginalMeshColor( QColor color_ );
+  void changeModifiedStructureColor( QColor color_ );
+  void changeModifiedMeshColor( QColor color_ );
+
+  void setCameraViewFront( void );
+  void setCameraViewTop( void );
+  void setCameraViewBottom( void );
+  void setCameraViewLeft( void );
+  void setCameraViewRight( void );
+
+  void undoState( void );
+
   void reset ( );
+
+  void updateSelection( std::unordered_set< int > selection_ );
+  void updateSelectionInclusionMode(
+    tSelectionInclusionMode selectionInclusionMode_ );
+  void updateSelectionType( tSelectionType selectionType_ );
+
+  void changeAveragePos( Eigen::Vector3f& pos_ );
+  void changeRotation( Eigen::Quaternionf& q_ );
+  void changeAverageRadius( float radius_ );
+
+Q_SIGNALS:
+
+  void morphologyChanged( void );
+
+  void updateSelectionSignal( std::unordered_set< int > selection_ );
+
+  void resetInspectorSignal( void );
+
+  void updateAveragePosSignal( Eigen::Vector3f& pos_ );
+  void updateRotationSignal( Eigen::Quaternionf& q_ );
+  void updateAverageRadiusSignal( float radius_ );
+
 protected:
 
   // initialize - update - draw functions
@@ -168,7 +221,7 @@ protected:
                           QPoint& regionCenter_, int& regionWidth_,
                           int& regionHegiht_ );
 
-
+  void _changeSelection( void );
 
   Scene* _scene;
   nsol::SwcReader swcReader;
@@ -177,10 +230,13 @@ protected:
   nsol::NeuronMorphologyPtr originalMorphology;
   nsol::NeuronMorphologyPtr modifiedMorphology;
 
+  nsol::NeuritePtr _somaNeurite;
+  nsol::NeuronMorphologySectionPtr _somaSection;
+
   bool _autoSaveState;
   std::stack < nsol::NeuronMorphologyPtr > _stack;
 
-  TreeModel* _TreeModel;
+  TreeModel* _treeModel;
 
   SIMP_METHOD _simpMethod;
 
@@ -193,24 +249,26 @@ protected:
   unsigned int _procInitialValue;
   unsigned int _procFinalValue;
 
-  bool _renderOriginalMorphology;
-  bool _renderModifiedMorphology;
   bool mSplitScreen;
 
   // Current rectangular selection
-  QRect rectangle_;
+  QRect _rectangle;
 
   // Different selection modes
-  enum SelectionMode { NONE, ADD, REMOVE };
-  SelectionMode selectionMode_;
+  tSelectionMode _selectionMode;
+  tSelectionInclusionMode _selectionInclusionMode;
+  tSelectionType _selectionType;
+  std::unordered_set< int > _selection;
 
-  QList < Object* > objects_;
-  std::unordered_set< int > selection_;
-  std::unordered_map< int, nsol::NodePtr > idToNode_;
-  std::unordered_map< int, Object* > idToObject_;
+  retracer::MorphologyStructure* _morphoStructure;
 
   tLayout _firstLayout;
-  tLayout _secondLayout; 
+  tLayout _secondLayout;
+
+  Eigen::Vector3f _averagePosition;
+  float _averageRadius;
+
+  const static float _colorFactor;
 
 };
 

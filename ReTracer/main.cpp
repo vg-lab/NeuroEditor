@@ -39,8 +39,10 @@ int main ( int argc, char* argv[] )
     if ( argc > 1 )
     {
       QString swcFile( argv[1] );
-      w.viewer->loadMorphology( swcFile );
+      w.viewer( )->loadMorphology( swcFile );
     }
+
+    w.init( );
 
     return a.exec( );
   }

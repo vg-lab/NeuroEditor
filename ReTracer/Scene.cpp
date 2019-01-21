@@ -30,6 +30,8 @@
 #include <GL/glu.h>
 #endif
 
+#include <QColor>
+
 #include <nlgenerator/nlgenerator.h>
 
 Scene::Scene( unsigned int defaultFbo_, unsigned int width_,
@@ -44,7 +46,14 @@ Scene::Scene( unsigned int defaultFbo_, unsigned int width_,
   , _modifiedStructure( nullptr )
   , _originalMesh( nullptr )
   , _modifiedMesh( nullptr )
+  , _backgroundColor( 0.0f, 0.0f, 0.0f )
+  , _originalStructureColor( 0.5f, 0.0f, 0.0f )
+  , _originalMeshColor( 0.0f, 0.2f, 0.2f )
+  , _modifiedStructureColor( 0.5f, 0.5f, 1.0f )
+  , _modifiedMeshColor( 0.2f, 0.2f, 0.0f )
 {
+  _modifiedStructureSelectedColor =
+    _convertToSelected( _modifiedStructureColor );
   _renderer = new nlrender::Renderer( true );
   _renderer->initTransparencySystem( _width, _height );
 
@@ -75,17 +84,17 @@ void Scene::render( bool renderModifiedStructure_, bool renderModifiedMesh_,
 {
   auto model = Eigen::Matrix4f::Identity( );
 
-  _renderer->setUpOpaqueTransparencyScene( Eigen::Vector3f( 1.0f, 1.0f, 1.0f ),
+  _renderer->setUpOpaqueTransparencyScene( _backgroundColor,
                                            _width, _height );
-  if ( _originalStructure && renderOriginalStructure_ )
-  {
-    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
-    _renderer->render( _originalStructure, model );
-  }
   if ( _modifiedStructure && renderModifiedStructure_ )
   {
     _renderer->colorFunc( ) = nlrender::Renderer::PERVERTEX;
     _renderer->render( _modifiedStructure, model );
+  }
+  if ( _originalStructure && renderOriginalStructure_ )
+  {
+    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->render( _originalStructure, model, _originalStructureColor );
   }
 
   if ( _alpha < 1.0f )
@@ -95,12 +104,12 @@ void Scene::render( bool renderModifiedStructure_, bool renderModifiedMesh_,
   if ( _originalMesh && renderOriginalMesh_ )
   {
     _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
-    _renderer->render( _originalMesh, model );
+    _renderer->render( _originalMesh, model, _originalMeshColor );
   }
   if ( _modifiedMesh && renderModifiedMesh_ )
   {
     _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
-    _renderer->render( _modifiedMesh, model );
+    _renderer->render( _modifiedMesh, model, _modifiedMeshColor );
   }
 
 
@@ -168,7 +177,7 @@ void Scene::modifiedMorphology( nsol::NeuronMorphologyPtr modifiedMorphology_ )
   }
   _modifiedStructure = nlgenerator::MeshGenerator::generateStructureMesh(
     _modifiedMorphology,  _nodeIdToVertices,
-    Eigen::Vector3f( 0.0f, 0.2f, 0.2f ), true, 0.98f );
+    _modifiedStructureColor, true, 1.0f );
   _modifiedStructure->uploadGPU( _format, nlgeometry::Facet::PATCHES );
   nlgenerator::MeshGenerator::verticesToIndices( _nodeIdToVertices,
                                                  _nodeIdToVerticesIds );
@@ -191,11 +200,11 @@ void Scene::updateModifiedStructure( void )
     }
     _modifiedStructure = nlgenerator::MeshGenerator::generateStructureMesh(
       _modifiedMorphology,  _nodeIdToVertices,
-      Eigen::Vector3f( 0.0f, 0.2f, 0.2f ), true, 0.98f );
+      _modifiedStructureColor, true, 1.0f );
     _modifiedStructure->uploadGPU( _format, nlgeometry::Facet::PATCHES );
     nlgenerator::MeshGenerator::verticesToIndices( _nodeIdToVertices,
                                                    _nodeIdToVerticesIds );
-    updateSelectedNodes( );
+    _updateSelectedNodes( );
   }
 }
 
@@ -217,24 +226,64 @@ void Scene::setSelection( const std::unordered_set< int >& selectedNodes_ )
   _selection.clear( );
   _selection.insert( _selection.end( ), selectedNodes_.begin( ),
                      selectedNodes_.end( ));
-  updateSelectedNodes( );
+  _updateSelectedNodes( );
 }
 
-void Scene::updateSelectedNodes( const Eigen::Vector3f& unselectedColor_,
-                                 const Eigen::Vector3f& selectedColor_ )
+void Scene::changeBackgroundColor( Eigen::Vector3f color_ )
 {
+  _backgroundColor = color_;
+}
+
+void Scene::changeOriginalStructureColor( const Eigen::Vector3f& color_ )
+{
+  _originalStructureColor = color_;
+}
+
+void Scene::changeOriginalMeshColor( const Eigen::Vector3f& color_ )
+{
+  _originalMeshColor = color_;
+}
+
+void Scene::changeModifiedStructureColor( const Eigen::Vector3f& color_ )
+{
+  _modifiedStructureColor = color_;
+  _modifiedStructureSelectedColor =
+    _convertToSelected( _modifiedStructureColor );
+  _updateSelectedNodes( );
+}
+
+void Scene::changeModifiedMeshColor( const Eigen::Vector3f& color_ )
+{
+  _modifiedMeshColor = color_;
+}
+
+void Scene::_updateSelectedNodes( void )
+{
+  auto unselectedColor = _modifiedStructureColor;
+  Eigen::Vector3f selectedColor = _modifiedStructureSelectedColor;
+  selectedColor *= 2.0f;
   if ( _modifiedStructure )
   {
     unsigned int verticesSize = _modifiedStructure->verticesSize( );
     std::vector< float > buffer( verticesSize * 3 );
     for ( unsigned int i = 0; i < verticesSize; i++ )
     {
-      buffer[i*3] = unselectedColor_.x( );
-      buffer[i*3+1] = unselectedColor_.y( );
-      buffer[i*3+2] = unselectedColor_.z( );
+      buffer[i*3] = unselectedColor.x( );
+      buffer[i*3+1] = unselectedColor.y( );
+      buffer[i*3+2] = unselectedColor.z( );
     }
     nlgenerator::MeshGenerator::conformBuffer( _selection, _nodeIdToVerticesIds,
-                                               buffer, selectedColor_ );
+                                               buffer, selectedColor );
     _modifiedStructure->uploadBuffer( nlgeometry::COLOR, buffer );
   }
+}
+
+Eigen::Vector3f Scene::_convertToSelected( Eigen::Vector3f color_ )
+{
+  QColor color;
+  color.setRgbF( color_.x( ), color_.y( ), color_.z( ));
+  int h = color.hsvHue( );
+  QColor sColor;
+  sColor.setHsv( h, 255, 255 );
+  return Eigen::Vector3f( sColor.redF( ), sColor.greenF( ), sColor.blueF( ));
 }

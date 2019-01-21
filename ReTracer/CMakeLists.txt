@@ -24,9 +24,14 @@ set(RETRACER_HEADERS
   TreeItem.h
   TreeModel.h
   ReTracer.h
+  ViewDock.h
+  SelectDock.h
+  EditDock.h
+  ColorSelectionWidget.h
 )
 
 set(RETRACER_SOURCES
+  resources.qrc
   manipulatedFrameSetConstraint.cpp
   object.cpp
   nsolRenderer.cpp
@@ -40,6 +45,10 @@ set(RETRACER_SOURCES
   TreeItem.cpp
   TreeModel.cpp
   main.cpp
+  ViewDock.cpp
+  SelectDock.cpp
+  EditDock.cpp
+  ColorSelectionWidget.cpp
 )
 
 set(RETRACER_LINK_LIBRARIES

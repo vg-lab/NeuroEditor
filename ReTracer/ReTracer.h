@@ -24,104 +24,130 @@
 #include <QMainWindow>
 #include "ui_ReTracer.h"
 #include "batchbuilder.h"
-#include "viewer.h"
+#include "ViewDock.h"
+#include "SelectDock.h"
+#include "EditDock.h"
 
-class ReTracer: public QMainWindow
+namespace Ui
+{
+  class ReTracer;
+}
+
+class ReTracer
+  : public QMainWindow
 {
   Q_OBJECT
 
-    SIMP_METHOD _simplificationMode;
-    ENHANCE_METHOD _enhanceMode;
+    // SIMP_METHOD _simplificationMode;
+    // ENHANCE_METHOD _enhanceMode;
 
-    QString _inputFilePath;
-    QString _ouputFilePath;
+    // QString _inputFilePath;
+    // QString _ouputFilePath;
 
-    std::vector < QString > _filesContainer;
-    std::map < std::string, float > _params;
+    // std::vector < QString > _filesContainer;
+    // std::map < std::string, float > _params;
 
-    BatchBuilder* _batchBuilder;
+    // BatchBuilder* _batchBuilder;
 
-  public:
+public:
 
-  Viewer* viewer;
+  explicit ReTracer( QWidget* parent = 0 );
 
-    ReTracer ( QWidget* parent = 0 );
+  ~ReTracer( );
 
-    ~ReTracer ( );
+  Viewer* viewer( void )
+  {
+    return _viewer;
+  }
 
-  private:
+  void init( void );
 
-    Ui::ReTracerClass ui;
+private Q_SLOTS:
 
-  private Q_SLOTS://slots:
-    //Main
-    void importMorphology ( );
-    void exportMorphology ( );
-    void setModificationInterval ( );
-    void saveState ( );
-    void setAutoSaveState ( );
-    void undoState ( );
+  void importMorphology ( );
+  void exportMorphology ( );
 
-    //Simplification
-    void setSimplificationMethod ( );
-    void simplify ( int objectId_ = -1, OBJECT_TYPE objectType =
-    OBJECT_TYPE::NEURITE );
+  void updateViewDock( void );
+  void updateSelectDock( void );
+  void updateEditDock( void );
 
-    //Enhancement
-    void setEnhanceMethod ( );
-    void enhance ( int objectId_ = -1, OBJECT_TYPE objectType =
-    OBJECT_TYPE::NEURITE );
+private:
 
-    //Repair
-    void insertNode ( );
-    void deleteNode ( );
-    void insertEdge ( );
-    void deleteEdge ( );
-    void interpolateRadius ( );
-    void middlePosition ( );
-    void setRadiusToSelectedNode ( );
-    void brokeLink ( );
-    void setLink ( );
+  Ui::ReTracer* _ui;
+  Viewer* _viewer;
 
-    //Fine Selection
-    void attachMorphology ( );
-    void selectNeuronObject ( );
-    void simplifyNeuronObject ( );
-    void enhanceNeuronObject ( );
 
-    void extractNeurite ( );
-    void removeNeurite ( );
-    void setTreeModel ( );
+  ViewDock* _viewDock;
+  SelectDock* _selectDock;
+  EditDock* _editDock;
 
-    //Utils
-    void showBatchBuilder ( );
-    bool copyRecursively ( const QString& sourceFolder,
-                           const QString& destFolder );
-    void genetareNeuronsInBatch ( );
+  QDockWidget* _detectAndCorrectDock;
+  QDockWidget* _customDock;
 
-    //Render
-    void setRenderModifiedMorphology ( );
-    void setRenderOriginalMorphology ( );
-    void setMorphologyToShowInfo ( );
-    void showTextValues ( );
-    void changeToDualView ( );
-    void colorToButtons ( );
+  // void setModificationInterval ( );
+    // void saveState ( );
+    // void setAutoSaveState ( );
+    // void undoState ( );
 
-    void setResolutionToNodes ( );
-    void setNodeIncToMorphology ( );
+    // //Simplification
+    // void setSimplificationMethod ( );
+    // void simplify ( int objectId_ = -1, OBJECT_TYPE objectType =
+    // OBJECT_TYPE::NEURITE );
 
-    void setNodeColorToOriginalMorphology ( );
-    void setNodeColorToModifiedMorphology ( );
-    void setLinkColorToOriginalMorphology ( );
-    void setLinkColorToModifiedMorphology ( );
+    // //Enhancement
+    // void setEnhanceMethod ( );
+    // void enhance ( int objectId_ = -1, OBJECT_TYPE objectType =
+    // OBJECT_TYPE::NEURITE );
 
-    //Others
-    void setModifiedAsOriginal ( );
-    void testPythonIntegration ( );
+    // //Repair
+    // void insertNode ( );
+    // void deleteNode ( );
+    // void insertEdge ( );
+    // void deleteEdge ( );
+    // void interpolateRadius ( );
+    // void middlePosition ( );
+    // void setRadiusToSelectedNode ( );
+    // void brokeLink ( );
+    // void setLink ( );
 
-    void quit();
-    void takeSnapshot();
-    void help();
+    // //Fine Selection
+    // void attachMorphology ( );
+    // void selectNeuronObject ( );
+    // void simplifyNeuronObject ( );
+    // void enhanceNeuronObject ( );
+
+    // void extractNeurite ( );
+    // void removeNeurite ( );
+    // void setTreeModel ( );
+
+    // //Utils
+    // void showBatchBuilder ( );
+    // bool copyRecursively ( const QString& sourceFolder,
+    //                        const QString& destFolder );
+    // void genetareNeuronsInBatch ( );
+
+    // //Render
+    // void setRenderModifiedMorphology ( );
+    // void setRenderOriginalMorphology ( );
+    // void setMorphologyToShowInfo ( );
+    // void showTextValues ( );
+    // void changeToDualView ( );
+    // void colorToButtons ( );
+
+    // void setResolutionToNodes ( );
+    // void setNodeIncToMorphology ( );
+
+    // void setNodeColorToOriginalMorphology ( );
+    // void setNodeColorToModifiedMorphology ( );
+    // void setLinkColorToOriginalMorphology ( );
+    // void setLinkColorToModifiedMorphology ( );
+
+    // //Others
+    // void setModifiedAsOriginal ( );
+    // void testPythonIntegration ( );
+
+  
+    // void takeSnapshot();
 };
 
 #endif // RETRACER_H

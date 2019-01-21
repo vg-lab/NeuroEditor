@@ -50,6 +50,8 @@ common_find_package(nsol REQUIRED)
 common_find_package(neurolots REQUIRED)
 common_find_package(Eigen3 REQUIRED SYSTEM)
 
+list(APPEND RETRACER_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT OpenGL
+  nsol neurolots Eigen3 )
 common_find_package_post( )
 
 # Needed because this var is set by PythonLibs and does

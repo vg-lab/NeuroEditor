@@ -16,22 +16,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- * 
- * 
+ *
+ *
  */
 
 #include "TreeModel.h"
 
 #include <QStringList>
 
-TreeModel::TreeModel ( const nsol::NeuronMorphologyPtr& morphology_,
-                       QObject* parent )
+TreeModel::TreeModel (  nsol::NeuronMorphologyPtr morphology_,
+                        QObject* parent )
   : QAbstractItemModel ( parent )
 {
   QList < QVariant > rootData;
-  rootData << "Title" << "Description";
+  rootData << "Label" << "Index"; // << "Description";
   _rootItem = new TreeItem ( rootData );
-  setupModelData ( morphology_, _rootItem );
+  _setupModelData( morphology_ );
 }
 
 TreeModel::~TreeModel ( )
@@ -125,34 +125,52 @@ int TreeModel::rowCount ( const QModelIndex& parent ) const
   return parentItem->childCount ( );
 }
 
-void TreeModel::setupModelData ( const nsol::NeuronMorphologyPtr& morphology_,
-                                 TreeItem* parent )
+void TreeModel::_setupModelData ( nsol::NeuronMorphologyPtr morphology_ )
 {
+  if( !morphology_ )
+    return;
+
   QList < TreeItem* > parents;
   QList < int > indentations;
-  parents << parent;
+  parents << _rootItem;
   unsigned int neuriteId_ = 0;
   unsigned int sectionId_ = 0;
 
+  QList< QVariant > somaList;
+  somaList << "Soma" << 0;
+  parents.last( )->appendChild( new TreeItem( somaList, parents.last( )));
+  for ( auto node: morphology_->soma( )->nodes( ))
+  {
+    QList< QVariant > nodeList;
+    nodeList << "Node" << node->id( );
+    parents << parents.last( )->child( parents.last( )->childCount( ) - 1 );
+    parents.last( )->appendChild( new TreeItem( nodeList, parents.last( )));
+    parents.pop_back( );
+  }
   for ( auto neurite: morphology_->neurites ( ))
   {
     QList < QVariant > neuriteList;
-    neuriteList << neuriteId_;
+    neuriteList << "Neurite" << neuriteId_;
     ++neuriteId_;
 
     parents.last ( )->appendChild ( new TreeItem ( neuriteList, parents.last ( )));
     for ( auto section: neurite->sections ( ))
     {
       QList < QVariant > sectionList;
-      sectionList << sectionId_;
+      sectionList << "Section" << sectionId_;
       ++sectionId_;
       parents<< parents.last ( )->child ( parents.last ( )->childCount ( ) - 1 );
       parents.last ( )
              ->appendChild ( new TreeItem ( sectionList, parents.last ( )));
       for ( auto node: section->nodes ( ))
       {
+        auto neuroMorphoSection =
+          dynamic_cast< nsol::NeuronMorphologySectionPtr >( section );
+        if ( node == neuroMorphoSection->firstNode( ) &&
+             neuroMorphoSection != neurite->firstSection( ))
+          continue;
         QList < QVariant > nodeList;
-        nodeList << node->id ( );
+        nodeList << "Node" << node->id ( );
         parents
           << parents.last ( )->child ( parents.last ( )->childCount ( ) - 1 );
         parents.last ( )
