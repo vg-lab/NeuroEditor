@@ -24,17 +24,17 @@ void EditDock::init( Viewer* viewer_ )
   setFeatures( QDockWidget::DockWidgetClosable |
                QDockWidget::DockWidgetMovable |
                QDockWidget::DockWidgetFloatable );
-  setWindowTitle( QString( "Edit and Correct" ));
+  setWindowTitle( QString( "Edit" ));
   setMinimumSize( 200, 200 );
 
   QWidget* mainWidget = new QWidget( );
   setWidget( mainWidget );
+  mainWidget->setMaximumHeight( 300 );
   QVBoxLayout* editDockLayout = new QVBoxLayout( );
   editDockLayout->setAlignment( Qt::AlignTop );
   mainWidget->setLayout( editDockLayout );
 
   QGroupBox* inspectorGroup = new QGroupBox( QString( "Inspector" ));
-  // inspectorGroup->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
   QGridLayout* inspectorLayout = new QGridLayout( );
   auto validator = new QDoubleValidator( );
   inspectorGroup->setLayout( inspectorLayout );

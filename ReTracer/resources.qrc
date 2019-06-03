@@ -1,10 +1,11 @@
 <RCC>
-  <qresource prefix="icons">
-    <file>open_swc.png</file>
-    <file>close.png</file>
-    <file>colorpicker.png</file>
-    <file>reconstruction.png</file>
-    <file>home.png</file>
-    <file>settings.png</file>
+  <qresource>
+    <file>icons/open_swc.png</file>
+    <file>icons/close.png</file>
+    <file>icons/colorpicker.png</file>
+    <file>icons/reconstruction.png</file>
+    <file>icons/home.png</file>
+    <file>icons/settings.png</file>
+    <file>icons/add.png</file>
   </qresource>
 </RCC>

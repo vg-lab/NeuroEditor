@@ -27,6 +27,7 @@ void ViewDock::init( Viewer* viewer_ )
 
   QWidget* mainWidget = new QWidget( );
   setWidget( mainWidget );
+  mainWidget->setMaximumHeight( 600 );
   QVBoxLayout* viewDockLayout = new QVBoxLayout( );
   viewDockLayout->setAlignment( Qt::AlignTop );
   mainWidget->setLayout( viewDockLayout );
@@ -118,30 +119,27 @@ void ViewDock::init( Viewer* viewer_ )
   QGridLayout* renderOptionsLayout = new QGridLayout( );
   renderOptionsGroup->setLayout( renderOptionsLayout );
   viewDockLayout->addWidget( renderOptionsGroup );
-  renderOptionsLayout->addWidget( new QLabel( QString( "Colors: " )),
-                                  0, 0, 1, 2 );
-
   renderOptionsLayout->addWidget( new QLabel( QString("Background color")),
-                                  1, 0);
+                                  0, 0);
   ColorSelectionWidget* backgroundColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( backgroundColor, 1, 1 );
+  renderOptionsLayout->addWidget( backgroundColor, 0, 1 );
 
   renderOptionsLayout->addWidget( new QLabel( QString("Modified trace color")),
-                                  2, 0);
+                                  1, 0);
   ColorSelectionWidget* mtColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( mtColor, 2, 1 );
+  renderOptionsLayout->addWidget( mtColor, 1, 1 );
   renderOptionsLayout->addWidget( new QLabel( QString("Modified mesh color")),
-                                  2, 2);
+                                  1, 2);
   ColorSelectionWidget* mmColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( mmColor, 2, 3 );
+  renderOptionsLayout->addWidget( mmColor, 1, 3 );
   renderOptionsLayout->addWidget( new QLabel( QString("Original trace color")),
-                                  3, 0);
+                                  2, 0);
   ColorSelectionWidget* otColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( otColor, 3, 1 );
+  renderOptionsLayout->addWidget( otColor, 2, 1 );
   renderOptionsLayout->addWidget( new QLabel( QString("Original mesh color")),
-                                  3, 2);
+                                  2, 2);
   ColorSelectionWidget* omColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( omColor, 3, 3 );
+  renderOptionsLayout->addWidget( omColor, 2, 3 );
 
 
   connect( backgroundColor, SIGNAL( colorChanged( QColor )),
@@ -171,14 +169,19 @@ void ViewDock::init( Viewer* viewer_ )
   viewDockLayout->addWidget( cameraGroup );
   cameraLayout->addWidget( new QLabel( QString( "View: " )), 1, 0 );
   QPushButton* cameraTopButton = new QPushButton( QString( "Top" ));
+  cameraTopButton->setMaximumSize( QSize( 65, 25 ));
   cameraLayout->addWidget( cameraTopButton, 0, 2 );
   QPushButton* cameraFrontButton = new QPushButton( QString( "Front" ));
+  cameraFrontButton->setMaximumSize( QSize( 65, 25 ));
   cameraLayout->addWidget( cameraFrontButton, 1, 2 );
   QPushButton* cameraBottomButton = new QPushButton( QString( "Bottom" ));
+  cameraBottomButton->setMaximumSize( QSize( 65, 25 ));
   cameraLayout->addWidget( cameraBottomButton, 2, 2 );
   QPushButton* cameraLeftButton = new QPushButton( QString( "Left" ));
+  cameraLeftButton->setMaximumSize( QSize( 65, 25 ));
   cameraLayout->addWidget( cameraLeftButton, 1, 1 );
   QPushButton* cameraRightButton = new QPushButton( QString( "Right" ));
+  cameraRightButton->setMaximumSize( QSize( 65, 25 ));
   cameraLayout->addWidget( cameraRightButton, 1, 3 );
 
   connect( cameraFrontButton, SIGNAL( clicked( )),

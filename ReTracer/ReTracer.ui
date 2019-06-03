@@ -42,8 +42,8 @@
         </property>
         <addaction name="actionView"/>
         <addaction name="actionSelect"/>
-        <addaction name="actionEditAndCorrect"/>
-        <addaction name="actionCustom"/>
+        <addaction name="actionEdit"/>
+        <addaction name="actionCorrect"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -76,8 +76,8 @@
       <addaction name="actionUndo"/>
       <addaction name="actionView"/>
       <addaction name="actionSelect"/>
-      <addaction name="actionEditAndCorrect"/>
-      <addaction name="actionCustom"/>
+      <addaction name="actionEdit"/>
+      <addaction name="actionCorrect"/>
     </widget>
 
 
@@ -161,7 +161,7 @@
         <string>Selection</string>
       </property>
     </action>
-    <action name="actionEditAndCorrect">
+    <action name="actionEdit">
       <property name="checkable">
         <bool>true</bool>
       </property>
@@ -169,18 +169,18 @@
         <string>Edit</string>
       </property>
       <property name="toolTip">
-        <string>Edit and Correct</string>
+        <string>Edit</string>
       </property>
     </action>
-    <action name="actionCustom">
+    <action name="actionCorrect">
       <property name="checkable">
         <bool>true</bool>
       </property>
       <property name="text">
-        <string>Custom</string>
+        <string>Correct</string>
       </property>
       <property name="toolTip">
-        <string>Custom</string>
+        <string>Correct</string>
       </property>
     </action>
     <action name="actionAbout">

@@ -29,6 +29,7 @@ void SelectDock::init( Viewer* viewer_ )
 
   QWidget* mainWidget = new QWidget( );
   setWidget( mainWidget );
+  mainWidget->setMaximumHeight( 500 );
   QVBoxLayout* selectDockLayout = new QVBoxLayout( );
   selectDockLayout->setAlignment( Qt::AlignTop );
   mainWidget->setLayout( selectDockLayout );

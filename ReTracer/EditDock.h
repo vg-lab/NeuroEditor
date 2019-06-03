@@ -57,7 +57,6 @@ protected:
   Eigen::Vector3f _quatToRot( Eigen::Quaternionf& q_ );
 
   Viewer* _viewer;
-  QTreeView* _morphologyTree;
 
   QLineEdit* _xTextBoxPosition;
   QLineEdit* _yTextBoxPosition;

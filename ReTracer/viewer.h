@@ -129,6 +129,11 @@ public:
 
   retracer::Utils * getUtils ( ) { return util; };
 
+  retracer::MorphologyStructure* morphologyStructure( void )
+  {
+    return _morphoStructure;
+  }
+
 public Q_SLOTS://slots:
 
   void updateSideBySide( bool sideBySideState_ );
