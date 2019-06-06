@@ -86,6 +86,15 @@ ReTracer::ReTracer ( QWidget* parent )
            _ui->actionCorrect, SLOT( setChecked( bool )));
   connect( _ui->actionCorrect, SIGNAL( triggered( )),
            this, SLOT( updateCorrectDock( )));
+
+  _simplifyDock = new SimplifyDock( );
+  this->addDockWidget( Qt::DockWidgetAreas::enum_type::RightDockWidgetArea,
+                       _simplifyDock, Qt::Vertical );
+  _simplifyDock->close( );
+  connect( _simplifyDock->toggleViewAction( ), SIGNAL( toggled( bool )),
+           _ui->actionSimplify, SLOT( setChecked( bool )));
+  connect( _ui->actionSimplify, SIGNAL( triggered( )),
+           this, SLOT( updateSimplifyDock( )));
 }
 
 ReTracer::~ReTracer ( )
@@ -99,6 +108,7 @@ void ReTracer::init( void )
   _selectDock->init( _viewer );
   _editDock->init( _viewer );
   _correctDock->init( _viewer );
+  _simplifyDock->init( _viewer );
 }
 
 void ReTracer::importMorphology ( )
@@ -150,4 +160,12 @@ void ReTracer::updateCorrectDock( void )
     _correctDock->show( );
   else
     _correctDock->close( );
+}
+
+void ReTracer::updateSimplifyDock( void )
+{
+  if( _ui->actionSimplify->isChecked( ))
+    _simplifyDock->show( );
+  else
+    _simplifyDock->close( );
 }

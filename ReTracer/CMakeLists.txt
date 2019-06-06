@@ -28,8 +28,10 @@ set(RETRACER_HEADERS
   SelectDock.h
   EditDock.h
   CorrectDock.h
+  SimplifyDock.h
   Fixer.h
   Tester.h
+  TraceModifier.h
   ColorSelectionWidget.h
 )
 
@@ -52,8 +54,10 @@ set(RETRACER_SOURCES
   SelectDock.cpp
   EditDock.cpp
   CorrectDock.cpp
+  SimplifyDock.cpp
   Fixer.cpp
   Tester.cpp
+  TraceModifier.cpp
   ColorSelectionWidget.cpp
 )
 

@@ -106,14 +106,14 @@ void CorrectDock::init( Viewer* viewer_ )
   selectorWidget->setLayout( selectorLayout );
 
   _testSelector = new QComboBox( );
-  selectorLayout->addWidget( _testSelector, 0, 0, 4, 1 );
+  selectorLayout->addWidget( _testSelector, 0, 0 );
   QIcon addIcon( QString::fromUtf8(":/icons/add.png"));
   _testAdder = new QToolButton( );
   _testAdder->setIcon( addIcon );
-  selectorLayout->addWidget( _testAdder, 1, 5, 1, 1 );
+  selectorLayout->addWidget( _testAdder, 0, 1 );
   _testAddAll = new QToolButton( );
   _testAddAll->setIcon( addIcon );
-  selectorLayout->addWidget( _testAddAll, 1, 6, 1, 1 );
+  selectorLayout->addWidget( _testAddAll, 0, 2 );
 
   connect( _testAdder, SIGNAL( pressed( )),
            this, SLOT( addTest( void )));
@@ -132,9 +132,18 @@ void CorrectDock::init( Viewer* viewer_ )
   scrollArea->setWidget( testWidget );
   scrollArea->setMaximumHeight( 400 );
 
-  QPushButton* runButton = new QPushButton( QString( "correct" ));
-  selectionGroupLayout->addWidget( runButton );
+  QWidget* buttonsWidget = new QWidget( );
+  QHBoxLayout* buttonsLayout = new QHBoxLayout( );
+  buttonsWidget->setLayout( buttonsLayout );
+  selectionGroupLayout->addWidget( buttonsWidget );
 
+  QPushButton* clearButton = new QPushButton( QString( "clear" ));
+  buttonsLayout->addWidget( clearButton );
+  QPushButton* runButton = new QPushButton( QString( "correct" ));
+  buttonsLayout->addWidget( runButton );
+
+  connect( clearButton, SIGNAL( pressed( )),
+           this, SLOT( clearTests( )));
   connect( runButton, SIGNAL( pressed( )),
            this, SLOT( correct( )));
 
@@ -182,6 +191,14 @@ void CorrectDock::removeTest( QWidget* testWidget_ )
 {
   _testsLayout->removeWidget( testWidget_ );
   delete testWidget_;
+}
+
+void CorrectDock::clearTests( void )
+{
+  while( _testsLayout->count( ) > 0 )
+  {
+    delete _testsLayout->takeAt( 0 )->widget( );
+  }
 }
 
 void CorrectDock::correct( void )

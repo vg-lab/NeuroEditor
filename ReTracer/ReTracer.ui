@@ -33,7 +33,6 @@
         <addaction name="actionOpenSWCFile"/>
         <addaction name="actionSaveSWCFile"/>
         <addaction name="actionExportMesh"/>
-        <addaction name="actionExportMorphometricMeasures"/>
         <addaction name="actionQuit"/>
       </widget>
       <widget class="QMenu" name="menuOptions">
@@ -44,6 +43,7 @@
         <addaction name="actionSelect"/>
         <addaction name="actionEdit"/>
         <addaction name="actionCorrect"/>
+        <addaction name="actionSimplify"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -72,12 +72,12 @@
       <addaction name="actionOpenSWCFile"/>
       <addaction name="actionSaveSWCFile"/>
       <addaction name="actionExportMesh"/>
-      <addaction name="actionExportMorphometricMeasures"/>
       <addaction name="actionUndo"/>
       <addaction name="actionView"/>
       <addaction name="actionSelect"/>
       <addaction name="actionEdit"/>
       <addaction name="actionCorrect"/>
+      <addaction name="actionSimplify"/>
     </widget>
 
 
@@ -127,18 +127,6 @@
         <string>Export mesh</string>
       </property>
     </action>
-    <action name="actionExportMorphometricMeasures">
-      <property name="icon">
-        <iconset resource="../qrc/resources.qrc">
-        <normaloff>:/icons/open_swc.png</normaloff>:/icons/open_swc.png</iconset>
-      </property>
-      <property name="text">
-        <string>Export morphometric measures</string>
-      </property>
-      <property name="toolTip">
-        <string>Export morphometric measures</string>
-      </property>
-    </action>
     <action name="actionView">
       <property name="checkable">
         <bool>true</bool>
@@ -181,6 +169,17 @@
       </property>
       <property name="toolTip">
         <string>Correct</string>
+      </property>
+    </action>
+    <action name="actionSimplify">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>Simplify</string>
+      </property>
+      <property name="toolTip">
+        <string>Simplifycation</string>
       </property>
     </action>
     <action name="actionAbout">

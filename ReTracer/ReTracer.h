@@ -28,6 +28,7 @@
 #include "SelectDock.h"
 #include "EditDock.h"
 #include "CorrectDock.h"
+#include "SimplifyDock.h"
 
 namespace Ui
 {
@@ -72,6 +73,7 @@ private Q_SLOTS:
   void updateSelectDock( void );
   void updateEditDock( void );
   void updateCorrectDock( void );
+  void updateSimplifyDock( void );
 
 private:
 
@@ -83,6 +85,7 @@ private:
   SelectDock* _selectDock;
   EditDock* _editDock;
   CorrectDock* _correctDock;
+  SimplifyDock* _simplifyDock;
 
   // QDockWidget* _customDock;
 

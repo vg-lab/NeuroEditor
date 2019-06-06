@@ -206,12 +206,40 @@ void Viewer::reset ( )
 
 }
 
+void Viewer::updateMorphology( void )
+{
+  _morphoStructure->update( );
+  _scene->updateModifiedStructure( );
+  delete _treeModel;
+  _treeModel = new TreeModel( modifiedMorphology );
+  Q_EMIT morphologyChanged( );
+  _scene->updateModifiedMesh( );
+  checkSelection( );
+  _changeSelection( );
+  Q_EMIT updateSelectionSignal( _selection );
+  updateGL( );
+}
+
 void Viewer::updateSelection( std::unordered_set< int > selection_ )
 {
   _selection.clear( );
   _selection = selection_;
   _changeSelection( );
   updateGL ( );
+}
+
+void Viewer::checkSelection( void )
+{
+  std::vector< int > selection( _selection.begin( ), _selection.end( ));
+
+  for ( auto id: selection )
+  {
+    if ( _morphoStructure->idToNode.find( id ) ==
+         _morphoStructure->idToNode.end( ))
+    {
+      _selection.erase( id );
+    }
+  }
 }
 
 void Viewer::updateSelectionInclusionMode(
@@ -615,7 +643,8 @@ void Viewer::endSelection ( const QPoint & )
     for ( int i = 0; i < nbHits; ++i )
     {
       std::vector< int > ids;
-      int nodeId = _morphoStructure->objects[ selectBuffer( )[4*i + 3]]->id;
+      int objectId = selectBuffer( )[4*i + 3];
+      int nodeId = _morphoStructure->objects[ objectId ]->id;
       nsol::NodePtr node = _morphoStructure->idToNode[nodeId];
       switch ( _selectionType )
       {
@@ -1099,7 +1128,12 @@ void Viewer::undoState ( )
     _stack.pop( );
     _scene->modifiedMorphology( modifiedMorphology );
     _morphoStructure->changeMorphology( modifiedMorphology );
+    delete _treeModel;
+    _treeModel = new TreeModel( modifiedMorphology );
+    Q_EMIT morphologyChanged( );
+    checkSelection( );
     _changeSelection( );
+    Q_EMIT updateSelectionSignal( _selection );
     updateGL ( );
   }
 }

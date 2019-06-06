@@ -118,6 +118,8 @@ public Q_SLOTS:
 
   void removeTest( QWidget* testWidget_ );
 
+  void clearTests( void );
+
   void correct( void );
 
   void clearOutput( void );

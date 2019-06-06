@@ -99,8 +99,10 @@ namespace retracer //Probably this code must be in nsol in the future
 
       void reloadInstance();
 
-      void Simplify ( nsol::NeuronMorphologyPtr &morphology_,  std::map < std::string, float > params_,
-                             int objectId_ = -1, OBJECT_TYPE objectType = OBJECT_TYPE::NEURITE );
+      void Simplify ( nsol::NeuronMorphologyPtr &morphology_,
+                      std::map < std::string, float > params_,
+                      int objectId_ = -1,
+                      OBJECT_TYPE objectType = OBJECT_TYPE::NEURITE );
 
       void Enhance ( nsol::NeuronMorphologyPtr &morphology_, std::map < std::string, float > params_,
                              int objectId_, OBJECT_TYPE objectType = OBJECT_TYPE::NEURITE );

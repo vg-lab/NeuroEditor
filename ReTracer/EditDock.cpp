@@ -34,7 +34,7 @@ void EditDock::init( Viewer* viewer_ )
   editDockLayout->setAlignment( Qt::AlignTop );
   mainWidget->setLayout( editDockLayout );
 
-  QGroupBox* inspectorGroup = new QGroupBox( QString( "Inspector" ));
+  QGroupBox* inspectorGroup = new QGroupBox( );
   QGridLayout* inspectorLayout = new QGridLayout( );
   auto validator = new QDoubleValidator( );
   inspectorGroup->setLayout( inspectorLayout );

@@ -134,6 +134,11 @@ public:
     return _morphoStructure;
   }
 
+  std::unordered_set< int >& selection( void )
+  {
+    return _selection;
+  }
+
 public Q_SLOTS://slots:
 
   void updateSideBySide( bool sideBySideState_ );
@@ -164,7 +169,9 @@ public Q_SLOTS://slots:
 
   void reset ( );
 
+  void updateMorphology( void );
   void updateSelection( std::unordered_set< int > selection_ );
+  void checkSelection( void );
   void updateSelectionInclusionMode(
     tSelectionInclusionMode selectionInclusionMode_ );
   void updateSelectionType( tSelectionType selectionType_ );
