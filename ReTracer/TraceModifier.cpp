@@ -23,6 +23,10 @@
 #include "TraceModifier.h"
 #include "imppsimpl.h"
 
+#include <PyGEmS/StrategyParams.h>
+#include <PyGEmSManager/PyGEmSManager.h>
+#include <PyGEmSManager/StrategyFrameworkBPModule.h>
+
 namespace retracer
 {
 
@@ -90,10 +94,81 @@ namespace retracer
   }
 
   bool TraceModifier::customModify(
-    std::unordered_set< nsol::Section* >& /*sections_*/,
-    const std::string& /*scriptPath_*/ )
+    std::unordered_set< nsol::Section* >& sections_,
+    const std::string& scriptPath_ )
   {
-    return false;
+    NSPGManager::PyGEmSManager *  manager= nullptr;
+    bool modified = false;
+
+    try
+    {
+
+#ifdef PYGEMS_USE_PYTHON3
+      manager = new NSPGManager::PyGEmSManager(
+        "StrFramework", &NSPGManager::PyInit_StrFramework, "Strategies",
+        scriptPath_.c_str( ));
+#else
+      std::cerr << "python 3 not supported" << std::endl;
+#endif
+
+      if ( manager )
+      {
+        bp::object strategy = manager->getModuleAttrib( "Strategy" );
+
+        for ( auto section: sections_ )
+        {
+          Container container;
+          StrategyParams params;
+
+          for ( auto node: section->nodes( ))
+          {
+            params.stringParam =
+              "MyTest_" + std::to_string( params.intParam ) + "_";
+            params.intParam++;
+            params.node.id = node->id ( );
+            params.node.position.x = node->point ( ).x ( );
+            params.node.position.y = node->point ( ).y ( );
+            params.node.position.z = node->point ( ).z ( );
+            params.node.radius = node->radius ( );
+            container.addElement( params );
+          }
+          bp::object _strategy = strategy( container );
+          std::string inVarName = "inNodes";
+          std::string outVarName = "outNodes";
+
+          manager->getModule( ).attr( inVarName.c_str( )) =
+            container.getContainer( );
+          manager->getModule( ).attr( outVarName.c_str( )) = 0;
+
+          _strategy.attr( "method" )( );
+          bp::list result =
+            manager->extractListFromModule( outVarName.c_str( ));
+          int n = bp::len( result );
+          std::vector < float > simplVecNodes;
+          for ( int t = 0; t < n; ++t )
+          {
+            StrategyParams val = bp::extract<StrategyParams>(result[t] );
+            simplVecNodes.push_back(val.node.position.x);
+            simplVecNodes.push_back(val.node.position.y);
+            simplVecNodes.push_back(val.node.position.z);
+          }
+          modified = modified | _fillSection( section, simplVecNodes );
+        }
+        delete manager;
+      }
+    }
+    catch( const bp::error_already_set& )
+    {
+      std::cerr << "Python code error" << std::endl;
+      modified = false;
+    }
+    catch( ... )
+    {
+      std::cerr << "Error loading script: " <<  scriptPath_.c_str( )
+                << std::endl;
+      modified = false;
+    }
+    return modified;
   }
 
   std::string TraceModifier::description( TModifierMethod modifierMethod_ )
@@ -451,8 +526,11 @@ namespace retracer
   bool TraceModifier::_fillSection(
     nsol::Section* section_, std::vector< float >& simplVecNodes_  )
   {
+    if ( simplVecNodes_.size( ) == 0 )
+      return false;
+
     bool modified = false;
-  
+
     auto& nodes = section_->nodes( );
     unsigned int j = 1;
     nsol::Vec3f simplPoint( simplVecNodes_[j*3], simplVecNodes_[j*3+1],

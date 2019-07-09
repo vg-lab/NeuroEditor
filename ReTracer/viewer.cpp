@@ -435,20 +435,20 @@ void Viewer::setModificationInterval ( unsigned int pIniValue,
   _procFinalValue = pFinalValue;
 }
 
-void Viewer::simplify ( std::map < std::string, float > &optParams,
-                        int objectId, OBJECT_TYPE objectType )
-{
-  saveState( );
-  util->getInstance( )->Simplify( modifiedMorphology, optParams,
-                                  objectId, objectType );
-  _morphoStructure->update( );
-  _scene->updateModifiedStructure( );
-  delete _treeModel;
-  _treeModel = new TreeModel( modifiedMorphology );
-  Q_EMIT morphologyChanged( );
-  _scene->updateModifiedMesh( );
-  updateGL( );
-}
+// void Viewer::simplify ( std::map < std::string, float > &optParams,
+//                         int objectId, OBJECT_TYPE objectType )
+// {
+//   saveState( );
+//   util->getInstance( )->Simplify( modifiedMorphology, optParams,
+//                                   objectId, objectType );
+//   _morphoStructure->update( );
+//   _scene->updateModifiedStructure( );
+//   delete _treeModel;
+//   _treeModel = new TreeModel( modifiedMorphology );
+//   Q_EMIT morphologyChanged( );
+//   _scene->updateModifiedMesh( );
+//   updateGL( );
+// }
 
 void Viewer::setModifiedAsOriginal ( )
 {
@@ -848,15 +848,15 @@ void Viewer::ExtractNeurite ( QString // pFile
 // }
 }
 
-void Viewer::enhance ( std::map < std::string, float > &optParams,
-                       int objectId, OBJECT_TYPE objectType )
-{
-  saveState( );
-  util->getInstance()->Enhance ( modifiedMorphology, optParams, objectId, objectType );
-  _scene->updateModifiedStructure( );
-  _scene->updateModifiedMesh( );
-  updateGL ( );
-}
+// void Viewer::enhance ( std::map < std::string, float > &optParams,
+//                        int objectId, OBJECT_TYPE objectType )
+// {
+//   saveState( );
+//   util->getInstance()->Enhance ( modifiedMorphology, optParams, objectId, objectType );
+//   _scene->updateModifiedStructure( );
+//   _scene->updateModifiedMesh( );
+//   updateGL ( );
+// }
 
 void Viewer::setRadiusToSelectedNode ( float // lRadius
   )

@@ -127,7 +127,7 @@ public:
 
   TreeModel* getTreeModel ( ) { return _treeModel; }
 
-  retracer::Utils * getUtils ( ) { return util; };
+  // retracer::Utils * getUtils ( ) { return util; };
 
   retracer::MorphologyStructure* morphologyStructure( void )
   {
@@ -252,7 +252,7 @@ protected:
 
   SIMP_METHOD _simpMethod;
 
-  retracer::Utils * util;
+  // retracer::Utils * util;
 
   short int _morphologyInfoToShow;
   bool _ShowText;

@@ -21,9 +21,6 @@
 #ifndef __RETRACER_UTILS__
 #define __RETRACER_UTILS__
 
-#include <PyGEmS/StrategyParams.h>
-#include <PyGEmSManager/PyGEmSManager.h>
-
 #include <nsol/nsol.h>
 #include <glm/glm.hpp>
 #include "glmSpline.hpp"
@@ -77,38 +74,6 @@ namespace retracer //Probably this code must be in nsol in the future
     IdToObject idToObject;
     IdToNode idToNode;
     NodeToSection nodeToSection;
-  };
-
-
-  class Utils
-  {
-      static Utils * instance;
-
-      static NSPGManager::PyGEmSManager *  myPyGEmSManager;
-
-    Utils() {};
-
-    void customSimplification(const nsol::SectionPtr & section,
-                              std::vector < float > & simplifiedCoords);
-
-    void customEnhance(const nsol::SectionPtr & section,
-                       std::vector < NSPyGEmS::StrategyParams > & simplifiedCoords);
-
-    public:
-      static Utils * getInstance();
-
-      void reloadInstance();
-
-      void Simplify ( nsol::NeuronMorphologyPtr &morphology_,
-                      std::map < std::string, float > params_,
-                      int objectId_ = -1,
-                      OBJECT_TYPE objectType = OBJECT_TYPE::NEURITE );
-
-      void Enhance ( nsol::NeuronMorphologyPtr &morphology_, std::map < std::string, float > params_,
-                             int objectId_, OBJECT_TYPE objectType = OBJECT_TYPE::NEURITE );
-
-      void Autofix ( nsol::NeuronMorphologyPtr &morphology_, std::map < std::string, float > params_ );
-
   };
 }
 #endif // __RETRACER_UTILS__

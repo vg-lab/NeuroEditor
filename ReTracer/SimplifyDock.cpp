@@ -273,6 +273,11 @@ bool SimplifyDock::_apply( ModifierWidget* mWidget_,
   if ( mWidget_->modifierMethod != retracer::TraceModifier::CUSTOM )
     return retracer::TraceModifier::modify( sections_, mWidget_->modifierMethod,
                                             mWidget_->modifierParams );
+  else if ( !mWidget_->scriptPath.empty( ))
+    return retracer::TraceModifier::customModify(
+      sections_, mWidget_->scriptPath );
+  else
+    std::cout << "empty path" << std::endl;
   return false;
 }
 
