@@ -14,12 +14,17 @@ TestWidget::TestWidget( retracer::Tester::TTesterMethod testMethod_ )
 
   std::string testerDescription;
   testerDescription.append( retracer::Tester::description( testMethod ));
-  testerDescription.append( ": " );
 
   QHBoxLayout* layout = new QHBoxLayout( );
+  layout->setAlignment( Qt::AlignLeft );
   setLayout( layout );
   layout->addWidget( new QLabel( QString( testerDescription.c_str( ))));
   _fixerCombo = new QComboBox( );
+  auto vline = new QFrame( );
+  vline->setFrameShape( QFrame::VLine );
+  vline->setFrameShadow( QFrame::Sunken );
+  layout->addWidget( vline );
+  layout->addWidget( new QLabel( QString( "Action to apply: " )));
   layout->addWidget( _fixerCombo );
 
   connect( _fixerCombo, SIGNAL( currentIndexChanged( int )),
@@ -102,24 +107,37 @@ void CorrectDock::init( Viewer* viewer_ )
 
   QWidget* selectorWidget = new QWidget( );
   selectionGroupLayout->addWidget( selectorWidget );
-  auto selectorLayout = new QGridLayout( );
+  auto selectorLayout = new QHBoxLayout( );
   selectorWidget->setLayout( selectorLayout );
+  selectorLayout->setAlignment( Qt::AlignLeft );
 
+  selectorLayout->addWidget( new QLabel( QString( "Test method:" )) );
   _testSelector = new QComboBox( );
-  selectorLayout->addWidget( _testSelector, 0, 0 );
+  selectorLayout->addWidget( _testSelector );
   QIcon addIcon( QString::fromUtf8(":/icons/list-add.png"));
   _testAdder = new QToolButton( );
   _testAdder->setIcon( addIcon );
-  selectorLayout->addWidget( _testAdder, 0, 1 );
+  selectorLayout->addWidget( _testAdder );
   QIcon addAllIcon( QString::fromUtf8(":/icons/list-add-all.png"));
   _testAddAll = new QToolButton( );
   _testAddAll->setIcon( addAllIcon );
-  selectorLayout->addWidget( _testAddAll, 0, 2 );
+  selectorLayout->addWidget( _testAddAll );
+
+  QIcon helpIcon( QString::fromUtf8(":/icons/help-browser.png"));
+  auto testMethodHelp = new QToolButton( );
+  testMethodHelp->setIcon( helpIcon );
+  selectorLayout->addWidget( testMethodHelp );
 
   connect( _testAdder, SIGNAL( pressed( )),
            this, SLOT( addTest( void )));
   connect( _testAddAll, SIGNAL( pressed( )),
            this, SLOT( addAllTests( void )));
+
+  auto message = QString( "test method help" );
+  _testMethodHelpBox = new QMessageBox(
+    QMessageBox::Information, QString( "Help" ), message );
+  QObject::connect( testMethodHelp, SIGNAL( pressed( )),
+                    _testMethodHelpBox, SLOT( exec( )));
 
   _initTestSelector( );
 
@@ -133,14 +151,17 @@ void CorrectDock::init( Viewer* viewer_ )
   scrollArea->setWidget( testWidget );
   scrollArea->setMaximumHeight( 400 );
 
+
   QWidget* buttonsWidget = new QWidget( );
   QHBoxLayout* buttonsLayout = new QHBoxLayout( );
   buttonsWidget->setLayout( buttonsLayout );
   selectionGroupLayout->addWidget( buttonsWidget );
 
-  QPushButton* clearButton = new QPushButton( QString( "clear" ));
+  QPushButton* clearButton = new QPushButton( QString( "clear all" ));
+  clearButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( clearButton );
-  QPushButton* runButton = new QPushButton( QString( "correct" ));
+  QPushButton* runButton = new QPushButton( QString( "apply all" ));
+  runButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( runButton );
 
   connect( clearButton, SIGNAL( pressed( )),
@@ -207,7 +228,7 @@ void CorrectDock::correct( void )
   clearOutput( );
 
   _outputLayout->addWidget(
-    new QLabel( QString( "Cabecera con informacion morfologica" )));
+    new QLabel( QString( "number de neuritas\nnumber de tracing points\nnumber of sections" )));
   auto hline = new QFrame( );
   hline->setFrameShape( QFrame::HLine );
   hline->setFrameShadow( QFrame::Sunken );

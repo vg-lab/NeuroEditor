@@ -159,8 +159,10 @@ void SimplifyDock::init( Viewer* viewer_ )
   simplifyGroupLayout->addWidget( buttonsWidget );
 
   QPushButton* clearButton = new QPushButton( QString( "clear" ));
+  clearButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( clearButton );
   QPushButton* applyAllButton = new QPushButton( QString( "apply all" ));
+  applyAllButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( applyAllButton );
 
   connect( clearButton, SIGNAL( pressed( )),

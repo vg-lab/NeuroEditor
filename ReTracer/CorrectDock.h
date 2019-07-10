@@ -26,6 +26,8 @@
 #include <QComboBox>
 #include <QToolButton>
 #include <QPushButton>
+#include <QMessageBox>
+
 #include "viewer.h"
 #include "Tester.h"
 
@@ -137,6 +139,7 @@ protected:
   QToolButton* _testAddAll;
   QVBoxLayout* _testsLayout;
   QVBoxLayout* _outputLayout;
+  QMessageBox* _testMethodHelpBox;
 };
 
 #endif
