@@ -29,7 +29,7 @@ TreeModel::TreeModel (  nsol::NeuronMorphologyPtr morphology_,
   : QAbstractItemModel ( parent )
 {
   QList < QVariant > rootData;
-  rootData << "Label" << "Index"; // << "Description";
+  rootData << "Type of element" << "Id."; // << "Description";
   _rootItem = new TreeItem ( rootData );
   _setupModelData( morphology_ );
 }

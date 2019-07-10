@@ -34,7 +34,7 @@ void SelectDock::init( Viewer* viewer_ )
   selectDockLayout->setAlignment( Qt::AlignTop );
   mainWidget->setLayout( selectDockLayout );
 
-  QGroupBox* selectionTreeGroup = new QGroupBox( QString( "Selection tree" ));
+  QGroupBox* selectionTreeGroup = new QGroupBox( );
   QGridLayout* selectionTreeLayout = new QGridLayout( );
   selectionTreeGroup->setLayout( selectionTreeLayout );
   selectDockLayout->addWidget( selectionTreeGroup );
@@ -44,10 +44,10 @@ void SelectDock::init( Viewer* viewer_ )
   _morphologyTree->setSelectionMode( QTreeView::NoSelection );
   _morphologyTree->setSelectionBehavior( QTreeView::SelectRows );
   _morphologyTree->setExpandsOnDoubleClick( false );
-  auto selectAllButton = new QPushButton( QString( "Select All" ));
+  auto selectAllButton = new QPushButton( QString( "select all" ));
   selectAllButton->setFixedWidth( 105 );
   selectionTreeLayout->addWidget( selectAllButton, 1, 0, 1, 1 );
-  auto clearSelectionButton = new QPushButton( QString( "Clear Selection" ));
+  auto clearSelectionButton = new QPushButton( QString( "clear selection" ));
   clearSelectionButton->setFixedWidth( 105 );
   selectionTreeLayout->addWidget( clearSelectionButton, 1, 1, 1, 1 );
 
@@ -72,7 +72,7 @@ void SelectDock::init( Viewer* viewer_ )
   selectDockLayout->addWidget( hline );
 
   QGroupBox* selectionTypeGroup =
-    new QGroupBox( QString( "Click selection type" ));
+    new QGroupBox( QString( "On mouse click select:" ));
   QGridLayout* selectionTypeLayout = new QGridLayout( );
   selectionTypeGroup->setLayout( selectionTypeLayout );
   selectDockLayout->addWidget( selectionTypeGroup );
@@ -92,15 +92,15 @@ void SelectDock::init( Viewer* viewer_ )
            this, SLOT( neuriteButtonClicked( )));
 
   QGroupBox* selectionModeGroup =
-    new QGroupBox( QString( "Click selection mode" ));
+    new QGroupBox( QString( "On mouse click accumulate selection:" ));
   QGridLayout* selectionModeLayout = new QGridLayout( );
   selectionModeGroup->setLayout( selectionModeLayout );
   selectDockLayout->addWidget( selectionModeGroup );
 
-  auto inclusiveRadioButton = new QRadioButton( QString( "inclusive" ));
-  selectionModeLayout->addWidget( inclusiveRadioButton, 0, 0, 1, 1 );
-  auto exclusiveRadioButton = new QRadioButton( QString( "exclusive" ));
-  selectionModeLayout->addWidget( exclusiveRadioButton, 0, 1, 1, 1 );
+  auto inclusiveRadioButton = new QRadioButton( QString( "yes" ));
+  selectionModeLayout->addWidget( inclusiveRadioButton, 0, 0 );
+  auto exclusiveRadioButton = new QRadioButton( QString( "no" ));
+  selectionModeLayout->addWidget( exclusiveRadioButton, 0, 1 );
   inclusiveRadioButton->setChecked(true);
   connect( inclusiveRadioButton, SIGNAL( clicked( )),
            this, SLOT( inclusiveButtonClicked( )));
