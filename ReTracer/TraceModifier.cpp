@@ -64,9 +64,6 @@ namespace retracer
     case DOUGLASPEUCKERMOD:
       simplifierFunc = TraceModifier::_douglasPeuckerMod;
       break;
-    case DELETE_MEDIUM:
-      simplifierFunc = TraceModifier::_deleteMedium;
-      break;
     case LINEAR_ENHANCE:
       enhacerFunc = TraceModifier::_linearEnhance;
       break;
@@ -85,7 +82,7 @@ namespace retracer
     else if ( enhacerFunc )
     {
 
-      int currentId = 1000;
+      int currentId = _maximumId( sections_ );
       for ( auto section: sections_ )
         modified =
           modified | enhacerFunc( section, modifierParams_, currentId );
@@ -180,10 +177,10 @@ namespace retracer
       description = std::string( "Nth point simplication" );
       break;
     case RADIAL:
-      description = std::string( "Radial simplication" );
+      description = std::string( "Radial distance simplication" );
       break;
     case PERPDIST:
-      description = std::string( "Perp dist simplication" );
+      description = std::string( "Perpendicular distance simplication" );
       break;
     case REUMANNWITKAM:
       description = std::string( "Reumann Witkam simplification" );
@@ -195,13 +192,10 @@ namespace retracer
       description = std::string( "Lang simplification" );
       break;
     case DOUGLASPEUCKER:
-      description = std::string( "Douglas Peucker simplification" );
+      description = std::string( "Douglas-Peucker simplification" );
       break;
     case DOUGLASPEUCKERMOD:
-      description = std::string( "Douglas Peucker Mod simplification" );
-      break;
-    case DELETE_MEDIUM:
-      description = std::string( "Delete midle nodes");
+      description = std::string( "Douglas-Peucker Mod simplification" );
       break;
     case LINEAR_ENHANCE:
       description = std::string( "Linear enhance" );
@@ -225,38 +219,36 @@ namespace retracer
     switch( modifierMethod_ )
     {
     case NTHPOINT:
-      modifierParams[std::string( "value" )] = 2.0f;
+      modifierParams[std::string( "num_points" )] = 1.0f;
       break;
     case RADIAL:
-      modifierParams[std::string( "value" )] = 0.0f;
+      modifierParams[std::string( "distance" )] = 0.1f;
       break;
     case PERPDIST:
-      modifierParams[std::string( "value" )] = 0.0f;
+      modifierParams[std::string( "distance" )] = 0.1f;
       break;
     case REUMANNWITKAM:
-      modifierParams[std::string( "value" )] = 0.0f;
+      modifierParams[std::string( "distance" )] = 0.1f;
       break;
     case OPHEIN:
-      modifierParams[std::string( "value2" )] = 0.0f;
-      modifierParams[std::string( "value" )] = 0.0f;
+      modifierParams[std::string( "min_threshold" )] = 0.1f;
+      modifierParams[std::string( "max_threshold" )] = 0.1f;
       break;
     case LANG:
-      modifierParams[std::string( "value2" )] = 0.0f;
-      modifierParams[std::string( "value" )] = 0.0f;
+      modifierParams[std::string( "threshold" )] = 0.1f;
+      modifierParams[std::string( "size" )] = 0.1f;
       break;
     case DOUGLASPEUCKER:
-      modifierParams[std::string( "value" )] = 0.0f;
+      modifierParams[std::string( "threshold" )] = 0.1f;
       break;
     case DOUGLASPEUCKERMOD:
-      modifierParams[std::string( "value" )] = 0.0f;
-      break;
-    case DELETE_MEDIUM:
+      modifierParams[std::string( "num_points" )] = 1.0f;
       break;
     case LINEAR_ENHANCE:
-      modifierParams[std::string( "PointsPerUnit" )] = 1.0f;
+      modifierParams[std::string( "points_per_unit" )] = 1.0f;
       break;
     case SPLINE_ENHANCE:
-      modifierParams[std::string( "PointsPerUnit" )] = 1.0f;
+      modifierParams[std::string( "points_per_unit" )] = 1.0f;
       break;
     case CUSTOM:
       break;
@@ -267,7 +259,7 @@ namespace retracer
   bool TraceModifier::_nthpoint( nsol::Section* section_,
                          TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
+    float value = modifierParams_["num_points"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -281,7 +273,7 @@ namespace retracer
   bool TraceModifier::_radial( nsol::Section* section_,
                                TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
+    float value = modifierParams_["distance"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -295,7 +287,7 @@ namespace retracer
   bool TraceModifier::_perpdist( nsol::Section* section_,
                                  TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
+    float value = modifierParams_["distance"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -310,7 +302,7 @@ namespace retracer
   bool TraceModifier::_reumannWitkam( nsol::Section* section_,
                                       TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
+    float value = modifierParams_["distance"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -327,8 +319,8 @@ namespace retracer
   bool TraceModifier::_ophein( nsol::Section* section_,
                        TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
-    float value2 = modifierParams_["value2"];
+    float value = modifierParams_["min_threshold"];
+    float value2 = modifierParams_["max_threshold"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -343,8 +335,8 @@ namespace retracer
   bool TraceModifier::_lang( nsol::Section* section_,
                              TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
-    float value2 = modifierParams_["value2"];
+    float value = modifierParams_["threshold"];
+    float value2 = modifierParams_["size"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -359,7 +351,7 @@ namespace retracer
   bool TraceModifier::_douglasPeucker( nsol::Section* section_,
                                        TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
+    float value = modifierParams_["threshold"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -374,7 +366,7 @@ namespace retracer
   bool TraceModifier::_douglasPeuckerMod( nsol::Section* section_,
                                           TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["value"];
+    float value = modifierParams_["num_points"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 
@@ -386,26 +378,12 @@ namespace retracer
     return false;
   }
 
-  bool TraceModifier::_deleteMedium( nsol::Section* section_,
-                                     TModifierParams /*modifierParams_*/ )
-  {
-    auto& nodes = section_->nodes( );
-    while( nodes.size( ) > 2 )
-    {
-      auto node = nodes[1];
-      nodes.erase( nodes.begin( ) + 1 );
-      delete node;
-    }
-
-    return true;
-  }
-
   bool TraceModifier::_linearEnhance( nsol::Section* section_,
                                       TModifierParams modifierParams_,
                                       int& currentId_ )
   {
     bool modified = false;
-    float pointsPerUnit = modifierParams_["PointsPerUnit"];
+    float pointsPerUnit = modifierParams_["points_per_unit"];
 
     auto& nodes = section_->nodes( );
     nsol::Nodes cNodes( nodes );
@@ -449,7 +427,7 @@ namespace retracer
                                       TModifierParams modifierParams_,
                                       int& currentId_ )
   {  bool modified = false;
-    float pointsPerUnit = modifierParams_["PointsPerUnit"];
+    float pointsPerUnit = modifierParams_["points_per_unit"];
 
     auto& nodes = section_->nodes( );
     nsol::Nodes cNodes( nodes );

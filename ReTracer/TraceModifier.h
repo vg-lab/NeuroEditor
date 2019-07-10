@@ -44,7 +44,6 @@ namespace retracer
       LANG,
       DOUGLASPEUCKER,
       DOUGLASPEUCKERMOD,
-      DELETE_MEDIUM,
       LINEAR_ENHANCE,
       SPLINE_ENHANCE,
       CUSTOM
@@ -63,7 +62,7 @@ namespace retracer
 
     static int numModifiers( void )
     {
-      return 12;
+      return 11;
     }
 
     static std::string description( TModifierMethod modifierMethod_ );
@@ -94,9 +93,6 @@ namespace retracer
 
     static bool _douglasPeuckerMod( nsol::Section* section_,
                                     TModifierParams modifierParams_ );
-
-    static bool _deleteMedium( nsol::Section* section_,
-                               TModifierParams modifierParams_ );
 
     static bool _linearEnhance( nsol::Section* section_,
                                 TModifierParams modifierParams_,
