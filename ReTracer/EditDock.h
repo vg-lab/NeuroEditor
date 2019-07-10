@@ -24,6 +24,7 @@
 #include <QDockWidget>
 #include <QObject>
 #include <QTreeView>
+#include <QMessageBox>
 #include "viewer.h"
 
 class EditDock: public QDockWidget
@@ -69,6 +70,10 @@ protected:
   QLineEdit* _radiusTextBox;
 
   bool _activeManipulation;
+
+  QMessageBox* _positionHelpBox;
+  QMessageBox* _rotationHelpBox;
+  QMessageBox* _radiusHelpBox;
 
 };
 

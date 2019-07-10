@@ -1,11 +1,13 @@
 <RCC>
   <qresource>
-    <file>icons/open_swc.png</file>
-    <file>icons/close.png</file>
-    <file>icons/colorpicker.png</file>
-    <file>icons/reconstruction.png</file>
-    <file>icons/home.png</file>
-    <file>icons/settings.png</file>
-    <file>icons/add.png</file>
+    <file>icons/document-open.png</file>
+    <file>icons/document-save.png</file>
+    <file>icons/document-save-as.png</file>
+    <file>icons/edit-undo.png</file>
+    <file>icons/help-browser.png</file>
+    <file>icons/list-add.png</file>
+    <file>icons/list-add-all.png</file>
+    <file>icons/list-remove.png</file>
+    <file>icons/system-log-out.png</file>
   </qresource>
 </RCC>

@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
+#include <QToolButton>
 
 #include <iostream>
 
@@ -59,7 +60,7 @@ void EditDock::init( Viewer* viewer_ )
   _zTextBoxPosition->setFixedWidth( 75 );
   _zTextBoxPosition->setPlaceholderText( QString( "---" ));
   inspectorLayout->addWidget( _zTextBoxPosition, 1, 5 );
-  auto applyPosButton = new QPushButton( QString( "Apply"));
+  auto applyPosButton = new QPushButton( QString( "apply"));
   inspectorLayout->addWidget( applyPosButton, 1, 6 );
 
   inspectorLayout->addWidget( new QLabel( QString( "Rotation (radians): " )),
@@ -82,19 +83,20 @@ void EditDock::init( Viewer* viewer_ )
   _zTextBoxRotation->setFixedWidth( 75 );
   _zTextBoxRotation->setPlaceholderText( QString( "---" ));
   inspectorLayout->addWidget( _zTextBoxRotation, 3, 5 );
-  auto applyRotButton = new QPushButton( QString( "Apply"));
+  auto applyRotButton = new QPushButton( QString( "apply"));
   inspectorLayout->addWidget( applyRotButton, 3, 6 );
 
   inspectorLayout->addWidget( new QLabel( QString( "Radius: " )),
-                              4, 0, 1, 6 );
-  inspectorLayout->addWidget( new QLabel( QString( "radius:" )), 5, 0 );
+                              4, 0, 1, 2 );
   _radiusTextBox = new QLineEdit( );
   _radiusTextBox->setValidator( validator );
   _radiusTextBox->setFixedWidth( 75 );
   _radiusTextBox->setPlaceholderText( QString( "---" ));
-  inspectorLayout->addWidget( _radiusTextBox, 5, 1 );
-  auto applyRadButton = new QPushButton( QString( "Apply"));
-  inspectorLayout->addWidget( applyRadButton, 5, 6 );
+  inspectorLayout->addWidget( _radiusTextBox, 4, 3 );
+  auto applyRadButton = new QPushButton( QString( "apply"));
+  inspectorLayout->addWidget( applyRadButton, 4, 6 );
+
+  
 
   QObject::connect( _viewer, SIGNAL( resetInspectorSignal( )),
                     this, SLOT( resetInspector( )));
@@ -115,6 +117,36 @@ void EditDock::init( Viewer* viewer_ )
                     this, SLOT( updateRadius( float )));
   QObject::connect( applyRadButton, SIGNAL( clicked( )),
                     this, SLOT( applyRadius( )));
+
+  QIcon helpIcon( QString::fromUtf8(":/icons/help-browser.png"));
+  auto positionHelp = new QToolButton( );
+  positionHelp->setIcon( helpIcon );
+  inspectorLayout->addWidget( positionHelp, 1, 7 );
+  auto rotationHelp = new QToolButton( );
+  rotationHelp->setIcon( helpIcon );
+  inspectorLayout->addWidget( rotationHelp, 3, 7 );
+  auto radiusHelp = new QToolButton( );
+  radiusHelp->setIcon( helpIcon );
+  inspectorLayout->addWidget( radiusHelp, 4, 7 );
+
+  auto message = QString( "position help" );
+  _positionHelpBox = new QMessageBox(
+    QMessageBox::Information, QString( "Help" ), message );
+  QObject::connect( positionHelp, SIGNAL( pressed( )),
+                    _positionHelpBox, SLOT( exec( )));
+
+  message = QString( "rotation help " );
+  _rotationHelpBox = new QMessageBox(
+    QMessageBox::Information, QString( "Help" ), message );
+  QObject::connect( rotationHelp, SIGNAL( pressed( )),
+                    _rotationHelpBox, SLOT( exec( )));
+
+  message = QString(
+    "este radio modifica los radios tomando como referencia .... " );
+  _radiusHelpBox = new QMessageBox(
+    QMessageBox::Information, QString( "Help" ), message );
+  QObject::connect( radiusHelp, SIGNAL( pressed( )),
+                    _radiusHelpBox, SLOT( exec( )));
 }
 
 void EditDock::resetInspector( void )

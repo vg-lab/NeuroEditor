@@ -85,7 +85,7 @@
     <action name="actionQuit">
       <property name="icon">
         <iconset resource="../qrc/resources.qrc">
-        <normaloff>:/icons/close.png</normaloff>:/icons/close.png</iconset>
+        <normaloff>:/icons/system-log-out.png</normaloff>:/icons/system-log-out.png</iconset>
       </property>
       <property name="text">
         <string>Quit</string>
@@ -94,7 +94,7 @@
     <action name="actionOpenSWCFile">
       <property name="icon">
         <iconset resource="../qrc/resources.qrc">
-        <normaloff>:/icons/open_swc.png</normaloff>:/icons/open_swc.png</iconset>
+        <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
       </property>
       <property name="text">
         <string>Open SWC</string>
@@ -106,7 +106,7 @@
     <action name="actionSaveSWCFile">
       <property name="icon">
         <iconset resource="../qrc/resources.qrc">
-        <normaloff>:/icons/open_swc.png</normaloff>:/icons/open_swc.png</iconset>
+        <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
       </property>
       <property name="text">
         <string>Save SWC</string>
@@ -118,7 +118,7 @@
     <action name="actionExportMesh">
       <property name="icon">
         <iconset resource="../qrc/resources.qrc">
-        <normaloff>:/icons/open_swc.png</normaloff>:/icons/open_swc.png</iconset>
+        <normaloff>:/icons/document-save-as.png</normaloff>:/icons/document-save-as.png</iconset>
       </property>
       <property name="text">
         <string>Export mesh</string>
@@ -191,6 +191,10 @@
       </property>
     </action>
     <action name="actionUndo">
+      <property name="icon">
+        <iconset resource="../qrc/resources.qrc">
+        <normaloff>:/icons/edit-undo.png</normaloff>:/icons/edit-undo.png</iconset>
+      </property>
       <property name="text">
         <string>Undo</string>
       </property>

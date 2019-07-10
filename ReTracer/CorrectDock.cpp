@@ -25,7 +25,7 @@ TestWidget::TestWidget( retracer::Tester::TTesterMethod testMethod_ )
   connect( _fixerCombo, SIGNAL( currentIndexChanged( int )),
            this, SLOT( changeFixerMethod( int )));
 
-  QIcon removeIcon( QString::fromUtf8(":/icons/close.png"));
+  QIcon removeIcon( QString::fromUtf8(":/icons/list-remove.png"));
   auto testRemove = new QToolButton( );
   testRemove->setIcon( removeIcon );
   layout->addWidget( testRemove );
@@ -107,12 +107,13 @@ void CorrectDock::init( Viewer* viewer_ )
 
   _testSelector = new QComboBox( );
   selectorLayout->addWidget( _testSelector, 0, 0 );
-  QIcon addIcon( QString::fromUtf8(":/icons/add.png"));
+  QIcon addIcon( QString::fromUtf8(":/icons/list-add.png"));
   _testAdder = new QToolButton( );
   _testAdder->setIcon( addIcon );
   selectorLayout->addWidget( _testAdder, 0, 1 );
+  QIcon addAllIcon( QString::fromUtf8(":/icons/list-add-all.png"));
   _testAddAll = new QToolButton( );
-  _testAddAll->setIcon( addIcon );
+  _testAddAll->setIcon( addAllIcon );
   selectorLayout->addWidget( _testAddAll, 0, 2 );
 
   connect( _testAdder, SIGNAL( pressed( )),

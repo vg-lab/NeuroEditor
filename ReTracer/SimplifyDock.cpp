@@ -25,7 +25,7 @@ ModifierWidget::ModifierWidget(
   applyButton->setMaximumSize( QSize( 50, 40 ));
   connect( applyButton, SIGNAL( pressed( )),
              this, SLOT( apply( )));
-  QIcon removeIcon( QString::fromUtf8(":/icons/close.png"));
+  QIcon removeIcon( QString::fromUtf8(":/icons/list-remove.png"));
   auto modifierRemove = new QToolButton( );
   modifierRemove->setIcon( removeIcon );
   layout->addWidget( modifierRemove );
@@ -132,7 +132,7 @@ void SimplifyDock::init( Viewer* viewer_ )
 
   _methodSelector = new QComboBox( );
   selectorLayout->addWidget( _methodSelector, 0, 0 );
-  QIcon addIcon( QString::fromUtf8( ":/icons/add.png" ));
+  QIcon addIcon( QString::fromUtf8( ":/icons/list-add.png" ));
   auto methodAdder = new QToolButton( );
   methodAdder->setIcon( addIcon );
   selectorLayout->addWidget( methodAdder, 0, 1 );
