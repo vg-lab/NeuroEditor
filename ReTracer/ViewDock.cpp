@@ -38,43 +38,37 @@ void ViewDock::init( Viewer* viewer_ )
   showGroup->setLayout( showGroupLayout );
   viewDockLayout->addWidget( showGroup );
 
-  QCheckBox* sideCheckBox = new QCheckBox( QString( "Side by side" ));
-  showGroupLayout->addWidget( sideCheckBox, 0, 0, 1, 2 );
-
-  hline = new QFrame( );
-  hline->setFrameShape( QFrame::HLine );
-  hline->setFrameShadow( QFrame::Sunken );
-  showGroupLayout->addWidget( hline, 1, 0, 1, 2 );
-
-  showGroupLayout->addWidget( new QLabel( QString( "Main screen" )), 2, 0 );
-  showGroupLayout->addWidget( new QLabel( QString( "Secondary screen" )), 2, 1 );
+  showGroupLayout->addWidget( new QLabel( QString( "First view" )), 0, 0 );
+  showGroupLayout->addWidget( new QLabel( QString( "Second view" )), 0, 1 );
+  QCheckBox* sideCheckBox = new QCheckBox( );
+  showGroupLayout->addWidget( sideCheckBox, 0, 2 );
 
   QCheckBox* msModifiedStructure =
-    new QCheckBox( QString( "Modified trace" ));
-  showGroupLayout->addWidget( msModifiedStructure, 3, 0 );
+    new QCheckBox( QString( "Modified tracing" ));
+  showGroupLayout->addWidget( msModifiedStructure, 1, 0 );
   QCheckBox* ssModifiedStructure =
-    new QCheckBox( QString( "Modified trace" ));
-  showGroupLayout->addWidget( ssModifiedStructure, 3, 1 );
+    new QCheckBox( QString( "Modified tracing" ));
+  showGroupLayout->addWidget( ssModifiedStructure, 1, 1 );
   ssModifiedStructure->setEnabled( false );
 
-  QCheckBox* msModifiedMesh = new QCheckBox( QString( "Modified mesh" ));
-  showGroupLayout->addWidget( msModifiedMesh, 4, 0 );
-  QCheckBox* ssModifiedMesh = new QCheckBox( QString( "Modified Mesh" ));
-  showGroupLayout->addWidget( ssModifiedMesh, 4, 1 );
+  QCheckBox* msModifiedMesh = new QCheckBox( QString( "Modified 3D mesh" ));
+  showGroupLayout->addWidget( msModifiedMesh, 2, 0 );
+  QCheckBox* ssModifiedMesh = new QCheckBox( QString( "Modified 3D mesh" ));
+  showGroupLayout->addWidget( ssModifiedMesh, 2, 1 );
   ssModifiedMesh->setEnabled( false );
 
   QCheckBox* msOriginalStructure =
-    new QCheckBox( QString( "Original trace" ));
-  showGroupLayout->addWidget( msOriginalStructure, 5, 0 );
+    new QCheckBox( QString( "Original tracing" ));
+  showGroupLayout->addWidget( msOriginalStructure, 3, 0 );
   QCheckBox* ssOriginalStructure =
-    new QCheckBox( QString( "Original trace" ));
-  showGroupLayout->addWidget( ssOriginalStructure, 5, 1 );
+    new QCheckBox( QString( "Original tracing" ));
+  showGroupLayout->addWidget( ssOriginalStructure, 3, 1 );
   ssOriginalStructure->setEnabled( false );
 
-  QCheckBox* msOriginalMesh = new QCheckBox( QString( "Original mesh" ));
-  showGroupLayout->addWidget( msOriginalMesh, 6, 0 );
-  QCheckBox* ssOriginalMesh = new QCheckBox( QString( "Original Mesh" ));
-  showGroupLayout->addWidget( ssOriginalMesh, 6, 1 );
+  QCheckBox* msOriginalMesh = new QCheckBox( QString( "Original 3D mesh" ));
+  showGroupLayout->addWidget( msOriginalMesh, 4, 0 );
+  QCheckBox* ssOriginalMesh = new QCheckBox( QString( "Original 3D mesh" ));
+  showGroupLayout->addWidget( ssOriginalMesh, 4, 1 );
   ssOriginalMesh->setEnabled( false );
 
   connect( sideCheckBox, SIGNAL( toggled( bool )),
@@ -124,19 +118,19 @@ void ViewDock::init( Viewer* viewer_ )
   ColorSelectionWidget* backgroundColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( backgroundColor, 0, 1 );
 
-  renderOptionsLayout->addWidget( new QLabel( QString("Modified trace color")),
+  renderOptionsLayout->addWidget( new QLabel( QString("Modified tracing color")),
                                   1, 0);
   ColorSelectionWidget* mtColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( mtColor, 1, 1 );
-  renderOptionsLayout->addWidget( new QLabel( QString("Modified mesh color")),
+  renderOptionsLayout->addWidget( new QLabel( QString("Modified 3D mesh color")),
                                   1, 2);
   ColorSelectionWidget* mmColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( mmColor, 1, 3 );
-  renderOptionsLayout->addWidget( new QLabel( QString("Original trace color")),
+  renderOptionsLayout->addWidget( new QLabel( QString("Original tracing color")),
                                   2, 0);
   ColorSelectionWidget* otColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( otColor, 2, 1 );
-  renderOptionsLayout->addWidget( new QLabel( QString("Original mesh color")),
+  renderOptionsLayout->addWidget( new QLabel( QString("Original 3D mesh color")),
                                   2, 2);
   ColorSelectionWidget* omColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( omColor, 2, 3 );
@@ -167,22 +161,21 @@ void ViewDock::init( Viewer* viewer_ )
   QGridLayout* cameraLayout = new QGridLayout( );
   cameraGroup->setLayout( cameraLayout );
   viewDockLayout->addWidget( cameraGroup );
-  cameraLayout->addWidget( new QLabel( QString( "View: " )), 1, 0 );
   QPushButton* cameraTopButton = new QPushButton( QString( "Top" ));
   cameraTopButton->setMaximumSize( QSize( 65, 25 ));
-  cameraLayout->addWidget( cameraTopButton, 0, 2 );
+  cameraLayout->addWidget( cameraTopButton, 0, 1 );
   QPushButton* cameraFrontButton = new QPushButton( QString( "Front" ));
   cameraFrontButton->setMaximumSize( QSize( 65, 25 ));
-  cameraLayout->addWidget( cameraFrontButton, 1, 2 );
+  cameraLayout->addWidget( cameraFrontButton, 1, 1 );
   QPushButton* cameraBottomButton = new QPushButton( QString( "Bottom" ));
   cameraBottomButton->setMaximumSize( QSize( 65, 25 ));
-  cameraLayout->addWidget( cameraBottomButton, 2, 2 );
+  cameraLayout->addWidget( cameraBottomButton, 2, 1 );
   QPushButton* cameraLeftButton = new QPushButton( QString( "Left" ));
   cameraLeftButton->setMaximumSize( QSize( 65, 25 ));
-  cameraLayout->addWidget( cameraLeftButton, 1, 1 );
+  cameraLayout->addWidget( cameraLeftButton, 1, 0 );
   QPushButton* cameraRightButton = new QPushButton( QString( "Right" ));
   cameraRightButton->setMaximumSize( QSize( 65, 25 ));
-  cameraLayout->addWidget( cameraRightButton, 1, 3 );
+  cameraLayout->addWidget( cameraRightButton, 1, 2 );
 
   connect( cameraFrontButton, SIGNAL( clicked( )),
            viewer_, SLOT( setCameraViewFront( )));
