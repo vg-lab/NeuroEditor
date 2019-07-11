@@ -16,8 +16,8 @@ ModifierWidget::ModifierWidget(
   description.append( ": " );
 
   QHBoxLayout* layout = new QHBoxLayout( );
+  // layout->setAlignment( Qt::AlignLeft );
   setLayout( layout );
-  layout->setAlignment( Qt::AlignLeft );
   layout->addWidget( new QLabel( QString( description.c_str( ))));
 
   QPushButton* applyButton = new QPushButton( QString( "apply" ));
@@ -56,7 +56,7 @@ ModifierWidget::ModifierWidget(
       layout->addWidget( new QLabel( QString( paramName.c_str( ))));
       auto paramLineEdit = new QLineEdit( QString::number( param.second ));
       paramLineEdit->setValidator( validator );
-      paramLineEdit->setFixedWidth( 50 );
+      // paramLineEdit->setFixedWidth( 50 );
       layout->addWidget( paramLineEdit );
       paramNames.push_back( param.first );
       paramLineEdits.push_back( paramLineEdit );
@@ -110,7 +110,7 @@ void SimplifyDock::init( Viewer* viewer_ )
   setFeatures( QDockWidget::DockWidgetClosable |
                QDockWidget::DockWidgetMovable |
                QDockWidget::DockWidgetFloatable );
-  setWindowTitle( QString( "Simplifycation" ));
+  setWindowTitle( QString( "Select simplification methods" ));
   setMinimumSize( 450, 200 );
 
   QWidget* mainWidget = new QWidget( );
@@ -130,15 +130,28 @@ void SimplifyDock::init( Viewer* viewer_ )
   auto selectorLayout = new QGridLayout( );
   selectorWidget->setLayout( selectorLayout );
 
+
+  selectorLayout->addWidget( new QLabel( QString( "Select method: " )), 0, 0 );
   _methodSelector = new QComboBox( );
-  selectorLayout->addWidget( _methodSelector, 0, 0 );
+  selectorLayout->addWidget( new QLabel( QString( "Select method: " )), 0, 0 );
+  selectorLayout->addWidget( _methodSelector, 0, 1 );
   QIcon addIcon( QString::fromUtf8( ":/icons/list-add.png" ));
   auto methodAdder = new QToolButton( );
   methodAdder->setIcon( addIcon );
-  selectorLayout->addWidget( methodAdder, 0, 1 );
+  selectorLayout->addWidget( methodAdder, 0, 2 );
+  QIcon helpIcon( QString::fromUtf8(":/icons/help-browser.png"));
+  auto simplifyMethodHelp = new QToolButton( );
+  simplifyMethodHelp->setIcon( helpIcon );
+  selectorLayout->addWidget( simplifyMethodHelp, 0, 3 );
 
   connect( methodAdder, SIGNAL( pressed( )),
            this, SLOT( addMethod( void )));
+
+  auto message = QString( "This menu provides several simplification and enhance methods to apply over the neuron morphology tracing. Each method has his own parameters that are editable by the user. Also there is a particular method named custom method that allows the run of python code to simplify or enhance the trancing.\nIf there are selected nodes the simplification will run over the morphological sections that are completely or partially selected, it there is no selected node the simplification will run over all the sections composing the tracing." );
+  _simplifyMethodHelpBox = new QMessageBox(
+    QMessageBox::Information, QString( "Help" ), message );
+  QObject::connect( simplifyMethodHelp, SIGNAL( pressed( )),
+                    _simplifyMethodHelpBox, SLOT( exec( )));
 
   _initMethodSelector( );
 
@@ -158,7 +171,7 @@ void SimplifyDock::init( Viewer* viewer_ )
   buttonsWidget->setLayout( buttonsLayout );
   simplifyGroupLayout->addWidget( buttonsWidget );
 
-  QPushButton* clearButton = new QPushButton( QString( "clear" ));
+  QPushButton* clearButton = new QPushButton( QString( "clear all" ));
   clearButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( clearButton );
   QPushButton* applyAllButton = new QPushButton( QString( "apply all" ));

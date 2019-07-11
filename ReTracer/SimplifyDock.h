@@ -26,6 +26,7 @@
 #include <QComboBox>
 #include <QToolButton>
 #include <QPushButton>
+#include <QMessageBox>
 #include "viewer.h"
 #include "TraceModifier.h"
 
@@ -101,6 +102,7 @@ protected:
 
   QComboBox* _methodSelector;
   QVBoxLayout* _methodsLayout;
+  QMessageBox* _simplifyMethodHelpBox;
 };
 
 #endif

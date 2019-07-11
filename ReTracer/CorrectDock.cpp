@@ -133,7 +133,7 @@ void CorrectDock::init( Viewer* viewer_ )
   connect( _testAddAll, SIGNAL( pressed( )),
            this, SLOT( addAllTests( void )));
 
-  auto message = QString( "test method help" );
+  auto message = QString( "This menu allows the selection of several test that fixes common errors coming from the neuron descriptions. Each test has several associated fixers that can be selected. Once the wanted tests are selected their will be applied over the neuron morphology fixing or giving a text output in the bellow panel (Output)." );
   _testMethodHelpBox = new QMessageBox(
     QMessageBox::Information, QString( "Help" ), message );
   QObject::connect( testMethodHelp, SIGNAL( pressed( )),

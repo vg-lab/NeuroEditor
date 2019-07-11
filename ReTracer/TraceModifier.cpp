@@ -204,7 +204,7 @@ namespace retracer
       description = std::string( "Spline enhance" );
       break;
     case CUSTOM:
-      description = std::string( "Custom modifier" );
+      description = std::string( "Custom method" );
       break;
     }
 
