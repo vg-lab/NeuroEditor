@@ -27,7 +27,7 @@
 #include <PyGEmSManager/PyGEmSManager.h>
 #include <PyGEmSManager/StrategyFrameworkBPModule.h>
 
-namespace retracer
+namespace neuroeditor
 {
 
   bool TraceModifier::modify( std::unordered_set< nsol::Section* >& sections_,

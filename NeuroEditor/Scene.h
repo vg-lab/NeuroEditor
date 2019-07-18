@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef __RETRACER_SCENE__
-#define __RETRACER_SCENE__
+#ifndef __NEUROEDITOR_SCENE__
+#define __NEUROEDITOR_SCENE__
 
 #include <nsol/nsol.h>
 #include <nlgeometry/nlgeometry.h>

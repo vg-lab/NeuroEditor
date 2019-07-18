@@ -26,7 +26,7 @@
 #include "Utils.h"
 #include <unordered_set>
 
-namespace retracer
+namespace neuroeditor
 {
 
   class TraceModifier

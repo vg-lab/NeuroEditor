@@ -22,7 +22,7 @@
 #include "imppsimpl.h"
 
 
-namespace retracer //Probably this code must be in nsol in the future
+namespace neuroeditor //Probably this code must be in nsol in the future
 {
 
   MorphologyStructure::MorphologyStructure(

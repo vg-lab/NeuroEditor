@@ -22,7 +22,7 @@
 
 #include "Tester.h"
 
-namespace retracer
+namespace neuroeditor
 {
 
   #define LIMIT 0.00001f

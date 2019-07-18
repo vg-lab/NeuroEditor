@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.2)
-project (ReTracer VERSION 0.0.2)
-set( ReTracer_VERSION_ABI 1 )
+project (NeuroEditor VERSION 0.0.2)
+set( NeuroEditor_VERSION_ABI 1 )
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
@@ -22,9 +22,9 @@ endif( )
 
 include( GitExternal )
 
-set( RETRACER_DESCRIPTION "ReTracer - Editor of neuro morphological tracings." )
-set( RETRACER_LICENSE LGPL )
-set( RETRACER_MAINTAINER "Juan Pedro Brito <juanpedro.brito@upm.es>" )
+set( NEUROEDITOR_DESCRIPTION "NeuroEditor - Editor of neuro morphological tracings." )
+set( NEUROEDITOR_LICENSE LGPL )
+set( NEUROEDITOR_MAINTAINER "Juan Pedro Brito <juanpedro.brito@upm.es>" )
 set( COMMON_PROJECT_DOMAIN es.gmrv )
 
 include( Common )
@@ -50,7 +50,7 @@ common_find_package(nsol REQUIRED)
 common_find_package(neurolots REQUIRED)
 common_find_package(Eigen3 REQUIRED SYSTEM)
 
-list(APPEND RETRACER_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT OpenGL
+list(APPEND NEUROEDITOR_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT OpenGL
   nsol neurolots Eigen3 )
 common_find_package_post( )
 
@@ -61,14 +61,14 @@ include_directories (
   ${PYTHON_INCLUDE_DIRS})
 
 if ( nsol_FOUND )
-  set(RETRACER_DEPENDENT_LIBRARIES nsol ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+  set(NEUROEDITOR_DEPENDENT_LIBRARIES nsol ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 endif( )
 
 ###Force Python3 compilation
 add_definitions( -DPYGEMS_USE_PYTHON3 )
-add_subdirectory( ReTracer )
+add_subdirectory( NeuroEditor )
 
-file(GLOB ICONS "ReTracer/icons/*")
+file(GLOB ICONS "NeuroEditor/icons/*")
 file(COPY ${ICONS} DESTINATION "${CMAKE_BINARY_DIR}/bin/icons")
 
 if ( ${USE_BOOST_PYTHON_VERSION} EQUAL 3 )
@@ -78,7 +78,7 @@ elseif()
 endif( )
 
 set(DOCS README.md LICENSE.txt)
-install(FILES ${DOCS} DESTINATION share/ReTracer COMPONENT dev)
+install(FILES ${DOCS} DESTINATION share/NeuroEditor COMPONENT dev)
 
 set(DOXYGEN_MAINPAGE_MD README.md)
 set(DOXYGEN_EXTRA_INPUT ${PROJECT_SOURCE_DIR}/README.md)

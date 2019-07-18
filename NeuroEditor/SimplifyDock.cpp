@@ -6,13 +6,13 @@
 #include <QLineEdit>
 
 ModifierWidget::ModifierWidget(
-  retracer::TraceModifier::TModifierMethod modifierMethod_ )
+  neuroeditor::TraceModifier::TModifierMethod modifierMethod_ )
   : modifierMethod( modifierMethod_ )
 {
-  modifierParams = retracer::TraceModifier::defaultParams( modifierMethod );
+  modifierParams = neuroeditor::TraceModifier::defaultParams( modifierMethod );
 
   std::string description;
-  description.append( retracer::TraceModifier::description( modifierMethod ));
+  description.append( neuroeditor::TraceModifier::description( modifierMethod ));
   description.append( ": " );
 
   QHBoxLayout* layout = new QHBoxLayout( );
@@ -33,7 +33,7 @@ ModifierWidget::ModifierWidget(
   connect( modifierRemove, SIGNAL( pressed( void )),
            this, SLOT( sendRemoveSignal( void )));
 
-  if ( modifierMethod == retracer::TraceModifier::CUSTOM )
+  if ( modifierMethod == neuroeditor::TraceModifier::CUSTOM )
   {
     _scriptPathLine = new QLineEdit(  );
     layout->addWidget( _scriptPathLine );
@@ -188,11 +188,11 @@ void SimplifyDock::init( Viewer* viewer_ )
 
 void SimplifyDock::addMethod( void )
 {
-  auto modifier = static_cast< retracer::TraceModifier::TModifierMethod >(
+  auto modifier = static_cast< neuroeditor::TraceModifier::TModifierMethod >(
     _methodSelector->currentData( ).toInt( ));
 
   bool included = false;
-  if ( modifier != retracer::TraceModifier::CUSTOM )
+  if ( modifier != neuroeditor::TraceModifier::CUSTOM )
   {
     for ( int i = 0; i < _methodsLayout->count( ); i++ )
     {
@@ -265,12 +265,12 @@ void SimplifyDock::clear( void )
 
 void SimplifyDock::_initMethodSelector( void )
 {
-  for ( int i = 0; i < retracer::TraceModifier::numModifiers( ); i++ )
+  for ( int i = 0; i < neuroeditor::TraceModifier::numModifiers( ); i++ )
   {
-    retracer::TraceModifier::TModifierMethod modifierMethod =
-      static_cast< retracer::TraceModifier::TModifierMethod >( i );
+    neuroeditor::TraceModifier::TModifierMethod modifierMethod =
+      static_cast< neuroeditor::TraceModifier::TModifierMethod >( i );
     std::string description =
-      retracer::TraceModifier::description( modifierMethod );
+      neuroeditor::TraceModifier::description( modifierMethod );
     _methodSelector->addItem( QString( description.c_str( )), QVariant( i ));
   }
 }
@@ -285,11 +285,11 @@ bool SimplifyDock::_apply( ModifierWidget* mWidget_,
     mWidget_->modifierParams[paramName] = paramValue;
   }
 
-  if ( mWidget_->modifierMethod != retracer::TraceModifier::CUSTOM )
-    return retracer::TraceModifier::modify( sections_, mWidget_->modifierMethod,
+  if ( mWidget_->modifierMethod != neuroeditor::TraceModifier::CUSTOM )
+    return neuroeditor::TraceModifier::modify( sections_, mWidget_->modifierMethod,
                                             mWidget_->modifierParams );
   else if ( !mWidget_->scriptPath.empty( ))
-    return retracer::TraceModifier::customModify(
+    return neuroeditor::TraceModifier::customModify(
       sections_, mWidget_->scriptPath );
   else
     std::cout << "empty path" << std::endl;

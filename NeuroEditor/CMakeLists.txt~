@@ -1,4 +1,3 @@
-
 set(UIDIR ${PROJECT_SOURCE_DIR}/ui)
 set(QRCDIR ${PROJECT_SOURCE_DIR}/qrc)
 
@@ -11,7 +10,7 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(RETRACER_HEADERS
+set(NEUROEDITOR_HEADERS
   glmSpline.hpp
   imppsimpl.h
   manipulatedFrameSetConstraint.h
@@ -23,7 +22,7 @@ set(RETRACER_HEADERS
   viewer.h
   TreeItem.h
   TreeModel.h
-  ReTracer.h
+  NeuroEditor.h
   ViewDock.h
   SelectDock.h
   EditDock.h
@@ -35,7 +34,7 @@ set(RETRACER_HEADERS
   ColorSelectionWidget.h
 )
 
-set(RETRACER_SOURCES
+set(NEUROEDITOR_SOURCES
   resources.qrc
   manipulatedFrameSetConstraint.cpp
   object.cpp
@@ -44,9 +43,9 @@ set(RETRACER_SOURCES
   viewer.cpp
   batchbuilder.ui
   Utils.cpp
-  ReTracer.ui
+  NeuroEditor.ui
   batchbuilder.cpp
-  ReTracer.cpp
+  NeuroEditor.cpp
   TreeItem.cpp
   TreeModel.cpp
   main.cpp
@@ -61,7 +60,7 @@ set(RETRACER_SOURCES
   ColorSelectionWidget.cpp
 )
 
-set(RETRACER_LINK_LIBRARIES
+set(NEUROEDITOR_LINK_LIBRARIES
   Qt5::Core
   Qt5::Xml
   Qt5::OpenGL
@@ -79,4 +78,4 @@ set(RETRACER_LINK_LIBRARIES
   PyGEmSManager
 )
 
-common_application(ReTracer GUI NOHELP)
+common_application(NeuroEditor GUI NOHELP)

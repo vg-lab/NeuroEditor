@@ -8,12 +8,12 @@
 #include <QPushButton>
 
 
-TestWidget::TestWidget( retracer::Tester::TTesterMethod testMethod_ )
+TestWidget::TestWidget( neuroeditor::Tester::TTesterMethod testMethod_ )
   : testMethod( testMethod_ )
 {
 
   std::string testerDescription;
-  testerDescription.append( retracer::Tester::description( testMethod ));
+  testerDescription.append( neuroeditor::Tester::description( testMethod ));
 
   QHBoxLayout* layout = new QHBoxLayout( );
   layout->setAlignment( Qt::AlignLeft );
@@ -38,14 +38,14 @@ TestWidget::TestWidget( retracer::Tester::TTesterMethod testMethod_ )
   connect( testRemove, SIGNAL( pressed( void )),
            this, SLOT( sendRemoveSignal( void )));
 
-  auto fixers = retracer::Tester::associatedFixers( testMethod );
+  auto fixers = neuroeditor::Tester::associatedFixers( testMethod );
   if ( fixers.size( ) > 0 )
   {
     fixerMethod = fixers[0];
     for ( auto fixer: fixers )
     {
       int intFixer = static_cast< int >( fixer );
-      std::string description = retracer::Fixer::description( fixer );
+      std::string description = neuroeditor::Fixer::description( fixer );
       _fixerCombo->addItem( QString( description.c_str( )),
                             QVariant( intFixer ));
     }
@@ -64,7 +64,7 @@ void TestWidget::sendRemoveSignal( void )
 
 void TestWidget::changeFixerMethod( int /*index_*/ )
 {
-  auto fixer = static_cast< retracer::Fixer::TFixerMethod >(
+  auto fixer = static_cast< neuroeditor::Fixer::TFixerMethod >(
     _fixerCombo->currentData( ).toInt( ));
   fixerMethod = fixer;
 }
@@ -193,7 +193,7 @@ void CorrectDock::init( Viewer* viewer_ )
 
 void CorrectDock::addTest( void )
 {
-  auto tester = static_cast< retracer::Tester::TTesterMethod >(
+  auto tester = static_cast< neuroeditor::Tester::TTesterMethod >(
     _testSelector->currentData( ).toInt( ));
 
   _addTest( tester );
@@ -203,7 +203,7 @@ void CorrectDock::addAllTests( void )
 {
   for ( int i = 0; i < _testSelector->count( ); i++ )
   {
-    auto tester = static_cast< retracer::Tester::TTesterMethod >(
+    auto tester = static_cast< neuroeditor::Tester::TTesterMethod >(
       _testSelector->itemData( i ).toInt( ));
     _addTest( tester );
   }
@@ -240,11 +240,11 @@ void CorrectDock::correct( void )
     TestWidget* test =
       static_cast< TestWidget* >( _testsLayout->itemAt( i )->widget( ));
     std::string testOut( "  -Test  ");
-    testOut.append( retracer::Tester::description( test->testMethod  ));
+    testOut.append( neuroeditor::Tester::description( test->testMethod  ));
     testOut.append( ": ");
     _outputLayout->addWidget( new QLabel( QString( testOut.c_str( ))));
 
-    auto testResult = retracer::Tester::test( _viewer->morphologyStructure( ),
+    auto testResult = neuroeditor::Tester::test( _viewer->morphologyStructure( ),
                                               test->testMethod );
 
     if ( testResult.size( ) == 0 )
@@ -255,7 +255,7 @@ void CorrectDock::correct( void )
     else
     {
       auto fixResult =
-      retracer::Fixer::fix( testResult, _viewer->morphologyStructure( ),
+      neuroeditor::Fixer::fix( testResult, _viewer->morphologyStructure( ),
                             test->fixerMethod );
 
       if ( fixResult.size( ) == 0 )
@@ -296,16 +296,16 @@ void CorrectDock::clearOutput( void )
 
 void CorrectDock::_initTestSelector( void )
 {
-  for ( int i = 0; i < retracer::Tester::numTesters( ); i++ )
+  for ( int i = 0; i < neuroeditor::Tester::numTesters( ); i++ )
   {
-    retracer::Tester::TTesterMethod testerMethod =
-      static_cast< retracer::Tester::TTesterMethod >( i );
-    std::string description = retracer::Tester::description( testerMethod );
+    neuroeditor::Tester::TTesterMethod testerMethod =
+      static_cast< neuroeditor::Tester::TTesterMethod >( i );
+    std::string description = neuroeditor::Tester::description( testerMethod );
     _testSelector->addItem( QString( description.c_str( )), QVariant( i ));
   }
 }
 
-void CorrectDock::_addTest( retracer::Tester::TTesterMethod testerMethod_ )
+void CorrectDock::_addTest( neuroeditor::Tester::TTesterMethod testerMethod_ )
 {
   bool included = false;
   for ( int i = 0; i < _testsLayout->count( ); i++ )

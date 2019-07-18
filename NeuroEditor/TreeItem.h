@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- * 
- * 
+ *
+ *
  */
-#ifndef RETRACER_TREEITEM_H
-#define RETRACER_TREEITEM_H
+#ifndef __NEUROEDITOR_TREEITEM__
+#define __NEUROEDITOR_TREEITEM__
 
 #include <QList>
 #include <QVariant>
@@ -47,4 +47,4 @@ class TreeItem
     TreeItem* _parentItem;
 };
 
-#endif //RETRACER_TREEITEM_H
+#endif //__NEUROEDITOR_TREEITEM__

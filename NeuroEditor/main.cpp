@@ -18,7 +18,7 @@
  *
  */
 
-#include "ReTracer.h"
+#include "NeuroEditor.h"
 #include <QApplication>
 #include <QErrorMessage>
 
@@ -33,7 +33,7 @@ int main ( int argc, char* argv[] )
 
   if ( setFormat( 4, 0, 16, 1 ))
   {
-    ReTracer w;
+    NeuroEditor w;
     w.show ( );
 
     if ( argc > 1 )

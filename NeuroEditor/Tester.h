@@ -26,7 +26,7 @@
 #include "Utils.h"
 #include "Fixer.h"
 
-namespace retracer
+namespace neuroeditor
 {
   class Tester
   {

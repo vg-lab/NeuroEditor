@@ -22,7 +22,7 @@
 
 #include "Fixer.h"
 
-namespace retracer
+namespace neuroeditor
 {
 
 

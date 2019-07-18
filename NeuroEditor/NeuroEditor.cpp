@@ -22,11 +22,11 @@
 #include <QDirIterator>
 #include <QMessageBox>
 
-#include "ReTracer.h"
+#include "NeuroEditor.h"
 
-ReTracer::ReTracer ( QWidget* parent )
+NeuroEditor::NeuroEditor ( QWidget* parent )
   : QMainWindow ( parent )
-  , _ui( new Ui::ReTracer )
+  , _ui( new Ui::NeuroEditor )
 {
 
   _ui->setupUi( this );
@@ -97,12 +97,12 @@ ReTracer::ReTracer ( QWidget* parent )
            this, SLOT( updateSimplifyDock( )));
 }
 
-ReTracer::~ReTracer ( )
+NeuroEditor::~NeuroEditor ( )
 {
   delete _viewer;
 }
 
-void ReTracer::init( void )
+void NeuroEditor::init( void )
 {
   _viewDock->init( _viewer );
   _selectDock->init( _viewer );
@@ -111,7 +111,7 @@ void ReTracer::init( void )
   _simplifyDock->init( _viewer );
 }
 
-void ReTracer::importMorphology ( )
+void NeuroEditor::importMorphology ( )
 {
   QString fileName = QFileDialog::getOpenFileName(
     this, tr( "Open File" ), "./", tr ( "NeuroMorpho(*.swc)" ));
@@ -121,7 +121,7 @@ void ReTracer::importMorphology ( )
   }
 }
 
-void ReTracer::exportMorphology ( )
+void NeuroEditor::exportMorphology ( )
 {
   QString fileName = QFileDialog::getSaveFileName ( this );
   if ( fileName.isEmpty ( ))
@@ -130,7 +130,7 @@ void ReTracer::exportMorphology ( )
     _viewer->exportMorphology ( fileName );
 }
 
-void ReTracer::updateViewDock( void )
+void NeuroEditor::updateViewDock( void )
 {
   if( _ui->actionView->isChecked( ))
     _viewDock->show( );
@@ -138,7 +138,7 @@ void ReTracer::updateViewDock( void )
     _viewDock->close( );
 }
 
-void ReTracer::updateSelectDock( void )
+void NeuroEditor::updateSelectDock( void )
 {
   if( _ui->actionSelect->isChecked( ))
     _selectDock->show( );
@@ -146,7 +146,7 @@ void ReTracer::updateSelectDock( void )
     _selectDock->close( );
 }
 
-void ReTracer::updateEditDock( void )
+void NeuroEditor::updateEditDock( void )
 {
   if( _ui->actionEdit->isChecked( ))
     _editDock->show( );
@@ -154,7 +154,7 @@ void ReTracer::updateEditDock( void )
     _editDock->close( );
 }
 
-void ReTracer::updateCorrectDock( void )
+void NeuroEditor::updateCorrectDock( void )
 {
   if( _ui->actionCorrect->isChecked( ))
     _correctDock->show( );
@@ -162,7 +162,7 @@ void ReTracer::updateCorrectDock( void )
     _correctDock->close( );
 }
 
-void ReTracer::updateSimplifyDock( void )
+void NeuroEditor::updateSimplifyDock( void )
 {
   if( _ui->actionSimplify->isChecked( ))
     _simplifyDock->show( );

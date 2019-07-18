@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef __RETRACER_UTILS__
-#define __RETRACER_UTILS__
+#ifndef __NEUROEDITOR_UTILS__
+#define __NEUROEDITOR_UTILS__
 
 #include <nsol/nsol.h>
 #include <glm/glm.hpp>
@@ -46,7 +46,7 @@ enum OBJECT_TYPE { NEURITE, SECTION, NODE, SOMA };
 typedef std::unordered_map< int, nsol::NodePtr > IdToNode;
 typedef std::unordered_map< nsol::NodePtr, nsol::SectionPtr > NodeToSection;
 
-namespace retracer //Probably this code must be in nsol in the future
+namespace neuroeditor //Probably this code must be in nsol in the future
 {
 
   class MorphologyStructure
@@ -76,4 +76,4 @@ namespace retracer //Probably this code must be in nsol in the future
     NodeToSection nodeToSection;
   };
 }
-#endif // __RETRACER_UTILS__
+#endif // __NEUROEDITOR_UTILS__

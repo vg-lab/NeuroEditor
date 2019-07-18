@@ -36,12 +36,12 @@ class ModifierWidget: public QWidget
 
 public:
 
-  ModifierWidget( retracer::TraceModifier::TModifierMethod modifierMethod_ );
+  ModifierWidget( neuroeditor::TraceModifier::TModifierMethod modifierMethod_ );
 
   ~ModifierWidget( void );
 
-  retracer::TraceModifier::TModifierMethod modifierMethod;
-  retracer::TraceModifier::TModifierParams modifierParams;
+  neuroeditor::TraceModifier::TModifierMethod modifierMethod;
+  neuroeditor::TraceModifier::TModifierParams modifierParams;
   std::vector< std::string > paramNames;
   std::vector< QLineEdit*> paramLineEdits;
   std::string scriptPath;
@@ -70,7 +70,6 @@ class SimplifyDock: public QDockWidget
   Q_OBJECT
 
 public:
-
   SimplifyDock( void );
 
   ~SimplifyDock( void );

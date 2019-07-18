@@ -37,12 +37,12 @@ class TestWidget: public QWidget
 
 public:
 
-  TestWidget( retracer::Tester::TTesterMethod testMethod_ );
+  TestWidget( neuroeditor::Tester::TTesterMethod testMethod_ );
 
   ~TestWidget( void );
 
-  retracer::Tester::TTesterMethod testMethod;
-  retracer::Fixer::TFixerMethod fixerMethod;
+  neuroeditor::Tester::TTesterMethod testMethod;
+  neuroeditor::Fixer::TFixerMethod fixerMethod;
 
 public Q_SLOTS:
 
@@ -130,7 +130,7 @@ protected:
 
   void _initTestSelector( void );
 
-  void _addTest( retracer::Tester::TTesterMethod testerMethod_ );
+  void _addTest( neuroeditor::Tester::TTesterMethod testerMethod_ );
 
   Viewer* _viewer;
 

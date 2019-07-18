@@ -20,8 +20,8 @@
  * 
  */
 
-#ifndef RETRACER_TREEMODEL_H
-#define RETRACER_TREEMODEL_H
+#ifndef __NEUROEDITOR_TREEMODEL__
+#define __NEUROEDITOR_TREEMODEL__
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -64,4 +64,4 @@ private:
   TreeItem* _rootItem;
 };
 
-#endif //RETRACER_TREEMODEL_H
+#endif //__NEUROEDITOR_TREEMODEL__
