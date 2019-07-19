@@ -129,19 +129,19 @@ void EditDock::init( Viewer* viewer_ )
   radiusHelp->setIcon( helpIcon );
   inspectorLayout->addWidget( radiusHelp, 4, 7 );
 
-  auto message = QString( "If only one node is selected this menu shows the position of the node and allows its edition, if several nodes are selected it shows the average of their positions and allows to edit the node positions taking this average position as reference." );
+  auto message = QString( "In case a single node is selected, its 3D coordinates (x, y, z) are shown and can be edited. In case of multiple selection, the average position (x, y, z) of the selected nodes is shown. Editing these values implies modifying the selected nodes coordinates accordingly in order to obtain this new average position." );
   _positionHelpBox = new QMessageBox(
     QMessageBox::Information, QString( "Help" ), message );
   QObject::connect( positionHelp, SIGNAL( pressed( )),
                     _positionHelpBox, SLOT( exec( )));
 
-  message = QString( "When several nodes are selected this menu allows to rotate each node taking as reference a pivot computed as the average of the node positions." );
+  message = QString( "In case multiple nodes are selected, the rotation is applied taking as reference a pivot computed as the average of the selected nodes positions." );
   _rotationHelpBox = new QMessageBox(
     QMessageBox::Information, QString( "Help" ), message );
   QObject::connect( rotationHelp, SIGNAL( pressed( )),
                     _rotationHelpBox, SLOT( exec( )));
 
-  message = QString( "If only one node is selected this menu shows the radius of the node and allows its edition, if several nodes are selected it shows the average of their radios and allows to edit the average radius, modifying the selected nodes radios keeping the ratio with the average radius." );
+  message = QString( "In case a single node is selected, this box shows its radius and allows its edition. In case of multiple selection, it shows the average radius of the selected nodes; editing this value implies modifying the selected nodes radii accordingly in order to obtain the new average radius." );
   _radiusHelpBox = new QMessageBox(
     QMessageBox::Information, QString( "Help" ), message );
   QObject::connect( radiusHelp, SIGNAL( pressed( )),

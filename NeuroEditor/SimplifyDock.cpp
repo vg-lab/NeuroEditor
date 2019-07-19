@@ -147,7 +147,7 @@ void SimplifyDock::init( Viewer* viewer_ )
   connect( methodAdder, SIGNAL( pressed( )),
            this, SLOT( addMethod( void )));
 
-  auto message = QString( "This menu provides several simplification and enhance methods to apply over the neuron morphology tracing. Each method has his own parameters that are editable by the user. Also there is a particular method named custom method that allows the run of python code to simplify or enhance the trancing.\nIf there are selected nodes the simplification will run over the morphological sections that are completely or partially selected, it there is no selected node the simplification will run over all the sections composing the tracing." );
+  auto message = QString( "This menu provides several simplification and enhancement methods to apply over the neuron morphological tracing. Each method has its own parameters that are configurable by the user. In addition, there is a particular method named “Custom method” that allows to run user-written python code to simplify or enhance the tracing.\nIn case there are selected nodes, the simplification will run over the morphological sections that are completely or partially selected; in case no node is selected, the simplification will run over all the sections composing the tracing." );
   _simplifyMethodHelpBox = new QMessageBox(
     QMessageBox::Information, QString( "Help" ), message );
   QObject::connect( simplifyMethodHelp, SIGNAL( pressed( )),
