@@ -91,6 +91,7 @@ public Q_SLOTS:
   void sendSelection( void )
   {
     _viewer->updateSelection( _selection );
+    _viewer->focusOnSelection( );
   }
 
 protected:

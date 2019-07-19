@@ -94,32 +94,12 @@ public:
   void saveState ( );
   void setAutoSaveState ( bool );
 
-  //Operations
-  void simplify ( std::map < std::string, float >& optParams,
-                  int objectId = -1, OBJECT_TYPE objectType =
-                  OBJECT_TYPE::NEURITE );
-
-  void interpolateRadius ( float pInitDendriteRadius,
-                           float pFinalDendriteRadius,
-                           float pInitApicalRadius,
-                           float pFinalApicalRadius );
   unsigned int getNumNeurites ( )
   {
     return modifiedMorphology->neurites ( ).size ( );
   }
-  void attachMorphology ( const nsol::NeuronMorphologyPtr& morphology_ );
-  void enhance (  std::map < std::string, float >& optParams,
-                  int objectId = -1, OBJECT_TYPE objectType =
-                  OBJECT_TYPE::NEURITE );
 
-  void setRadiusToSelectedNode ( float lRadius );
-  void brokeLink ( );
-  void setLink ( );
-
-  //Others
   void setModifiedAsOriginal ( );
-  void middlePosition ( );
-  void ExtractNeurite ( QString pFile );
 
   void selectDendrite ( unsigned int dendriteId_ );
   void selectSection ( unsigned int sectionId_ );
@@ -168,6 +148,8 @@ public Q_SLOTS://slots:
   void undoState( void );
 
   void reset ( );
+
+  void focusOnSelection( );
 
   void updateMorphology( void );
   void updateSelection( std::unordered_set< int > selection_ );

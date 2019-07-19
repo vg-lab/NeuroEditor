@@ -186,9 +186,8 @@ void CorrectDock::init( Viewer* viewer_ )
   scrollArea->setWidget( outputWidget );
   scrollArea->setMaximumHeight( 400 );
 
-
-  connect( _viewer, SIGNAL( morphologyChanged( )),
-           this, SLOT( clearOutput( )));
+  // connect( _viewer, SIGNAL( morphologyChanged( )),
+  //          this, SLOT( clearOutput( )));
 }
 
 void CorrectDock::addTest( void )
@@ -226,15 +225,9 @@ void CorrectDock::clearTests( void )
 void CorrectDock::correct( void )
 {
   clearOutput( );
+  _viewer->saveState( );
 
-  _outputLayout->addWidget(
-    new QLabel( QString( "number de neuritas\nnumber de tracing points\nnumber of sections" )));
-  auto hline = new QFrame( );
-  hline->setFrameShape( QFrame::HLine );
-  hline->setFrameShadow( QFrame::Sunken );
-  _outputLayout->addWidget( hline );
-
-
+  bool modified = false;
   for( int i = 0; i < _testsLayout->count( ); i++ )
   {
     TestWidget* test =
@@ -244,8 +237,8 @@ void CorrectDock::correct( void )
     testOut.append( ": ");
     _outputLayout->addWidget( new QLabel( QString( testOut.c_str( ))));
 
-    auto testResult = neuroeditor::Tester::test( _viewer->morphologyStructure( ),
-                                              test->testMethod );
+    auto testResult = neuroeditor::Tester::test(
+      _viewer->morphologyStructure( ), test->testMethod );
 
     if ( testResult.size( ) == 0 )
     {
@@ -256,10 +249,11 @@ void CorrectDock::correct( void )
     {
       auto fixResult =
       neuroeditor::Fixer::fix( testResult, _viewer->morphologyStructure( ),
-                            test->fixerMethod );
+                               test->fixerMethod );
 
       if ( fixResult.size( ) == 0 )
       {
+        modified = true;
         testOut = std::string( "\tCorrected: " +
                                std::to_string( testResult.size( )) +
                                " errors" );
@@ -282,6 +276,38 @@ void CorrectDock::correct( void )
       }
     }
   }
+
+  auto neurites = _viewer->morphologyStructure( )->morphology->neurites( );
+
+  unsigned int numNeurites = neurites.size( );
+  unsigned int numSections = 0;
+  unsigned int numTracingPoints = 0;
+
+  for ( auto neurite: neurites )
+  {
+    numSections += neurite->sections( ).size( );
+    numTracingPoints ++;
+    for ( auto section: neurite->sections( ))
+    {
+      numTracingPoints += section->nodes( ).size( ) - 1;
+    }
+  }
+
+  auto hline = new QFrame( );
+  hline->setFrameShape( QFrame::HLine );
+  hline->setFrameShadow( QFrame::Sunken );
+  _outputLayout->addWidget( hline );
+  std::string stats( "number neurites: " + std::to_string( numNeurites ) +
+                     "\nnumber sections: " + std::to_string( numSections ) +
+                     "\nnumber tracing points: " +
+                     std::to_string( numTracingPoints ));
+  _outputLayout->addWidget(
+    new QLabel( QString( stats.c_str( ))));
+
+  if ( modified )
+    _viewer->updateMorphology( );
+  else
+    _viewer->undoState( );
 
 
 }

@@ -35,9 +35,10 @@ namespace neuroeditor
     {
       NODE_TEXT_OUT = 0,
       SECTION_TEXT_OUT,
-      A,
-      B,
-      C
+      NEURITE_TEXT_OUT,
+      DELETE_NODE,
+      DISPLACE_TO_MIDDLE_EDGE,
+      DISPLACE_TO_SOMA_SURFACE
     } TFixerMethod;
 
     typedef std::vector< int > (*TFixerFunc)( int, MorphologyStructure* ) ;
@@ -59,6 +60,18 @@ namespace neuroeditor
       int index_, MorphologyStructure* morphoStructure_ );
 
     static std::vector< int > _sectionTextOut(
+      int index_, MorphologyStructure* morphoStructure_ );
+
+    static std::vector< int > _neuriteTextOut(
+      int index_, MorphologyStructure* morphoStructure_ );
+
+    static std::vector< int > _deleteNode(
+      int index_, MorphologyStructure* morphoStructure_ );
+
+    static std::vector< int > _displaceToMiddleSegment(
+      int index_, MorphologyStructure* morphoStructure_ );
+
+    static std::vector< int > _displaceToSomaSurface(
       int index_, MorphologyStructure* morphoStructure_ );
 
   };

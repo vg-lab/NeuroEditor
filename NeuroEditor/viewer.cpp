@@ -206,6 +206,49 @@ void Viewer::reset ( )
 
 }
 
+void Viewer::focusOnSelection( )
+{
+
+  if ( _selection.empty( ))
+    return;
+
+  Eigen::Vector3f center( 0.0f, 0.0f, 0.0f );
+
+  for ( auto id: _selection )
+  {
+    auto node = _morphoStructure->idToNode[id];
+    if ( node )
+      center += node->point( );
+  }
+  center /= _selection.size( );
+
+  float radius = 0.0f;
+
+  if ( _selection.size( ) == 1 )
+  {
+    radius = _morphoStructure->idToNode[*_selection.begin( )]->radius( );
+    radius *= 50.0f;
+  }
+  else
+  {
+    for ( auto id: _selection )
+    {
+      auto node = _morphoStructure->idToNode[id];
+      if ( node )
+        radius = std::max( radius, ( node->point( ) - center ).norm( ));
+    }
+    radius *= 5.0f;
+  }
+
+  auto pivot = Vec( center.x( ), center.y( ), center.z( ));
+  auto axis = camera( )->viewDirection( );
+
+  camera( )->setPivotPoint( pivot );
+  camera( )->setPosition( pivot - axis * radius );
+
+  updateGL( );
+}
+
 void Viewer::updateMorphology( void )
 {
   _morphoStructure->update( );
@@ -408,7 +451,8 @@ void Viewer::loadMorphology ( QString pSWCFile )
   if ( _morphoStructure )
     _morphoStructure->changeMorphology( modifiedMorphology );
   else
-    _morphoStructure = new neuroeditor::MorphologyStructure( modifiedMorphology );
+    _morphoStructure =
+      new neuroeditor::MorphologyStructure( modifiedMorphology );
 
   while ( !_stack.empty ( ))
   {
@@ -435,61 +479,11 @@ void Viewer::setModificationInterval ( unsigned int pIniValue,
   _procFinalValue = pFinalValue;
 }
 
-// void Viewer::simplify ( std::map < std::string, float > &optParams,
-//                         int objectId, OBJECT_TYPE objectType )
-// {
-//   saveState( );
-//   util->getInstance( )->Simplify( modifiedMorphology, optParams,
-//                                   objectId, objectType );
-//   _morphoStructure->update( );
-//   _scene->updateModifiedStructure( );
-//   delete _treeModel;
-//   _treeModel = new TreeModel( modifiedMorphology );
-//   Q_EMIT morphologyChanged( );
-//   _scene->updateModifiedMesh( );
-//   updateGL( );
-// }
-
 void Viewer::setModifiedAsOriginal ( )
 {
   originalMorphology = modifiedMorphology->clone ( );
   _scene->originalMorphology( originalMorphology );
   updateGL( );
-}
-
-void Viewer::interpolateRadius ( float pInitDendriteRadius,
-                                 float pFinalDendriteRadius,
-                                 float pInitApicalRadius,
-                                 float pFinalApicalRadius )
-{
-  if ( modifiedMorphology != nullptr )
-  {
-    saveState ( );
-    for ( auto neurite: modifiedMorphology->neurites ( ))
-    {
-      for ( auto section: neurite->sections ( ))
-      {
-        for ( auto node: section->nodes ( ))
-        {
-          //### It needs to be done using parametric values. 
-          node->radius (
-            pInitDendriteRadius + pFinalDendriteRadius + pInitApicalRadius
-              + pFinalApicalRadius );
-        }
-      }
-    }
-    _scene->updateModifiedStructure( );
-    _scene->updateModifiedMesh( );
-  }
-  updateGL ( );
-}
-
-void Viewer::attachMorphology ( const nsol::NeuronMorphologyPtr &morphology_ )
-{
-  //mNeuronGraphOptimizer->copyGraph();
-  //mNeuronGraphOptimizer->getOptimizedGraph().attachSWCImporter(pSWCImporter);
-  //### under development
-  ( void ) morphology_;
 }
 
 //Manipulated methods
@@ -785,134 +779,6 @@ void Viewer::drawSelectionRectangle ( ) const
   glEnd ( );
   glEnable ( GL_LIGHTING );
   stopScreenCoordinatesSystem ( );
-}
-
-
-void Viewer::middlePosition ( )
-{
-  // if ( selection_.size ( ) > 0 )
-  // {
-  //   nsol::Vec3f initialPoint ( 0, 0, 0 );
-  //   nsol::Vec3f endPoint ( 0, 0, 0 );
-
-  //   for ( QList < int >::const_iterator it = selection_.begin ( ),
-  //           end = selection_.end ( ); it != end; ++it )
-  //   {
-  //     for ( auto neurite: modifiedMorphology->neurites ( ))
-  //     {
-  //       for ( auto section: neurite->sections ( ))
-  //       {
-  //         nsol::Nodes *nodes = &section->nodes ( );
-  //         for ( unsigned int i = 0; i < nodes->size ( ); ++i )
-  //         {
-  //           if ((( *nodes )[i]->id ( ) + 1 ) == objects_[*it]->id )
-  //           {
-  //             initialPoint = ( *nodes )[i]->point ( );
-  //           }
-  //           //### Problem with non consecutive nodes.
-  //           if ( (i > 0) && ( (( *nodes )[i]->id ( ) - 1 ) == objects_[*it]->id ) )
-  //           {
-  //             endPoint = ( *nodes )[i]->point ( );
-  //             ( *nodes )[i - 1]->point (( initialPoint + endPoint )/2.0 );
-  //             Vec objPos (( *nodes )[i - 1]->point ( ).x ( ),
-  //                         ( *nodes )[i - 1]->point ( ).y ( ),
-  //                         ( *nodes )[i - 1]->point ( ).z ( )
-  //             );
-
-  //             objects_[*it]->frame.setPosition ( objPos );
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  //   if ( _autoSaveState ) saveState ( );
-  // }
-  // updateGL ( );
-}
-
-void Viewer::ExtractNeurite ( QString // pFile
-  )
-{
-//   if ( selection_.size ( ) > 0 )
-//   {
-//     for ( QList < int >::const_iterator it = selection_.begin ( ),
-//             end = selection_.end ( ); it != end; ++it )
-//     {
-// //			if ( (*it>2) && (!mOriginalGraph->getNodeInfo(*it).isTermination) )
-// //			{
-// //				mOriginalGraph->ExtractNeurite(*it, pFile.toStdString());
-// //			}
-//       ( void ) pFile;
-//     }
-//     updateGL ( );
-// }
-}
-
-// void Viewer::enhance ( std::map < std::string, float > &optParams,
-//                        int objectId, OBJECT_TYPE objectType )
-// {
-//   saveState( );
-//   util->getInstance()->Enhance ( modifiedMorphology, optParams, objectId, objectType );
-//   _scene->updateModifiedStructure( );
-//   _scene->updateModifiedMesh( );
-//   updateGL ( );
-// }
-
-void Viewer::setRadiusToSelectedNode ( float // lRadius
-  )
-{
-  // if ( selection_.size ( ) > 0 )
-  // {
-  //   //### Hard traverse
-  //   for ( auto neurite: modifiedMorphology->neurites ( ))
-  //   {
-  //     for ( auto section: neurite->sections ( ))
-  //     {
-  //       for ( auto node: section->nodes ( ))
-  //       {
-  //         for ( QList < int >::const_iterator it = selection_.begin ( ),
-  //                 end = selection_.end ( ); it != end; ++it )
-  //         {
-  //           if (( *it > 0 ) && ( node->id ( ) == objects_[*it]->id ))
-  //             node->radius ( lRadius );
-  //         }
-  //       }
-  //     }
-  //   }
-  //   if ( _autoSaveState ) saveState ( );
-  //   updateGL ( );
-  // }
-}
-
-void Viewer::brokeLink ( )
-{
-  // if ( selection_.size ( ) > 0 )
-  // {
-  //   for ( QList < int >::const_iterator it = selection_.begin ( ),
-  //           end = selection_.end ( ); it != end; ++it )
-  //   {
-  //     if (( *it >= 2 ))
-  //     {
-  //       //mOriginalGraph->brokeLink(*it);
-  //     }
-  //   }
-  //   updateGL ( );
-  // }
-}
-
-void Viewer::setLink ( )
-{
-  // if ( selection_.size ( ) == 2 )
-  // {
-  //   QList < int >::const_iterator it = selection_.begin ( );
-  //   ++it;
-  //   if (( *it >= 2 ))
-  //   {
-  //     //mOriginalGraph->setRadiusToSelectedNode(*it, lRadius);
-  //     //###mOriginalGraph->setLink(*it,*it2);
-  //   }
-  //   updateGL ( );
-  // }
 }
 
 void Viewer::updateSideBySide( bool sideBySideState_ )
