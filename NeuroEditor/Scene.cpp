@@ -39,7 +39,6 @@ Scene::Scene( unsigned int defaultFbo_, unsigned int width_,
   : _defaultFbo( defaultFbo_ )
   , _width( width_ )
   , _height( height_ )
-  , _alpha( 0.5f )
   , _originalMorphology( nullptr )
   , _modifiedMorphology( nullptr )
   , _originalStructure( nullptr )
@@ -51,6 +50,9 @@ Scene::Scene( unsigned int defaultFbo_, unsigned int width_,
   , _originalMeshColor( 0.0f, 0.2f, 0.2f )
   , _modifiedStructureColor( 0.5f, 0.5f, 1.0f )
   , _modifiedMeshColor( 0.2f, 0.2f, 0.0f )
+  , _originalMeshAlpha( 0.5f )
+  , _modifiedMeshAlpha( 0.5f )
+
 {
   _modifiedStructureSelectedColor =
     _convertToSelected( _modifiedStructureColor );
@@ -97,26 +99,35 @@ void Scene::render( bool renderModifiedStructure_, bool renderModifiedMesh_,
     _renderer->render( _originalStructure, model, _originalStructureColor );
   }
 
-  if ( _alpha < 1.0f )
-  {
-    _renderer->setUpTransparentTransparencyScene( );
-  }
-  if ( _originalMesh && renderOriginalMesh_ )
+
+  if (( _originalMeshAlpha >= 1.0f ) && _originalMesh && renderOriginalMesh_ )
   {
     _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
     _renderer->render( _originalMesh, model, _originalMeshColor );
   }
-  if ( _modifiedMesh && renderModifiedMesh_ )
+
+  if (( _modifiedMeshAlpha >= 1.0f ) && _modifiedMesh && renderModifiedMesh_ )
   {
     _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
     _renderer->render( _modifiedMesh, model, _modifiedMeshColor );
   }
 
+  _renderer->setUpTransparentTransparencyScene( );
 
-  if ( _alpha >= 1.0f )
+  if (( _originalMeshAlpha < 1.0f ) && _originalMesh && renderOriginalMesh_ )
   {
-    _renderer->setUpTransparentTransparencyScene( );
+    _renderer->alpha( ) = _originalMeshAlpha;
+    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->render( _originalMesh, model, _originalMeshColor );
   }
+
+  if (( _modifiedMeshAlpha < 1.0f ) && _modifiedMesh && renderModifiedMesh_ )
+  {
+    _renderer->alpha( ) = _modifiedMeshAlpha;
+    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->render( _modifiedMesh, model, _modifiedMeshColor );
+  }
+
   _renderer->composeTransparencyScene( _defaultFbo );
 
   glUseProgram( 0 );
@@ -128,12 +139,6 @@ void Scene::size( unsigned int width_, unsigned int height_ )
 {
   _width = width_;
   _height = height_;
-}
-
-void Scene::alpha( float alpha_ )
-{
-  _alpha = alpha_;
-  _renderer->alpha( ) = _alpha;
 }
 
 void Scene::viewMatrix( Eigen::Matrix4f& view_ )
@@ -265,6 +270,16 @@ void Scene::exportModifiedMesh( const std::string& path_ )
     nlgeometry::ObjWriter::writeMesh(
       _renderer->extract( _modifiedMesh, model ), path_ );
   }
+}
+
+void Scene::originalMeshAlpha( float alpha_ )
+{
+  _originalMeshAlpha = alpha_;
+}
+
+void Scene::modifiedMeshAlpha( float alpha_ )
+{
+  _modifiedMeshAlpha = alpha_;
 }
 
 void Scene::_updateSelectedNodes( void )

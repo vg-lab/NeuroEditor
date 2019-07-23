@@ -164,6 +164,9 @@ public Q_SLOTS://slots:
   void changeRotation( Eigen::Quaternionf& q_ );
   void changeAverageRadius( float radius_ );
 
+  void changeOriginalMeshAlpha( float alpha_ );
+  void changeModifiedMeshAlpha( float alpha_ );
+
 Q_SIGNALS:
 
   void morphologyChanged( void );

@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QSlider>
 #include "ColorSelectionWidget.h"
 
 ViewDock::ViewDock( void )
@@ -15,6 +16,7 @@ ViewDock::ViewDock( void )
 
 void ViewDock::init( Viewer* viewer_ )
 {
+  _viewer = viewer_;
   QFrame* hline;
 
   setSizePolicy( QSizePolicy::MinimumExpanding,
@@ -118,24 +120,39 @@ void ViewDock::init( Viewer* viewer_ )
   ColorSelectionWidget* backgroundColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( backgroundColor, 0, 1 );
 
-  renderOptionsLayout->addWidget( new QLabel( QString("Modified tracing color")),
-                                  1, 0);
+  renderOptionsLayout->addWidget(
+    new QLabel( QString("Modified tracing color")), 1, 0);
   ColorSelectionWidget* mtColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( mtColor, 1, 1 );
-  renderOptionsLayout->addWidget( new QLabel( QString("Modified 3D mesh color")),
-                                  1, 2);
+  renderOptionsLayout->addWidget(
+    new QLabel( QString("Modified 3D mesh color")), 1, 2);
   ColorSelectionWidget* mmColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( mmColor, 1, 3 );
-  renderOptionsLayout->addWidget( new QLabel( QString("Original tracing color")),
-                                  2, 0);
+  renderOptionsLayout->addWidget(
+    new QLabel( QString("Modified 3D mesh alpha" )), 2, 0 );
+  auto mAlphaSlider = new QSlider( Qt::Horizontal );
+  mAlphaSlider->setRange( 0, 100 );
+  mAlphaSlider->setValue( 50 );
+  renderOptionsLayout->addWidget( mAlphaSlider, 2, 2 );
+  renderOptionsLayout->addWidget(
+    new QLabel( QString("Original tracing color")), 3, 0);
   ColorSelectionWidget* otColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( otColor, 2, 1 );
-  renderOptionsLayout->addWidget( new QLabel( QString("Original 3D mesh color")),
-                                  2, 2);
+  renderOptionsLayout->addWidget( otColor, 3, 1 );
+  renderOptionsLayout->addWidget(
+    new QLabel( QString("Original 3D mesh color")), 3, 2);
   ColorSelectionWidget* omColor = new ColorSelectionWidget( this );
-  renderOptionsLayout->addWidget( omColor, 2, 3 );
+  renderOptionsLayout->addWidget( omColor, 3, 3 );
+  renderOptionsLayout->addWidget(
+    new QLabel( QString("Original 3D mesh alpha" )), 4, 0 );
+  auto oAlphaSlider = new QSlider( Qt::Horizontal );
+  oAlphaSlider->setRange( 0, 100 );
+  oAlphaSlider->setValue( 50 );
+  renderOptionsLayout->addWidget( oAlphaSlider, 4, 2 );
 
-
+  connect( mAlphaSlider, SIGNAL( valueChanged( int )),
+           this, SLOT( modifiedAlphaChanged( int )));
+  connect( oAlphaSlider, SIGNAL( valueChanged( int )),
+           this, SLOT( originalAlphaChanged( int )));
   connect( backgroundColor, SIGNAL( colorChanged( QColor )),
            viewer_, SLOT( changeBackgroundColor( QColor )));
   backgroundColor->color( QColor( 255, 255, 255 ));
@@ -188,4 +205,17 @@ void ViewDock::init( Viewer* viewer_ )
   connect( cameraRightButton, SIGNAL( clicked( )),
            viewer_, SLOT( setCameraViewRight( )));
 
+}
+
+
+void ViewDock::originalAlphaChanged( int value )
+{
+  float alpha = value * 0.01;
+  _viewer->changeOriginalMeshAlpha( alpha );
+}
+
+void ViewDock::modifiedAlphaChanged( int value )
+{
+  float alpha = value * 0.01;
+  _viewer->changeModifiedMeshAlpha( alpha );
 }

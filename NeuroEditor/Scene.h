@@ -72,6 +72,9 @@ public:
 
   void exportModifiedMesh( const std::string& path_  );
 
+  void originalMeshAlpha( float alpha_ );
+  void modifiedMeshAlpha( float alpha_ );
+
 protected:
 
   void _updateSelectedNodes( void );
@@ -82,8 +85,6 @@ protected:
   unsigned int _width;
 
   unsigned int _height;
-
-  float _alpha;
 
   nlrender::Renderer* _renderer;
 
@@ -111,6 +112,10 @@ protected:
   Eigen::Vector3f _modifiedStructureColor;
   Eigen::Vector3f _modifiedStructureSelectedColor;
   Eigen::Vector3f _modifiedMeshColor;
+
+  float _originalMeshAlpha;
+  float _modifiedMeshAlpha;
+
 };
 
 #endif

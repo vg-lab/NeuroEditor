@@ -38,6 +38,14 @@ public:
 
   void init( Viewer* viewer_ );
 
+public Q_SLOTS:
+
+  void originalAlphaChanged( int value );
+  void modifiedAlphaChanged( int value );
+
+protected:
+  Viewer* _viewer;
+
 };
 
 #endif

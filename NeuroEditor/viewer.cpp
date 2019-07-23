@@ -370,6 +370,18 @@ void Viewer::changeAverageRadius( float radius_ )
   }
 }
 
+void Viewer::changeOriginalMeshAlpha( float alpha_ )
+{
+  _scene->originalMeshAlpha( alpha_ );
+  updateGL( );
+}
+
+void Viewer::changeModifiedMeshAlpha( float alpha_ )
+{
+  _scene->modifiedMeshAlpha( alpha_ );
+  updateGL( );
+}
+
 QString Viewer::helpString ( ) const
 {
   QString text ( "<h2>NeuroEditor: A neuromophological tracings editor</h2>" );
@@ -430,46 +442,66 @@ void Viewer::renderMorphologyInfo ( nsol::NeuronMorphologyPtr morphology_,
 
 void Viewer::loadMorphology ( QString pSWCFile )
 {
-  if ( originalMorphology )
-    delete originalMorphology;
-  originalMorphology = swcReader.readMorphology ( pSWCFile.toStdString ( ));
-  if ( modifiedMorphology )
-    delete modifiedMorphology;
-  modifiedMorphology = originalMorphology->clone ( );
+  try{
 
-  _scene->originalMorphology( originalMorphology );
-  _scene->modifiedMorphology( modifiedMorphology );
+    auto loadedMorphology =
+      swcReader.readMorphology ( pSWCFile.toStdString ( ));
+    if ( !loadedMorphology )
+    {
+      std::cerr << "Error loading swc file: " << pSWCFile.toStdString( )
+              << std::endl;
+      return;
+    }
+    if ( originalMorphology )
+      delete originalMorphology;
+    originalMorphology = loadedMorphology;
+    if ( modifiedMorphology )
+      delete modifiedMorphology;
+    modifiedMorphology = originalMorphology->clone ( );
 
-  auto aabb = _scene->aabb( );
+    _scene->originalMorphology( originalMorphology );
+    _scene->modifiedMorphology( modifiedMorphology );
 
-  Vec center( aabb.center( ).x( ), aabb.center( ).y( ),
-              aabb.center( ).z( ));
-  setSceneCenter( center );
-  setSceneRadius( aabb.radius( ));
-  camera( )->fitSphere( center, aabb.radius( ));
+    auto aabb = _scene->aabb( );
 
-  if ( _morphoStructure )
-    _morphoStructure->changeMorphology( modifiedMorphology );
-  else
-    _morphoStructure =
-      new neuroeditor::MorphologyStructure( modifiedMorphology );
+    Vec center( aabb.center( ).x( ), aabb.center( ).y( ),
+                aabb.center( ).z( ));
+    setSceneCenter( center );
+    setSceneRadius( aabb.radius( ));
+    camera( )->fitSphere( center, aabb.radius( ));
 
-  while ( !_stack.empty ( ))
-  {
-    delete _stack.top( );
-    _stack.pop ( );
+    if ( _morphoStructure )
+      _morphoStructure->changeMorphology( modifiedMorphology );
+    else
+      _morphoStructure =
+        new neuroeditor::MorphologyStructure( modifiedMorphology );
+
+    while ( !_stack.empty ( ))
+    {
+      delete _stack.top( );
+      _stack.pop ( );
+    }
+
+    delete _treeModel;
+    _treeModel = new TreeModel( modifiedMorphology );
+    Q_EMIT morphologyChanged( );
+    updateGL ( );
   }
+  catch( ... )
+  {
+    std::cerr << "Error loading swc file: " << pSWCFile.toStdString( )
+              << std::endl;
+    delete originalMorphology;
+    delete modifiedMorphology;
 
-  delete _treeModel;
-  _treeModel = new TreeModel( modifiedMorphology );
-  Q_EMIT morphologyChanged( );
-  updateGL ( );
+  }
 }
 
 void Viewer::exportMorphology ( QString pFile )
 {
-  swcWriter.writeMorphology( pFile.toStdString( ).c_str( ),
-                             modifiedMorphology );
+  if ( modifiedMorphology )
+    swcWriter.writeMorphology( pFile.toStdString( ).c_str( ),
+                               modifiedMorphology );
 }
 
 void Viewer::exportMesh( QString pFile )
