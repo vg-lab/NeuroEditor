@@ -24,7 +24,7 @@ void SelectDock::init( Viewer* viewer_ )
   setFeatures( QDockWidget::DockWidgetClosable |
                QDockWidget::DockWidgetMovable |
                QDockWidget::DockWidgetFloatable );
-  setWindowTitle( QString( "Selection" ));
+  setWindowTitle( QString( "Select" ));
   setMinimumSize( 200, 200 );
 
   QWidget* mainWidget = new QWidget( );

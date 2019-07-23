@@ -472,6 +472,11 @@ void Viewer::exportMorphology ( QString pFile )
                              modifiedMorphology );
 }
 
+void Viewer::exportMesh( QString pFile )
+{
+  _scene->exportModifiedMesh( pFile.toStdString( ));
+}
+
 void Viewer::setModificationInterval ( unsigned int pIniValue,
                                        unsigned int pFinalValue )
 {

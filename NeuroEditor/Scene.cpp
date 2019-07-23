@@ -257,6 +257,16 @@ void Scene::changeModifiedMeshColor( const Eigen::Vector3f& color_ )
   _modifiedMeshColor = color_;
 }
 
+void Scene::exportModifiedMesh( const std::string& path_ )
+{
+  if ( _modifiedMesh )
+  {
+    auto model = Eigen::Matrix4f::Identity( );
+    nlgeometry::ObjWriter::writeMesh(
+      _renderer->extract( _modifiedMesh, model ), path_ );
+  }
+}
+
 void Scene::_updateSelectedNodes( void )
 {
   auto unselectedColor = _modifiedStructureColor;

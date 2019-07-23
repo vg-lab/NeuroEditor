@@ -14,8 +14,6 @@
       <string>NeuroEditor</string>
     </property>
 
-
-
     <widget class="QWidget" name="centralWidget"/>
     <widget class="QMenuBar" name="menuBar">
       <property name="geometry">
@@ -43,7 +41,6 @@
         <addaction name="actionSelect"/>
         <addaction name="actionEdit"/>
         <addaction name="actionCorrect"/>
-        <addaction name="actionSimplify"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -77,7 +74,6 @@
       <addaction name="actionSelect"/>
       <addaction name="actionEdit"/>
       <addaction name="actionCorrect"/>
-      <addaction name="actionSimplify"/>
     </widget>
 
 
@@ -169,17 +165,6 @@
       </property>
       <property name="toolTip">
         <string>Correct</string>
-      </property>
-    </action>
-    <action name="actionSimplify">
-      <property name="checkable">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>Simplify</string>
-      </property>
-      <property name="toolTip">
-        <string>Simplifycation</string>
       </property>
     </action>
     <action name="actionAbout">

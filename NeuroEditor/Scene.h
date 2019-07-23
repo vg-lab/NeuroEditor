@@ -70,6 +70,8 @@ public:
   void changeModifiedStructureColor( const Eigen::Vector3f& color_ );
   void changeModifiedMeshColor( const Eigen::Vector3f& color_ );
 
+  void exportModifiedMesh( const std::string& path_  );
+
 protected:
 
   void _updateSelectedNodes( void );

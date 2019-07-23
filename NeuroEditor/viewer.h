@@ -74,6 +74,7 @@ public:
   void setupViewer ( );
   void loadMorphology ( QString pSWCFile );
   void exportMorphology ( QString pFile );
+  void exportMesh( QString pFile );
 
   //Shows
   void setMorphologyInfoToShow ( short int morphologyInfoToShow_ )
@@ -118,6 +119,7 @@ public:
   {
     return _selection;
   }
+
 
 public Q_SLOTS://slots:
 

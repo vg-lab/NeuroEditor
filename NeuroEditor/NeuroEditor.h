@@ -27,7 +27,6 @@
 #include "SelectDock.h"
 #include "EditDock.h"
 #include "CorrectDock.h"
-#include "SimplifyDock.h"
 
 namespace Ui
 {
@@ -54,14 +53,14 @@ public:
 
 private Q_SLOTS:
 
-  void importMorphology ( );
-  void exportMorphology ( );
+  void importMorphology( void );
+  void exportMorphology( void );
+  void exportMesh( void );
 
   void updateViewDock( void );
   void updateSelectDock( void );
   void updateEditDock( void );
   void updateCorrectDock( void );
-  void updateSimplifyDock( void );
 
 private:
 
@@ -73,7 +72,6 @@ private:
   SelectDock* _selectDock;
   EditDock* _editDock;
   CorrectDock* _correctDock;
-  SimplifyDock* _simplifyDock;
 
 };
 

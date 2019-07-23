@@ -24,6 +24,11 @@
 #include <QDockWidget>
 #include <QObject>
 #include <QTreeView>
+#include <QGridLayout>
+#include <QComboBox>
+#include <QToolButton>
+#include <QPushButton>
+#include <QMessageBox>
 #include "viewer.h"
 
 class SelectDock: public QDockWidget

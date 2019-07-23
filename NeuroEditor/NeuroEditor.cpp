@@ -44,10 +44,8 @@ NeuroEditor::NeuroEditor ( QWidget* parent )
                     this, SLOT( importMorphology( )));
   QObject::connect( _ui->actionSaveSWCFile, SIGNAL( triggered( )),
                     this, SLOT( exportMorphology( )));
-  // QObject::connect( _ui->exportMesh, SIGNAL( triggered( )),
-  //                   this, SLOT( ));
-  // QObject::connect( _ui->exportMorphometricMeasures, SIGNAL( triggered( )),
-  //                   this, SLOT( ));
+  QObject::connect( _ui->actionExportMesh, SIGNAL( triggered( )),
+                    this, SLOT( exportMesh( )));
   QObject::connect( _ui->actionUndo, SIGNAL( triggered( )),
                     _viewer, SLOT( undoState( )));
 
@@ -86,15 +84,6 @@ NeuroEditor::NeuroEditor ( QWidget* parent )
            _ui->actionCorrect, SLOT( setChecked( bool )));
   connect( _ui->actionCorrect, SIGNAL( triggered( )),
            this, SLOT( updateCorrectDock( )));
-
-  _simplifyDock = new SimplifyDock( );
-  this->addDockWidget( Qt::DockWidgetAreas::enum_type::RightDockWidgetArea,
-                       _simplifyDock, Qt::Vertical );
-  _simplifyDock->close( );
-  connect( _simplifyDock->toggleViewAction( ), SIGNAL( toggled( bool )),
-           _ui->actionSimplify, SLOT( setChecked( bool )));
-  connect( _ui->actionSimplify, SIGNAL( triggered( )),
-           this, SLOT( updateSimplifyDock( )));
 }
 
 NeuroEditor::~NeuroEditor ( )
@@ -108,13 +97,12 @@ void NeuroEditor::init( void )
   _selectDock->init( _viewer );
   _editDock->init( _viewer );
   _correctDock->init( _viewer );
-  _simplifyDock->init( _viewer );
 }
 
 void NeuroEditor::importMorphology ( )
 {
   QString fileName = QFileDialog::getOpenFileName(
-    this, tr( "Open File" ), "./", tr ( "NeuroMorpho(*.swc)" ));
+    this, tr( "Open Tracing" ), "./", tr ( ".swc(*.swc)" ));
   if ( !fileName.isNull ( ))
   {
     _viewer->loadMorphology( fileName );
@@ -123,11 +111,22 @@ void NeuroEditor::importMorphology ( )
 
 void NeuroEditor::exportMorphology ( )
 {
-  QString fileName = QFileDialog::getSaveFileName ( this );
-  if ( fileName.isEmpty ( ))
+  QString fileName= QFileDialog::getSaveFileName(
+    this, tr( "Save Tracing" ), "./", tr ( ".swc(*.swc)" ) );
+  if ( fileName.isEmpty( ))
     return;
   else
-    _viewer->exportMorphology ( fileName );
+    _viewer->exportMorphology( fileName );
+}
+
+void NeuroEditor::exportMesh( )
+{
+  QString fileName = QFileDialog::getSaveFileName(
+    this, tr( "Save Mesh" ), "./", tr ( ".obj(*.obj)" ) );
+  if ( fileName.isEmpty( ))
+    return;
+  else
+    _viewer->exportMesh( fileName );
 }
 
 void NeuroEditor::updateViewDock( void )
@@ -160,12 +159,4 @@ void NeuroEditor::updateCorrectDock( void )
     _correctDock->show( );
   else
     _correctDock->close( );
-}
-
-void NeuroEditor::updateSimplifyDock( void )
-{
-  if( _ui->actionSimplify->isChecked( ))
-    _simplifyDock->show( );
-  else
-    _simplifyDock->close( );
 }

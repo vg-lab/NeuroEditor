@@ -24,8 +24,48 @@
 #include <QDockWidget>
 #include <QObject>
 #include <QTreeView>
+#include <QGridLayout>
+#include <QComboBox>
+#include <QToolButton>
+#include <QPushButton>
 #include <QMessageBox>
 #include "viewer.h"
+#include "TraceModifier.h"
+
+class ModifierWidget: public QWidget
+{
+  Q_OBJECT
+
+public:
+
+  ModifierWidget( neuroeditor::TraceModifier::TModifierMethod modifierMethod_ );
+
+  ~ModifierWidget( void );
+
+  neuroeditor::TraceModifier::TModifierMethod modifierMethod;
+  neuroeditor::TraceModifier::TModifierParams modifierParams;
+  std::vector< std::string > paramNames;
+  std::vector< QLineEdit*> paramLineEdits;
+  std::string scriptPath;
+
+public Q_SLOTS:
+
+  void loadPath( void );
+
+  void apply( void );
+
+  void sendRemoveSignal( void );
+
+Q_SIGNALS:
+  void modifierToDelete( QWidget* widget_ );
+
+  void applyModifier( ModifierWidget* modifierWidget_ );
+
+protected:
+
+  QLineEdit* _scriptPathLine;
+
+};
 
 class EditDock: public QDockWidget
 {
@@ -51,11 +91,24 @@ public Q_SLOTS:
   void applyRotation( void );
   void applyRadius( void );
 
+  void addMethod( void );
+  void removeMethod( QWidget* modifierWidget_ );
+  void apply( ModifierWidget* modifierWidget_ );
+  void applyAll( void );
+  void clear( void );
+
 protected:
 
   Eigen::Quaternionf _rotToQuat( Eigen::Vector3f& rot_ );
 
   Eigen::Vector3f _quatToRot( Eigen::Quaternionf& q_ );
+
+  void _initMethodSelector( void );
+
+  bool _apply( ModifierWidget* modifierWidget_,
+               std::unordered_set< nsol::Section* >& sections_ );
+
+  std::unordered_set< nsol::Section* > _uniqueSections( void );
 
   Viewer* _viewer;
 
@@ -74,6 +127,11 @@ protected:
   QMessageBox* _positionHelpBox;
   QMessageBox* _rotationHelpBox;
   QMessageBox* _radiusHelpBox;
+
+  QComboBox* _methodSelector;
+  QVBoxLayout* _methodsLayout;
+  QMessageBox* _simplifyMethodHelpBox;
+
 
 };
 

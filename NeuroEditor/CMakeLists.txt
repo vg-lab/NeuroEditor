@@ -26,7 +26,6 @@ set(NEUROEDITOR_HEADERS
   SelectDock.h
   EditDock.h
   CorrectDock.h
-  SimplifyDock.h
   Fixer.h
   Tester.h
   TraceModifier.h
@@ -50,7 +49,6 @@ set(NEUROEDITOR_SOURCES
   SelectDock.cpp
   EditDock.cpp
   CorrectDock.cpp
-  SimplifyDock.cpp
   Fixer.cpp
   Tester.cpp
   TraceModifier.cpp

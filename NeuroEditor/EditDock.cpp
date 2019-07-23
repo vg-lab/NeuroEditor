@@ -2,12 +2,98 @@
 
 #include <QVBoxLayout>
 #include <QGroupBox>
+#include <QScrollArea>
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
 #include <QToolButton>
 
 #include <iostream>
+
+ModifierWidget::ModifierWidget(
+  neuroeditor::TraceModifier::TModifierMethod modifierMethod_ )
+  : modifierMethod( modifierMethod_ )
+{
+  modifierParams = neuroeditor::TraceModifier::defaultParams( modifierMethod );
+
+  std::string description;
+  description.append( neuroeditor::TraceModifier::description( modifierMethod ));
+  description.append( ": " );
+
+  QHBoxLayout* layout = new QHBoxLayout( );
+  // layout->setAlignment( Qt::AlignLeft );
+  setLayout( layout );
+  layout->addWidget( new QLabel( QString( description.c_str( ))));
+
+  QPushButton* applyButton = new QPushButton( QString( "apply" ));
+  layout->addWidget( applyButton );
+  applyButton->setMaximumSize( QSize( 50, 40 ));
+  connect( applyButton, SIGNAL( pressed( )),
+             this, SLOT( apply( )));
+  QIcon removeIcon( QString::fromUtf8(":/icons/list-remove.png"));
+  auto modifierRemove = new QToolButton( );
+  modifierRemove->setIcon( removeIcon );
+  layout->addWidget( modifierRemove );
+
+  connect( modifierRemove, SIGNAL( pressed( void )),
+           this, SLOT( sendRemoveSignal( void )));
+
+  if ( modifierMethod == neuroeditor::TraceModifier::CUSTOM )
+  {
+    _scriptPathLine = new QLineEdit(  );
+    layout->addWidget( _scriptPathLine );
+    QPushButton* loadButton = new QPushButton( QString( "load" ));
+    layout->addWidget( loadButton );
+    loadButton->setMaximumSize( QSize( 50, 40 ));
+    connect( loadButton, SIGNAL( pressed()),
+             this, SLOT( loadPath( )));
+  }
+  else
+  {
+    auto validator = new QDoubleValidator( );
+    for ( auto param: modifierParams )
+    {
+      auto vline = new QFrame( );
+      vline->setFrameShape( QFrame::VLine );
+      vline->setFrameShadow( QFrame::Sunken );
+      layout->addWidget( vline );
+      std::string paramName( param.first + ":" );
+      layout->addWidget( new QLabel( QString( paramName.c_str( ))));
+      auto paramLineEdit = new QLineEdit( QString::number( param.second ));
+      paramLineEdit->setValidator( validator );
+      // paramLineEdit->setFixedWidth( 50 );
+      layout->addWidget( paramLineEdit );
+      paramNames.push_back( param.first );
+      paramLineEdits.push_back( paramLineEdit );
+    }
+  }
+}
+
+ModifierWidget::~ModifierWidget( void )
+{
+  modifierParams.clear( );
+  paramNames.clear( );
+  paramLineEdits.clear( );
+}
+
+void ModifierWidget::loadPath( void )
+{
+  QString path = QFileDialog::getOpenFileName(
+    this, tr( "Open File" ), "./", tr ( ".py(*.py)" ));
+  scriptPath = path.toStdString( );
+  _scriptPathLine->setText( path );
+}
+
+void ModifierWidget::apply( void )
+{
+  Q_EMIT applyModifier( this );
+}
+
+void ModifierWidget::sendRemoveSignal( void )
+{
+  Q_EMIT modifierToDelete( (QWidget*)this );
+}
+
 
 EditDock::EditDock( void )
   : QDockWidget( )
@@ -30,7 +116,7 @@ void EditDock::init( Viewer* viewer_ )
 
   QWidget* mainWidget = new QWidget( );
   setWidget( mainWidget );
-  mainWidget->setMaximumHeight( 300 );
+  mainWidget->setMaximumHeight( 500 );
   QVBoxLayout* editDockLayout = new QVBoxLayout( );
   editDockLayout->setAlignment( Qt::AlignTop );
   mainWidget->setLayout( editDockLayout );
@@ -146,6 +232,68 @@ void EditDock::init( Viewer* viewer_ )
     QMessageBox::Information, QString( "Help" ), message );
   QObject::connect( radiusHelp, SIGNAL( pressed( )),
                     _radiusHelpBox, SLOT( exec( )));
+
+  QGroupBox* simplifyGroup = new QGroupBox( );
+  QVBoxLayout* simplifyGroupLayout = new QVBoxLayout( );
+  simplifyGroup->setLayout( simplifyGroupLayout );
+  editDockLayout->addWidget( simplifyGroup );
+
+  QWidget* selectorWidget = new QWidget( );
+  simplifyGroupLayout->addWidget( selectorWidget );
+  auto selectorLayout = new QGridLayout( );
+  selectorWidget->setLayout( selectorLayout );
+
+
+  selectorLayout->addWidget( new QLabel( QString( "Select method: " )), 0, 0 );
+  _methodSelector = new QComboBox( );
+  selectorLayout->addWidget( new QLabel( QString( "Select method: " )), 0, 0 );
+  selectorLayout->addWidget( _methodSelector, 0, 1 );
+  QIcon addIcon( QString::fromUtf8( ":/icons/list-add.png" ));
+  auto methodAdder = new QToolButton( );
+  methodAdder->setIcon( addIcon );
+  selectorLayout->addWidget( methodAdder, 0, 2 );
+  auto simplifyMethodHelp = new QToolButton( );
+  simplifyMethodHelp->setIcon( helpIcon );
+  selectorLayout->addWidget( simplifyMethodHelp, 0, 3 );
+
+  connect( methodAdder, SIGNAL( pressed( )),
+           this, SLOT( addMethod( void )));
+
+  message = QString( "This menu provides several simplification and enhancement methods to apply over the neuron morphological tracing. Each method has its own parameters that are configurable by the user. In addition, there is a particular method named “Custom method” that allows to run user-written python code to simplify or enhance the tracing.\nIn case there are selected nodes, the simplification will run over the morphological sections that are completely or partially selected; in case no node is selected, the simplification will run over all the sections composing the tracing." );
+  _simplifyMethodHelpBox = new QMessageBox(
+    QMessageBox::Information, QString( "Help" ), message );
+  QObject::connect( simplifyMethodHelp, SIGNAL( pressed( )),
+                    _simplifyMethodHelpBox, SLOT( exec( )));
+
+  _initMethodSelector( );
+
+  QScrollArea* scrollArea = new QScrollArea( );
+  scrollArea->setWidgetResizable( true );
+  simplifyGroupLayout->addWidget( scrollArea );
+  QWidget* methodWidget = new QWidget( );
+  _methodsLayout = new QVBoxLayout( );
+  _methodsLayout->setAlignment( Qt::AlignTop );
+  methodWidget->setLayout( _methodsLayout );
+
+  scrollArea->setWidget( methodWidget );
+  scrollArea->setMaximumHeight( 300 );
+
+  QWidget* buttonsWidget = new QWidget( );
+  QHBoxLayout* buttonsLayout = new QHBoxLayout( );
+  buttonsWidget->setLayout( buttonsLayout );
+  simplifyGroupLayout->addWidget( buttonsWidget );
+
+  QPushButton* clearButton = new QPushButton( QString( "clear all" ));
+  clearButton->setMaximumSize( QSize( 80, 40 ));
+  buttonsLayout->addWidget( clearButton );
+  QPushButton* applyAllButton = new QPushButton( QString( "apply all" ));
+  applyAllButton->setMaximumSize( QSize( 80, 40 ));
+  buttonsLayout->addWidget( applyAllButton );
+
+  connect( clearButton, SIGNAL( pressed( )),
+           this, SLOT( clear( )));
+  connect( applyAllButton, SIGNAL( pressed( )),
+           this, SLOT( applyAll( )));
 }
 
 void EditDock::resetInspector( void )
@@ -231,6 +379,84 @@ void EditDock::applyRadius( void )
     resetInspector( );
 }
 
+
+void EditDock::addMethod( void )
+{
+  auto modifier = static_cast< neuroeditor::TraceModifier::TModifierMethod >(
+    _methodSelector->currentData( ).toInt( ));
+
+  bool included = false;
+  if ( modifier != neuroeditor::TraceModifier::CUSTOM )
+  {
+    for ( int i = 0; i < _methodsLayout->count( ); i++ )
+    {
+      ModifierWidget* modifierWidget =
+        static_cast< ModifierWidget* >( _methodsLayout->itemAt( i )->widget( ));
+      if ( modifierWidget->modifierMethod == modifier )
+      {
+        included = true;
+        break;
+      }
+    }
+  }
+
+  if ( included )
+    return;
+
+  auto modifierWidget = new ModifierWidget( modifier );
+  _methodsLayout->addWidget( modifierWidget );
+  connect( modifierWidget, SIGNAL( modifierToDelete( QWidget* )),
+           this, SLOT( removeMethod( QWidget* )));
+  connect( modifierWidget, SIGNAL( applyModifier( ModifierWidget* )),
+           this, SLOT( apply( ModifierWidget* )));
+
+}
+
+void EditDock::removeMethod( QWidget* modifierWidget_ )
+{
+  _methodsLayout->removeWidget( modifierWidget_ );
+  delete modifierWidget_;
+}
+
+void EditDock::apply( ModifierWidget* modifierWidget_ )
+{
+  _viewer->saveState( );
+  auto sections = _uniqueSections( );
+  if ( _apply( modifierWidget_, sections ))
+    _viewer->updateMorphology( );
+  else
+    _viewer->undoState( );
+}
+
+void EditDock::applyAll( void )
+{
+  if ( _methodsLayout->count( ) == 0 )
+    return;
+  _viewer->saveState( );
+  auto sections = _uniqueSections( );
+  bool modified = false;
+  for( int i = 0; i < _methodsLayout->count( ); i++ )
+  {
+    ModifierWidget* modifierWidget =
+      static_cast< ModifierWidget* >( _methodsLayout->itemAt( i )->widget( ));
+    modified = modified | _apply( modifierWidget, sections );
+  }
+
+  if ( modified )
+    _viewer->updateMorphology( );
+  else
+    _viewer->undoState( );
+
+}
+
+void EditDock::clear( void )
+{
+  while( _methodsLayout->count( ) > 0 )
+  {
+    delete _methodsLayout->takeAt( 0 )->widget( );
+  }
+}
+
 Eigen::Quaternionf EditDock::_rotToQuat( Eigen::Vector3f& rot_ )
 {
   Eigen::Quaternionf q;
@@ -244,4 +470,58 @@ Eigen::Quaternionf EditDock::_rotToQuat( Eigen::Vector3f& rot_ )
 Eigen::Vector3f EditDock::_quatToRot( Eigen::Quaternionf& q_ )
 {
   return q_.toRotationMatrix( ).eulerAngles( 0, 1, 2 );
+}
+
+
+void EditDock::_initMethodSelector( void )
+{
+  for ( int i = 0; i < neuroeditor::TraceModifier::numModifiers( ); i++ )
+  {
+    neuroeditor::TraceModifier::TModifierMethod modifierMethod =
+      static_cast< neuroeditor::TraceModifier::TModifierMethod >( i );
+    std::string description =
+      neuroeditor::TraceModifier::description( modifierMethod );
+    _methodSelector->addItem( QString( description.c_str( )), QVariant( i ));
+  }
+}
+
+bool EditDock::_apply( ModifierWidget* mWidget_,
+                           std::unordered_set< nsol::Section* >& sections_ )
+{
+  for ( unsigned int i = 0; i < mWidget_->modifierParams.size( ); i++ )
+  {
+    std::string paramName = mWidget_->paramNames[i];
+    float paramValue = mWidget_->paramLineEdits[i]->text( ).toFloat( );
+    mWidget_->modifierParams[paramName] = paramValue;
+  }
+
+  if ( mWidget_->modifierMethod != neuroeditor::TraceModifier::CUSTOM )
+    return neuroeditor::TraceModifier::modify( sections_, mWidget_->modifierMethod,
+                                            mWidget_->modifierParams );
+  else if ( !mWidget_->scriptPath.empty( ))
+    return neuroeditor::TraceModifier::customModify(
+      sections_, mWidget_->scriptPath );
+  else
+    std::cout << "empty path" << std::endl;
+  return false;
+}
+
+std::unordered_set< nsol::Section* > EditDock::_uniqueSections( void )
+{
+  auto morphoSt = _viewer->morphologyStructure( );
+  auto selection = _viewer->selection( );
+  std::unordered_set< nsol::Section* > uSections;
+  for ( auto id: selection )
+  {
+    auto section = morphoSt->nodeToSection[morphoSt->idToNode[id]];
+    if ( section != morphoSt->somaSection )
+      uSections.insert( section );
+  }
+  if ( uSections.size( ) == 0 )
+  {
+    for ( auto neurite: morphoSt->morphology->neurites( ))
+      for( auto section: neurite->sections( ))
+        uSections.insert( section );
+  }
+  return uSections;
 }
