@@ -446,7 +446,6 @@ void EditDock::applyAll( void )
     _viewer->updateMorphology( );
   else
     _viewer->undoState( );
-
 }
 
 void EditDock::clear( void )
@@ -501,8 +500,6 @@ bool EditDock::_apply( ModifierWidget* mWidget_,
   else if ( !mWidget_->scriptPath.empty( ))
     return neuroeditor::TraceModifier::customModify(
       sections_, mWidget_->scriptPath );
-  else
-    std::cout << "empty path" << std::endl;
   return false;
 }
 

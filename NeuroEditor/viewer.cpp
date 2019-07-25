@@ -86,9 +86,9 @@ void Viewer::init ( )
   nlrender::Config::init( );
   _scene = new Scene( 0, 600, 600 );
 
-  camera ( )->setZClippingCoefficient ( 500.0 );
-  camera ( )->setZNearCoefficient ( 0.0001 );
-
+  camera ( )->setZClippingCoefficient ( 500.0f );
+  camera ( )->setZNearCoefficient ( 0.000001f );
+  
   setBackgroundColor ( QColor ( 255, 255, 255 ));
 
   setManipulatedFrame ( new ManipulatedFrame ( ));
@@ -253,10 +253,10 @@ void Viewer::updateMorphology( void )
 {
   _morphoStructure->update( );
   _scene->updateModifiedStructure( );
+  _scene->updateModifiedMesh( );
   delete _treeModel;
   _treeModel = new TreeModel( modifiedMorphology );
   Q_EMIT morphologyChanged( );
-  _scene->updateModifiedMesh( );
   checkSelection( );
   _changeSelection( );
   Q_EMIT updateSelectionSignal( _selection );

@@ -30,6 +30,8 @@
 namespace neuroeditor
 {
 
+  #define LIMIT 0.00001f
+
   bool TraceModifier::modify( std::unordered_set< nsol::Section* >& sections_,
                               TModifierMethod modifierMethod_,
                               TModifierParams modifierParams_ )
@@ -96,7 +98,7 @@ namespace neuroeditor
   {
     NSPGManager::PyGEmSManager *  manager= nullptr;
     bool modified = false;
-
+    int currentId = _maximumId( sections_ );
     try
     {
 
@@ -141,15 +143,80 @@ namespace neuroeditor
           bp::list result =
             manager->extractListFromModule( outVarName.c_str( ));
           int n = bp::len( result );
-          std::vector < float > simplVecNodes;
-          for ( int t = 0; t < n; ++t )
+
+
+          if ( n < 2 )
+            return false;
+
+          nsol::Nodes previousNodes = section->nodes( );
+          section->nodes( ).clear( );
+          nsol::Nodes& newNodes = section->nodes( );
+
+          auto node = previousNodes[0];
+          StrategyParams val = bp::extract<StrategyParams>( result[0] );
+          auto pos = val.node.position;
+          node->point( Eigen::Vector3f( pos.x, pos.y, pos.z ));
+          int id = val.node.id;
+          if ( id == 0 )
           {
-            StrategyParams val = bp::extract<StrategyParams>(result[t] );
-            simplVecNodes.push_back(val.node.position.x);
-            simplVecNodes.push_back(val.node.position.y);
-            simplVecNodes.push_back(val.node.position.z);
+            currentId++;
+            id = currentId;
           }
-          modified = modified | _fillSection( section, simplVecNodes );
+          node->id( id );
+          node->radius( val.node.radius );
+          newNodes.push_back( node );
+
+          for ( int t = 1; t < n-1; ++t )
+          {
+            val = bp::extract<StrategyParams>( result[t] );
+            pos = val.node.position;
+            Eigen::Vector3f position( pos.x, pos.y, pos.z );
+            id = val.node.id;
+            if ( id == 0 )
+            {
+              currentId++;
+              id = currentId;
+            }
+            node = new nsol::Node( position, id, val.node.radius );
+            newNodes.push_back( node );
+          }
+
+          node = previousNodes[previousNodes.size( )-1];
+          val = bp::extract<StrategyParams>( result[n-1] );
+          pos = val.node.position;
+          node->point( Eigen::Vector3f( pos.x, pos.y, pos.z ));
+          id = val.node.id;
+          if ( id == 0 )
+          {
+            currentId++;
+            id = currentId;
+          }
+          node->id( id );
+          node->radius( val.node.radius );
+          newNodes.push_back( node );
+
+          bool secModified = false;
+          if ( previousNodes.size( ) == newNodes.size( ))
+          {
+            for ( unsigned int i = 0; i < previousNodes.size( ); i++ )
+            {
+              auto preNode = previousNodes[i];
+              auto newNode = newNodes[i];
+              secModified =
+                (( preNode->point( ) - newNode->point( )).norm( ) > LIMIT ) |
+                ( preNode->id( ) != newNode->id( )) |
+                ( preNode->radius( ) != newNode->radius( ));
+
+              if ( secModified )
+                break;
+            }
+          }
+          else
+            secModified = true;
+
+          previousNodes.clear( );
+
+          modified |= secModified;
         }
         delete manager;
       }
