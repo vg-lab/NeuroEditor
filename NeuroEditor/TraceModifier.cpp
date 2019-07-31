@@ -265,10 +265,10 @@ namespace neuroeditor
       description = std::string( "Douglas-Peucker Mod simplification" );
       break;
     case LINEAR_ENHANCE:
-      description = std::string( "Linear enhance" );
+      description = std::string( "Linear refinement" );
       break;
     case SPLINE_ENHANCE:
-      description = std::string( "Spline enhance" );
+      description = std::string( "Quadratic refinement" );
       break;
     case CUSTOM:
       description = std::string( "Custom method" );
