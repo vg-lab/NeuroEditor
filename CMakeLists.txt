@@ -36,46 +36,32 @@ common_find_package(Qt5Core SYSTEM REQUIRED)
 common_find_package(Qt5Gui SYSTEM REQUIRED)
 common_find_package(OpenGL SYSTEM REQUIRED)
 common_find_package(GLUT SYSTEM REQUIRED)
-# common_find_package(OpenMesh SYSTEM REQUIRED)
 common_find_package(QGLViewer SYSTEM REQUIRED)
-
-common_find_package(PythonInterp REQUIRED)
-common_find_package(PythonLibs REQUIRED)
-common_find_package(Boost REQUIRED COMPONENTS
-  date_time filesystem iostreams program_options regex system unit_test_framework
-  python${USE_BOOST_PYTHON_VERSION})
-
-common_find_package(PyGEmS REQUIRED)
 common_find_package(nsol REQUIRED)
 common_find_package(neurolots REQUIRED)
 common_find_package(Eigen3 REQUIRED SYSTEM)
+common_find_package(pygems REQUIRED)
 
 list(APPEND NEUROEDITOR_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT OpenGL
-  nsol neurolots Eigen3 )
+  nsol neurolots Eigen3 pygems)
+
 common_find_package_post( )
 
-# Needed because this var is set by PythonLibs and does
-# not follow conventional naming
-include_directories (
-  ${Boost_INCLUDE_DIRS}
-  ${PYTHON_INCLUDE_DIRS})
 
-if ( nsol_FOUND )
-  set(NEUROEDITOR_DEPENDENT_LIBRARIES nsol ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-endif( )
+include_directories(
+        ${Boost_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_DIRS}
+)
 
-###Force Python3 compilation
 add_definitions( -DPYGEMS_USE_PYTHON3 )
 add_subdirectory( NeuroEditor )
 
 file(GLOB ICONS "NeuroEditor/icons/*")
 file(COPY ${ICONS} DESTINATION "${CMAKE_BINARY_DIR}/bin/icons")
 
-if ( ${USE_BOOST_PYTHON_VERSION} EQUAL 3 )
-  file(COPY "${COMMON_SOURCE_DIR}/PyGEmS/scripts/Strategies-Python3.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
-elseif()
-  file(COPY "${COMMON_SOURCE_DIR}/PyGEmS/scripts/Strategies-Python2.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
-endif( )
+#if ( ${USE_BOOST_PYTHON_VERSION} EQUAL 3 )
+#  file(COPY "${COMMON_SOURCE_DIR}/PyGEmS/scripts/Strategies-Python3.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+#endif( )
 
 set(DOCS README.md LICENSE.txt)
 install(FILES ${DOCS} DESTINATION share/NeuroEditor COMPONENT dev)

@@ -78,10 +78,13 @@ ModifierWidget::~ModifierWidget( void )
 
 void ModifierWidget::loadPath( void )
 {
-  QString path = QFileDialog::getOpenFileName(
-    this, tr( "Open File" ), "./", tr ( ".py(*.py)" ));
-  scriptPath = path.toStdString( );
-  _scriptPathLine->setText( path );
+    QString path = QFileDialog::getOpenFileName(
+            this, tr( "Open File" ), "./", tr ( ".py(*.py)" ));
+    if ( !path.isNull( ))
+    {
+        scriptPath = path.toStdString();
+        _scriptPathLine->setText(path);
+    }
 }
 
 void ModifierWidget::apply( void )

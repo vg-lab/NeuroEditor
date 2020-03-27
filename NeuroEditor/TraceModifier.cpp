@@ -22,218 +22,195 @@
 
 #include "TraceModifier.h"
 #include "imppsimpl.h"
+#include <QErrorMessage>
+#include <QMessageBox>
 
-#include <PyGEmS/StrategyParams.h>
-#include <PyGEmSManager/PyGEmSManager.h>
-#include <PyGEmSManager/StrategyFrameworkBPModule.h>
+#include <pygems/pygems.h>
 
 namespace neuroeditor
 {
 
-  #define LIMIT 0.00001f
+    #define LIMIT 0.00001f
 
-  bool TraceModifier::modify( std::unordered_set< nsol::Section* >& sections_,
-                              TModifierMethod modifierMethod_,
-                              TModifierParams modifierParams_ )
-  {
-
-    TSimplifierFunc simplifierFunc = nullptr;
-    TEnhacerFunc enhacerFunc = nullptr;
-
-    switch( modifierMethod_ )
-    {
-    case NTHPOINT:
-      simplifierFunc = TraceModifier::_nthpoint;
-      break;
-    case RADIAL:
-      simplifierFunc = TraceModifier::_radial;
-      break;
-    case PERPDIST:
-      simplifierFunc = TraceModifier::_perpdist;
-      break;
-    case REUMANNWITKAM:
-      simplifierFunc = TraceModifier::_reumannWitkam;
-      break;
-    case OPHEIN:
-      simplifierFunc = TraceModifier::_ophein;
-      break;
-    case LANG:
-      simplifierFunc = TraceModifier::_lang;
-      break;
-    case DOUGLASPEUCKER:
-      simplifierFunc = TraceModifier::_douglasPeucker;
-      break;
-    case DOUGLASPEUCKERMOD:
-      simplifierFunc = TraceModifier::_douglasPeuckerMod;
-      break;
-    case LINEAR_ENHANCE:
-      enhacerFunc = TraceModifier::_linearEnhance;
-      break;
-    case SPLINE_ENHANCE:
-      enhacerFunc = TraceModifier::_splineEnhance;
-      break;
-    case CUSTOM:
-      break;
-    }
-
-    bool modified = false;
-
-    if ( simplifierFunc )
-      for ( auto section: sections_ )
-        modified = modified | simplifierFunc( section, modifierParams_ );
-    else if ( enhacerFunc )
+    bool TraceModifier::modify( std::unordered_set< nsol::Section* >& sections_,
+            TModifierMethod modifierMethod_,
+            TModifierParams modifierParams_ )
     {
 
-      int currentId = _maximumId( sections_ );
-      for ( auto section: sections_ )
-        modified =
-          modified | enhacerFunc( section, modifierParams_, currentId );
-    }
-    return modified;
-  }
+        TSimplifierFunc simplifierFunc = nullptr;
+        TEnhacerFunc enhacerFunc = nullptr;
 
-  bool TraceModifier::customModify(
-    std::unordered_set< nsol::Section* >& sections_,
-    const std::string& scriptPath_ )
-  {
-    NSPGManager::PyGEmSManager *  manager= nullptr;
-    bool modified = false;
-    int currentId = _maximumId( sections_ );
-    try
-    {
-
-#ifdef PYGEMS_USE_PYTHON3
-      manager = new NSPGManager::PyGEmSManager(
-        "StrFramework", &NSPGManager::PyInit_StrFramework, "Strategies",
-        scriptPath_.c_str( ));
-#else
-      std::cerr << "python 3 not supported" << std::endl;
-#endif
-
-      if ( manager )
-      {
-        bp::object strategy = manager->getModuleAttrib( "Strategy" );
-
-        for ( auto section: sections_ )
+        switch( modifierMethod_ )
         {
-          Container container;
-          StrategyParams params;
-
-          for ( auto node: section->nodes( ))
-          {
-            params.stringParam =
-              "MyTest_" + std::to_string( params.intParam ) + "_";
-            params.intParam++;
-            params.node.id = node->id ( );
-            params.node.position.x = node->point ( ).x ( );
-            params.node.position.y = node->point ( ).y ( );
-            params.node.position.z = node->point ( ).z ( );
-            params.node.radius = node->radius ( );
-            container.addElement( params );
-          }
-          bp::object _strategy = strategy( container );
-          std::string inVarName = "inNodes";
-          std::string outVarName = "outNodes";
-
-          manager->getModule( ).attr( inVarName.c_str( )) =
-            container.getContainer( );
-          manager->getModule( ).attr( outVarName.c_str( )) = 0;
-
-          _strategy.attr( "method" )( );
-          bp::list result =
-            manager->extractListFromModule( outVarName.c_str( ));
-          int n = bp::len( result );
-
-
-          if ( n < 2 )
-            return false;
-
-          nsol::Nodes previousNodes = section->nodes( );
-          section->nodes( ).clear( );
-          nsol::Nodes& newNodes = section->nodes( );
-
-          auto node = previousNodes[0];
-          StrategyParams val = bp::extract<StrategyParams>( result[0] );
-          auto pos = val.node.position;
-          node->point( Eigen::Vector3f( pos.x, pos.y, pos.z ));
-          int id = val.node.id;
-          if ( id == 0 )
-          {
-            currentId++;
-            id = currentId;
-          }
-          node->id( id );
-          node->radius( val.node.radius );
-          newNodes.push_back( node );
-
-          for ( int t = 1; t < n-1; ++t )
-          {
-            val = bp::extract<StrategyParams>( result[t] );
-            pos = val.node.position;
-            Eigen::Vector3f position( pos.x, pos.y, pos.z );
-            id = val.node.id;
-            if ( id == 0 )
-            {
-              currentId++;
-              id = currentId;
-            }
-            node = new nsol::Node( position, id, val.node.radius );
-            newNodes.push_back( node );
-          }
-
-          node = previousNodes[previousNodes.size( )-1];
-          val = bp::extract<StrategyParams>( result[n-1] );
-          pos = val.node.position;
-          node->point( Eigen::Vector3f( pos.x, pos.y, pos.z ));
-          id = val.node.id;
-          if ( id == 0 )
-          {
-            currentId++;
-            id = currentId;
-          }
-          node->id( id );
-          node->radius( val.node.radius );
-          newNodes.push_back( node );
-
-          bool secModified = false;
-          if ( previousNodes.size( ) == newNodes.size( ))
-          {
-            for ( unsigned int i = 0; i < previousNodes.size( ); i++ )
-            {
-              auto preNode = previousNodes[i];
-              auto newNode = newNodes[i];
-              secModified =
-                (( preNode->point( ) - newNode->point( )).norm( ) > LIMIT ) |
-                ( preNode->id( ) != newNode->id( )) |
-                ( preNode->radius( ) != newNode->radius( ));
-
-              if ( secModified )
+            case NTHPOINT:
+                simplifierFunc = TraceModifier::_nthpoint;
                 break;
-            }
-          }
-          else
-            secModified = true;
-
-          previousNodes.clear( );
-
-          modified |= secModified;
+            case RADIAL:
+                simplifierFunc = TraceModifier::_radial;
+                break;
+            case PERPDIST:
+                simplifierFunc = TraceModifier::_perpdist;
+                break;
+            case REUMANNWITKAM:
+                simplifierFunc = TraceModifier::_reumannWitkam;
+                break;
+            case OPHEIN:
+                simplifierFunc = TraceModifier::_ophein;
+                break;
+            case LANG:
+                simplifierFunc = TraceModifier::_lang;
+                break;
+            case DOUGLASPEUCKER:
+                simplifierFunc = TraceModifier::_douglasPeucker;
+                break;
+            case DOUGLASPEUCKERMOD:
+                simplifierFunc = TraceModifier::_douglasPeuckerMod;
+                break;
+            case LINEAR_ENHANCE:
+                enhacerFunc = TraceModifier::_linearEnhance;
+                break;
+            case SPLINE_ENHANCE:
+                enhacerFunc = TraceModifier::_splineEnhance;
+                break;
+            case CUSTOM:
+                break;
         }
-        delete manager;
-      }
+
+        bool modified = false;
+
+        if ( simplifierFunc )
+        for ( auto section: sections_ )
+            modified = modified | simplifierFunc( section, modifierParams_ );
+        else if ( enhacerFunc )
+        {
+
+            int currentId = _maximumId( sections_ );
+            for ( auto section: sections_ )
+                modified =
+                    modified | enhacerFunc( section, modifierParams_, currentId );
+        }
+        return modified;
     }
-    catch( const bp::error_already_set& )
+
+    bool TraceModifier::customModify(
+        std::unordered_set< nsol::Section* >& sections_,
+        const std::string& scriptPath_ )
     {
-      std::cerr << "Python code error" << std::endl;
-      modified = false;
+        bool modified = false;
+        int currentId = _maximumId(sections_);
+        try
+        {
+            pygems::CorrectionManager manager(scriptPath_);
+
+            for (auto section: sections_)
+            {
+                pygems::TracingNodes nodes;
+                pygems::TracingNode *newTNode;
+
+                for (auto node: section->nodes())
+                {
+                    newTNode = new pygems::TracingNode(node->id(),
+                            node->radius(), pygems::Point3D( node->point().x(),
+                                    node->point().y(), node->point().z()));
+                    nodes.push_back(*newTNode);
+                }
+                auto outNodes = manager.correct(nodes);
+
+                if (outNodes.size() < 2)
+                    return false;
+
+                nsol::Nodes previousNodes = section->nodes();
+                section->nodes().clear();
+                nsol::Nodes &newNodes = section->nodes();
+
+
+                //First section node
+                auto node = previousNodes[0];
+                auto oNode = outNodes[0];
+                node->point( Eigen::Vector3f( oNode.position.x,
+                        oNode.position.y, oNode.position.z ));
+                node->radius( oNode.radius );
+                int id = oNode.id;
+                if (id == 0)
+                {
+                    ++currentId;
+                    id = currentId;
+                }
+                node->id( id );
+                newNodes.push_back( node );
+
+                //Middle nodes
+                for ( unsigned int t = 1; t < outNodes.size() - 1; ++t)
+                {
+                    oNode = outNodes[t];
+                    Eigen::Vector3f position( oNode.position.x,
+                            oNode.position.y, oNode.position.z);
+                    id = oNode.id;
+                    if (id == 0)
+                    {
+                        currentId++;
+                        id = currentId;
+                    }
+                    node = new nsol::Node(position, id, oNode.radius);
+                    newNodes.push_back( node );
+                }
+
+                //Last section node
+                node = previousNodes[previousNodes.size() - 1];
+                oNode = outNodes[outNodes.size() - 1];
+                node->point( Eigen::Vector3f( oNode.position.x,
+                        oNode.position.y, oNode.position.z ));
+                node->radius( oNode.radius );
+                id = oNode.id;
+                if (id == 0)
+                {
+                    ++currentId;
+                    id = currentId;
+                }
+                node->id( id );
+                newNodes.push_back( node );
+
+                bool secModified = false;
+                if (previousNodes.size() == newNodes.size())
+                {
+                    for (unsigned int i = 0; i < previousNodes.size(); i++)
+                    {
+                        auto preNode = previousNodes[i];
+                        auto newNode = newNodes[i];
+                        secModified =
+                                ((preNode->point() - newNode->point()).norm() >
+                                LIMIT) |
+                                (preNode->id() != newNode->id()) |
+                                (preNode->radius() != newNode->radius());
+
+                        if (secModified)
+                            break;
+                    }
+                }
+                else
+                  secModified = true;
+
+                previousNodes.clear();
+                modified |= secModified;
+            }
+        }
+        catch( const boost::python::error_already_set& )
+        {
+            std::string errMessage("Python execution error:\n");
+            errMessage.append(pygems::CorrectionManager::pyErrorMessage());
+
+            QMessageBox errorBox;
+            errorBox.setText(errMessage.c_str());
+            errorBox.exec();
+        }
+        catch( ... )
+        {
+            std::cerr << "Error loading script: " <<  scriptPath_.c_str( )
+                    << std::endl;
+            modified = false;
+        }
+        return modified;
     }
-    catch( ... )
-    {
-      std::cerr << "Error loading script: " <<  scriptPath_.c_str( )
-                << std::endl;
-      modified = false;
-    }
-    return modified;
-  }
 
   std::string TraceModifier::description( TModifierMethod modifierMethod_ )
   {

@@ -1,40 +1,27 @@
 stages:
  - build
 
-Ubuntu-OptionalDeps:
- stage: build
- script:
-  - date
-  - hostname
-  - uname -a
-  - export CMAKE_EXTRA_TARGETS="install"
-  - export BUILD_OPTIONALS_SUBPROJECTS=1
-  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
-  - export BUILD_GENERATOR="Ninja"
-  - bash .gitlab-ci.sh
- tags:
-  - ubuntu
-
 Ubuntu-Subproject:
  stage: build
  script:
   - date
   - hostname
   - uname -a
+  - module load libQGLViewer-2.6.3
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - export BUILD_GENERATOR="Ninja"
   - bash .gitlab-ci.sh
- except:
-  - master
  tags:
   - ubuntu
 
 Win7:
  stage: build
  script:
-  - call %ENVFILESDIR%\Boost-1.64-vs14-x64.bat
+  - call %ENVFILESDIR%\glut.bat
+  - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
   - call %ENVFILESDIR%\Qt-5.9-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
+  - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
