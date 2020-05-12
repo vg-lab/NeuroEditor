@@ -1,8 +1,8 @@
-/*
- * Copyright (c) 2018 CCS/UPM - GMRV/URJC.
+/**
+ * Copyright (c) 2020 CCS/GMRV/URJC/UPM.
  *
- * Authors: Juan Pedro Brito Méndez <juanpedro.brito@upm.es>
- * Based on Qt TreeItem example from Qt SDK.
+ * Authors: Juan P. Brito <juanpedro.brito@upm.es>
+ *          Juan Jose Garcia Cantero <juanjose.garcia@urjc.es>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -17,8 +17,8 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
  */
+
 #ifndef __NEUROEDITOR_TREEITEM__
 #define __NEUROEDITOR_TREEITEM__
 

@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2014-2019 GMRV/URJC.
+ * Copyright (c) 2020 CCS/GMRV/URJC/UPM.
  *
- * Authors: Juan Jose Garcia Cantero <juanjose.garcia@urjc.es>
- *
- * This file is part of nsol <https://github.com/gmrvvis/nsol>
+ * Authors: Juan P. Brito <juanpedro.brito@upm.es>
+ *          Juan Jose Garcia Cantero <juanjose.garcia@urjc.es>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
