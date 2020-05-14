@@ -36,14 +36,15 @@ common_find_package(Qt5Core SYSTEM REQUIRED)
 common_find_package(Qt5Gui SYSTEM REQUIRED)
 common_find_package(OpenGL SYSTEM REQUIRED)
 common_find_package(GLUT SYSTEM REQUIRED)
+common_find_package(GLEW SYSTEM REQUIRED)
 common_find_package(QGLViewer SYSTEM REQUIRED)
 common_find_package(nsol REQUIRED)
 common_find_package(neurolots REQUIRED)
 common_find_package(Eigen3 REQUIRED SYSTEM)
 common_find_package(pygems REQUIRED)
 
-list(APPEND NEUROEDITOR_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT OpenGL
-  nsol neurolots Eigen3 pygems)
+list(APPEND NEUROEDITOR_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT GLEW
+        OpenGL nsol neurolots Eigen3 pygems)
 
 common_find_package_post( )
 

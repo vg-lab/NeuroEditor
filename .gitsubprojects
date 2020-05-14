@@ -1,4 +1,4 @@
 #-*- mode: cmake -*-
-git_subproject(nsol git@gitlab.gmrv.es:nsviz/nsol.git 465a9147)
-git_subproject(neurolots git@gitlab.gmrv.es:nsviz/neurolots.git dd76a24f)
-git_subproject(pygems git@gitlab.gmrv.es:gmrv/pygems.git 4e65f56c)
+git_subproject(nsol https://github.com/gmrvvis/nsol.git 465a9147)
+git_subproject(neurolots https://github.com/gmrvvis/neurolots.git dd76a24f)
+git_subproject(pygems https://github.com/gmrvvis/pygems.git 5a3f9093)

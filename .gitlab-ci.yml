@@ -18,6 +18,7 @@ Win7:
  stage: build
  script:
   - call %ENVFILESDIR%\glut.bat
+  - call %ENVFILESDIR%\glew-2.1.0.bat
   - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
   - call %ENVFILESDIR%\Qt-5.9-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat

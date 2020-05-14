@@ -23,7 +23,6 @@
 #define __NEUROEDITOR_UTILS__
 
 #include <nsol/nsol.h>
-#include <glm/glm.hpp>
 #include "glmSpline.hpp"
 #include "object.h"
 

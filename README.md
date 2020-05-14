@@ -26,6 +26,7 @@ Description
 ```bash
 git clone https://github.com/gmrvvis/NeuroEditor
 mkdir NeuroEditor/build && cd NeuroEditor/build
+git submodule update --init
 cmake .. -DCLONE_SUBPROJECTS=ON
 make
 ```
