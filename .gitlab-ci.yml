@@ -1,0 +1,34 @@
+stages:
+ - build
+
+Ubuntu-Subproject:
+ stage: build
+ script:
+  - date
+  - hostname
+  - uname -a
+  - module load libQGLViewer-2.6.3
+  - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - export BUILD_GENERATOR="Ninja"
+  - bash .gitlab-ci.sh
+ tags:
+  - ubuntu
+
+Win7:
+ stage: build
+ script:
+  - set WINAPP_REPO=gitlabci@gmrv.es:apps
+  - set WINEXES=NeuroEditor
+  - call %ENVFILESDIR%\glut.bat
+  - call %ENVFILESDIR%\glew-2.1.0.bat
+  - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
+  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
+  - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - set BUILD_GENERATOR=Visual Studio 14 Win64
+  - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
+  - set PATH=%PATH%;"c:\Program Files\Git\bin"
+  - bash.exe --login .gitlab-ci.sh
+ tags:
+  - win7
