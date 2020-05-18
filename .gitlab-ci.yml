@@ -8,6 +8,7 @@ Ubuntu-Subproject:
   - hostname
   - uname -a
   - module load libQGLViewer-2.6.3
+  - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - export BUILD_GENERATOR="Ninja"
   - bash .gitlab-ci.sh
@@ -17,6 +18,8 @@ Ubuntu-Subproject:
 Win7:
  stage: build
  script:
+  - set WINAPP_REPO=gitlabci@gmrv.es:apps
+  - set WINEXES=NeuroEditor
   - call %ENVFILESDIR%\glut.bat
   - call %ENVFILESDIR%\glew-2.1.0.bat
   - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
