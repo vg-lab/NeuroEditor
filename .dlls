@@ -1,0 +1,5 @@
+${GLUT_BIN_DIR}/freeglut.dll
+${GLEW_BIN_DIR}/glew32.dll
+${BOOST_LIBRARYDIR}/boost_python38-vc140-mt-x64-1_72.dll
+${QTDIR}/bin/Qt5Xml.dll
+${QGLVIEWER_BIN_DIR}/QGLViewer2.dll
