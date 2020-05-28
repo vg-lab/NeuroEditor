@@ -8,18 +8,58 @@ Ubuntu-Subproject:
   - hostname
   - uname -a
   - module load libQGLViewer-2.6.3
+  - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - export BUILD_GENERATOR="Ninja"
+  - bash .gitlab-ci.sh
+ except:
+  - tags
+ tags:
+  - ubuntu
+
+Ubuntu-Subproject-tags:
+ stage: build
+ script:
+  - date
+  - hostname
+  - uname -a
+  - module load libQGLViewer-2.6.3
+  - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
   - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - export BUILD_GENERATOR="Ninja"
   - bash .gitlab-ci.sh
+ only:
+  - tags
+ except:
+  - branches
+ tags:
+  - ubuntu
+
+Ubuntu-Subproject-master:
+ stage: build
+ script:
+  - date
+  - hostname
+  - uname -a
+  - module load libQGLViewer-2.6.3
+  - export APP_VERSION="git-master"
+  - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
+  - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - export BUILD_GENERATOR="Ninja"
+  - export GITHUB_MIRROR_URL="git@github.com:gmrvvis/NeuroEditor"
+  - bash .gitlab-ci.sh
+ only:
+  - master
+ except:
+  - tags
  tags:
   - ubuntu
 
 Win7:
  stage: build
  script:
-  - set WINAPP_REPO=gitlabci@gmrv.es:apps
-  - set WINEXES=NeuroEditor
   - call %ENVFILESDIR%\glut.bat
   - call %ENVFILESDIR%\glew-2.1.0.bat
   - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
@@ -30,5 +70,50 @@ Win7:
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
   - bash.exe --login .gitlab-ci.sh
+ except:
+  - tags
+ tags:
+  - win7
+
+Win7-tags:
+ stage: build
+ script:
+  - set WINAPP_REPO=gitlabci@gmrv.es:apps
+  - call %ENVFILESDIR%\glut.bat
+  - call %ENVFILESDIR%\glew-2.1.0.bat
+  - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
+  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
+  - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - set BUILD_GENERATOR=Visual Studio 14 Win64
+  - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
+  - set PATH=%PATH%;"c:\Program Files\Git\bin"
+  - bash.exe --login .gitlab-ci.sh
+ only:
+  - tags
+ except:
+  - branches
+ tags:
+  - win7
+
+Win7-master:
+ stage: build
+ script:
+  - set APP_VERSION=git-master
+  - set WINAPP_REPO=gitlabci@gmrv.es:apps
+  - call %ENVFILESDIR%\glut.bat
+  - call %ENVFILESDIR%\glew-2.1.0.bat
+  - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
+  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
+  - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - set BUILD_GENERATOR=Visual Studio 14 Win64
+  - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
+  - set PATH=%PATH%;"c:\Program Files\Git\bin"
+  - bash.exe --login .gitlab-ci.sh
+ only:
+  - master
+ except:
+  - tags
  tags:
   - win7

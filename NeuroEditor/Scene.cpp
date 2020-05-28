@@ -89,25 +89,25 @@ void Scene::render( bool renderModifiedStructure_, bool renderModifiedMesh_,
                                            _width, _height );
   if ( _modifiedStructure && renderModifiedStructure_ )
   {
-    _renderer->colorFunc( ) = nlrender::Renderer::PERVERTEX;
+    _renderer->colorFunc( nlrender::Renderer::PERVERTEX );
     _renderer->render( _modifiedStructure, model );
   }
   if ( _originalStructure && renderOriginalStructure_ )
   {
-    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->colorFunc( nlrender::Renderer::GLOBAL );
     _renderer->render( _originalStructure, model, _originalStructureColor );
   }
 
 
   if (( _originalMeshAlpha >= 1.0f ) && _originalMesh && renderOriginalMesh_ )
   {
-    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->colorFunc( nlrender::Renderer::GLOBAL);
     _renderer->render( _originalMesh, model, _originalMeshColor );
   }
 
   if (( _modifiedMeshAlpha >= 1.0f ) && _modifiedMesh && renderModifiedMesh_ )
   {
-    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->colorFunc( nlrender::Renderer::GLOBAL );
     _renderer->render( _modifiedMesh, model, _modifiedMeshColor );
   }
 
@@ -116,14 +116,14 @@ void Scene::render( bool renderModifiedStructure_, bool renderModifiedMesh_,
   if (( _originalMeshAlpha < 1.0f ) && _originalMesh && renderOriginalMesh_ )
   {
     _renderer->alpha( ) = _originalMeshAlpha;
-    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->colorFunc( nlrender::Renderer::GLOBAL );
     _renderer->render( _originalMesh, model, _originalMeshColor );
   }
 
   if (( _modifiedMeshAlpha < 1.0f ) && _modifiedMesh && renderModifiedMesh_ )
   {
     _renderer->alpha( ) = _modifiedMeshAlpha;
-    _renderer->colorFunc( ) = nlrender::Renderer::GLOBAL;
+    _renderer->colorFunc( nlrender::Renderer::GLOBAL );
     _renderer->render( _modifiedMesh, model, _modifiedMeshColor );
   }
 

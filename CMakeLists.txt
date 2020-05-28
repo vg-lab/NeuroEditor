@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.2)
-project (NeuroEditor VERSION 0.0.2)
+project (NeuroEditor VERSION 0.0.1)
 set( NeuroEditor_VERSION_ABI 1 )
 
 if(NOT CMAKE_BUILD_TYPE)
