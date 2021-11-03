@@ -30,6 +30,7 @@ set(NEUROEDITOR_HEADERS
         Tester.h
         TraceModifier.h
         ColorSelectionWidget.h
+        SimplificationHelpDialog.h
 )
 
 set(NEUROEDITOR_SOURCES
@@ -53,6 +54,7 @@ set(NEUROEDITOR_SOURCES
         Tester.cpp
         TraceModifier.cpp
         ColorSelectionWidget.cpp
+        SimplificationHelpDialog.cpp
 )
 
 set(NEUROEDITOR_LINK_LIBRARIES

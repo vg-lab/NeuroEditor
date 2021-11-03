@@ -23,6 +23,7 @@
 #define __NEUROEDITOR_H__
 
 #include <QMainWindow>
+#include <QShortcut>
 #include "ui_NeuroEditor.h"
 #include "ViewDock.h"
 #include "SelectDock.h"

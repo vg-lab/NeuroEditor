@@ -150,6 +150,8 @@ public Q_SLOTS://slots:
 
   void undoState( void );
 
+  void showAxis( bool isVisible );
+
   void reset ( );
 
   void focusOnSelection( );
@@ -175,6 +177,7 @@ Q_SIGNALS:
   void updateSelectionSignal( std::unordered_set< int > selection_ );
 
   void resetInspectorSignal( void );
+  void updateSelectionSignal( int nSelected );
 
   void updateAveragePosSignal( Eigen::Vector3f& pos_ );
   void updateRotationSignal( Eigen::Quaternionf& q_ );
@@ -270,6 +273,7 @@ protected:
 
   const static float _colorFactor;
 
+  bool _drawAxis;
 };
 
 #endif /* VIEWERINTERFACE_H_ */

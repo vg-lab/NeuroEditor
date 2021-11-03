@@ -47,6 +47,7 @@ Viewer::Viewer ( QWidget *parent )
   , _selectionInclusionMode( INCLUSIVE )
   , _selectionType( NODE )
   , _morphoStructure( nullptr )
+  , _drawAxis( false )
 {
   _morphologyInfoToShow = 0;
 
@@ -165,7 +166,7 @@ void Viewer::draw ( )
   }
 
   float axisSize = camera( )->distanceToSceneCenter( ) / 10.0f;
-  if ( manipulatedFrame ( )->isManipulated ( ))
+  if ( manipulatedFrame ( )->isManipulated ( ) || _drawAxis)
   {
     if ( mSplitScreen)
     {
@@ -1043,6 +1044,12 @@ void Viewer::undoState ( )
   }
 }
 
+void Viewer::showAxis( bool isVisible )
+{
+  _drawAxis = isVisible;
+  updateGL( );
+}
+
 void Viewer::adjustSelecRegion( int windowWidth_, int windowHeight_,
                                 QPoint& regionCenter_, int& regionWidth_,
                                 int& regionHeight_ )
@@ -1069,6 +1076,7 @@ void Viewer::_changeSelection( void )
   ManipulatedFrameSetConstraint *mfsc =
     ( ManipulatedFrameSetConstraint* )( manipulatedFrame( )->constraint( ));
   mfsc->clearSet( );
+  Q_EMIT updateSelectionSignal( _selection.size( ));
   if ( _selection.size( ) <= 0 )
     Q_EMIT resetInspectorSignal( );
   else
