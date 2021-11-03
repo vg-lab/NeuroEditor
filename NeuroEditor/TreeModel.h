@@ -27,6 +27,7 @@
 #include <QVariant>
 
 #include <nsol/nsol.h>
+#include <unordered_set>
 #include "TreeItem.h"
 
 class TreeModel: public QAbstractItemModel
@@ -56,11 +57,18 @@ public:
 
   int columnCount ( const QModelIndex& parent = QModelIndex ( )) const override;
 
+  void setPartialSelected(  const QModelIndex& index, bool partialSelected );
+
+  bool isPartialSelected(  const QModelIndex& index );
+
+  void clearPartialSelected( );
+
 private:
 
   void _setupModelData( nsol::NeuronMorphologyPtr morphology_ );
 
   TreeItem* _rootItem;
+  std::unordered_set<TreeItem *> _partialSelectedItems;
 };
 
 #endif //__NEUROEDITOR_TREEMODEL__

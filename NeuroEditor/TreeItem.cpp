@@ -25,6 +25,7 @@ TreeItem::TreeItem ( const QList < QVariant >& data, TreeItem* parent )
 {
   _parentItem = parent;
   _itemData = data;
+  _partialSelected = false;
 }
 
 TreeItem::~TreeItem ( )
@@ -69,3 +70,15 @@ int TreeItem::row ( ) const
 
   return 0;
 }
+
+bool TreeItem::isPartialSelected( ) const
+{
+  return _partialSelected;
+}
+
+void TreeItem::setPartialSelected( bool partialSelected )
+{
+  _partialSelected = partialSelected;
+}
+
+

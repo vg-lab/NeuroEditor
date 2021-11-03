@@ -76,7 +76,7 @@ protected:
 
   void _fromSelectionToTree( std::unordered_set< int > selection_ );
 
-  bool _recursiveFromSelectionToTree( QModelIndex index_,
+  std::pair<bool,bool> _recursiveFromSelectionToTree( QModelIndex index_,
                                       std::unordered_set< int >& selection_ );
 
   void _recursiveDownSelectDeselectItem(
