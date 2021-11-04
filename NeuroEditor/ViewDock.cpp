@@ -57,53 +57,69 @@ void ViewDock::init( Viewer* viewer_ )
 
   //Show
   QGroupBox* showGroup = new QGroupBox( QString( "Show" ));
-  QGridLayout* showGroupLayout = new QGridLayout( );
+  auto showGroupLayout = new QHBoxLayout( );
   showGroup->setLayout( showGroupLayout );
   viewDockLayout->addWidget( showGroup );
 
-  showGroupLayout->addWidget( new QLabel( QString( "First view" )), 0, 0 );
-  showGroupLayout->addWidget( new QLabel( QString( "Second view" )), 0, 1 );
-  QCheckBox* sideCheckBox = new QCheckBox( );
-  showGroupLayout->addWidget( sideCheckBox, 0, 2 );
+  auto vline = new QFrame( );
+  vline->setFrameShape( QFrame::VLine );
+  vline->setFrameShadow( QFrame::Sunken );
+
+  auto firstViewLayout = new QVBoxLayout( );
+  auto secondViewLayout = new QVBoxLayout( );
+  showGroupLayout->addLayout( firstViewLayout );
+  showGroupLayout->addWidget( vline, Qt::AlignLeft );
+  showGroupLayout->addLayout( secondViewLayout );
+
+  firstViewLayout->addWidget( new QLabel(" First View") );
+  auto secondViewCheckBox = new QCheckBox( "Second View" );
+  secondViewLayout->addWidget( secondViewCheckBox );
+
+  auto firstCheckBoxLayout = new QVBoxLayout( );
+  auto secondCheckBoxLayout = new QVBoxLayout( );
+  firstCheckBoxLayout->setContentsMargins( 20, 1, 1, 1);
+  secondCheckBoxLayout->setContentsMargins( 20, 1, 1, 1);
+  firstViewLayout->addLayout( firstCheckBoxLayout );
+  secondViewLayout->addLayout( secondCheckBoxLayout );
 
   QCheckBox* msModifiedStructure =
     new QCheckBox( QString( "Modified tracing" ));
-  showGroupLayout->addWidget( msModifiedStructure, 1, 0 );
+  firstCheckBoxLayout->addWidget( msModifiedStructure );
   QCheckBox* ssModifiedStructure =
     new QCheckBox( QString( "Modified tracing" ));
-  showGroupLayout->addWidget( ssModifiedStructure, 1, 1 );
+  secondCheckBoxLayout->addWidget( ssModifiedStructure );
   ssModifiedStructure->setEnabled( false );
 
   QCheckBox* msModifiedMesh = new QCheckBox( QString( "Modified 3D mesh" ));
-  showGroupLayout->addWidget( msModifiedMesh, 2, 0 );
+  firstCheckBoxLayout->addWidget( msModifiedMesh );
   QCheckBox* ssModifiedMesh = new QCheckBox( QString( "Modified 3D mesh" ));
-  showGroupLayout->addWidget( ssModifiedMesh, 2, 1 );
+  secondCheckBoxLayout->addWidget( ssModifiedMesh );
   ssModifiedMesh->setEnabled( false );
 
   QCheckBox* msOriginalStructure =
     new QCheckBox( QString( "Original tracing" ));
-  showGroupLayout->addWidget( msOriginalStructure, 3, 0 );
+  firstCheckBoxLayout->addWidget( msOriginalStructure, 3, 0 );
   QCheckBox* ssOriginalStructure =
     new QCheckBox( QString( "Original tracing" ));
-  showGroupLayout->addWidget( ssOriginalStructure, 3, 1 );
+  secondCheckBoxLayout->addWidget( ssOriginalStructure );
   ssOriginalStructure->setEnabled( false );
 
   QCheckBox* msOriginalMesh = new QCheckBox( QString( "Original 3D mesh" ));
-  showGroupLayout->addWidget( msOriginalMesh, 4, 0 );
+  firstCheckBoxLayout->addWidget( msOriginalMesh, 4, 0 );
   QCheckBox* ssOriginalMesh = new QCheckBox( QString( "Original 3D mesh" ));
-  showGroupLayout->addWidget( ssOriginalMesh, 4, 1 );
+  secondCheckBoxLayout->addWidget( ssOriginalMesh );
   ssOriginalMesh->setEnabled( false );
 
-  connect( sideCheckBox, SIGNAL( toggled( bool )),
+  connect( secondViewCheckBox, SIGNAL( toggled( bool )),
            viewer_, SLOT( updateSideBySide( bool )));
 
-  connect( sideCheckBox, SIGNAL( toggled( bool )),
+  connect( secondViewCheckBox, SIGNAL( toggled( bool )),
            ssModifiedStructure, SLOT( setEnabled( bool )));
-  connect( sideCheckBox, SIGNAL( toggled( bool )),
+  connect( secondViewCheckBox, SIGNAL( toggled( bool )),
            ssModifiedMesh, SLOT( setEnabled( bool )));
-  connect( sideCheckBox, SIGNAL( toggled( bool )),
+  connect( secondViewCheckBox, SIGNAL( toggled( bool )),
            ssOriginalStructure, SLOT( setEnabled( bool )));
-  connect( sideCheckBox, SIGNAL( toggled( bool )),
+  connect( secondViewCheckBox, SIGNAL( toggled( bool )),
            ssOriginalMesh, SLOT( setEnabled( bool )));
 
   msModifiedStructure->setCheckState( Qt::Checked );
@@ -150,7 +166,7 @@ void ViewDock::init( Viewer* viewer_ )
   ColorSelectionWidget* mmColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( mmColor, 1, 3 );
   renderOptionsLayout->addWidget(
-    new QLabel( QString("Modified 3D mesh alpha" )), 2, 0 );
+    new QLabel( QString("Modified 3D mesh transparency" )), 2, 0 );
   auto mAlphaSlider = new QSlider( Qt::Horizontal );
   mAlphaSlider->setRange( 0, 100 );
   mAlphaSlider->setValue( 50 );
@@ -164,7 +180,7 @@ void ViewDock::init( Viewer* viewer_ )
   ColorSelectionWidget* omColor = new ColorSelectionWidget( this );
   renderOptionsLayout->addWidget( omColor, 3, 3 );
   renderOptionsLayout->addWidget(
-    new QLabel( QString("Original 3D mesh alpha" )), 4, 0 );
+    new QLabel( QString("Original 3D mesh transparency" )), 4, 0 );
   auto oAlphaSlider = new QSlider( Qt::Horizontal );
   oAlphaSlider->setRange( 0, 100 );
   oAlphaSlider->setValue( 50 );
@@ -214,6 +230,8 @@ void ViewDock::init( Viewer* viewer_ )
   QPushButton* cameraRightButton = new QPushButton( QString( "Right" ));
   cameraRightButton->setMaximumSize( QSize( 65, 25 ));
   cameraLayout->addWidget( cameraRightButton, 1, 2 );
+
+  viewDockLayout->addStretch( 1 );
 
   connect( cameraFrontButton, SIGNAL( clicked( )),
            viewer_, SLOT( setCameraViewFront( )));

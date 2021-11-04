@@ -62,9 +62,7 @@ public Q_SLOTS:
 
   void neuriteButtonClicked( void );
 
-  void inclusiveButtonClicked( void );
-
-  void exclusiveButtonClicked( void );
+  void multipleSelectionChanged( int state );
 
 Q_SIGNALS:
 
