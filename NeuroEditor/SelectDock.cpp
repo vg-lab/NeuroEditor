@@ -115,6 +115,7 @@ void SelectDock::init( Viewer* viewer_ )
 
 
   auto multipleSelectionCheckBox = new QCheckBox( "Multiple Selection" );
+  multipleSelectionCheckBox->setCheckState( Qt::Checked );
   selectionTypeLayout->addWidget(multipleSelectionCheckBox,1,0,1,3);
 
   connect( multipleSelectionCheckBox, SIGNAL( stateChanged( int )),

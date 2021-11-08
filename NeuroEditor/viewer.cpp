@@ -33,6 +33,7 @@
 #include <limits>
 #include <iostream>
 #include <algorithm>
+#include <QMenu>
 
 using namespace std;
 
@@ -76,6 +77,20 @@ Viewer::Viewer ( QWidget *parent )
   _somaSection = new nsol::NeuronMorphologySection( );
   _somaNeurite->firstSection( _somaSection );
   _somaSection->neurite( _somaNeurite );
+
+  _actionDelete = new QAction("Delete",this);
+  _actionDelete->setShortcut(QKeySequence("R"));
+  _actionDelete->setShortcutVisibleInContextMenu( true );
+
+  _actionSelect = new QAction( "Select/Deselect", this );
+  _actionSelect->setToolTip("shift + leftClick ");
+
+
+  QObject::connect(_actionDelete, SIGNAL(triggered( bool )),
+                   this, SLOT( _onDelete( void )));
+
+  QObject::connect(_actionSelect, SIGNAL( triggered( bool )),
+                   this, SLOT(_onSelect( void )));
 }
 
 Viewer::~Viewer ( )
@@ -531,15 +546,13 @@ void Viewer::setModifiedAsOriginal ( )
 //   C u s t o m i z e d   m o u s e   e v e n t s
 void Viewer::mousePressEvent ( QMouseEvent *e )
 {
+  std::cout << "Press" << std::endl;
   // Start selection. Mode is ADD with Shift key and TOGGLE with Alt key.
   _rectangle = QRect ( e->pos ( ), e->pos ( ));
 
   if (( e->button ( ) == Qt::LeftButton )
     && ( e->modifiers ( ) == Qt::ShiftModifier ))
-    _selectionMode = ADD;
-  else if (( e->button ( ) == Qt::RightButton )
-    && ( e->modifiers ( ) == Qt::ShiftModifier ))
-    _selectionMode = REMOVE;
+    _selectionMode = Select;
   else
   {
     if ( e->modifiers ( ) == Qt::ControlModifier )
@@ -550,6 +563,7 @@ void Viewer::mousePressEvent ( QMouseEvent *e )
 
 void Viewer::mouseMoveEvent ( QMouseEvent *e )
 {
+  _hasMoved = true;
   if ( _selectionMode != NONE )
   {
     _rectangle.setBottomRight ( e->pos ( ) );
@@ -572,6 +586,10 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
 
 void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 {
+
+  if ( e->button() == Qt::RightButton && !_hasMoved  )
+    _showContextMenu( e );
+
   if ( _selectionMode != NONE )
   {
     _rectangle = _rectangle.normalized ( );
@@ -630,6 +648,61 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 
     QGLViewer::mouseReleaseEvent ( e );
   }
+
+  _hasMoved = false;
+}
+
+void Viewer::_showContextMenu( const QMouseEvent* e )
+{
+  _selectionMode = RightSelect;
+  select( e->pos( ));
+  _selectionMode = NONE;
+
+  auto menu = new QMenu( );
+  menu->setToolTipsVisible( true );
+  menu->addAction( _actionSelect );
+  menu->addAction("Select all", [&](){ _selectAll();});
+  menu->addAction("Deselect all", [&](){ _deSelectAll();});
+
+  if ( _selection.find( _leftSelected ) == _selection.end( ))
+  {
+    _deleteSelection = false;
+    if ( _checkFirstLastNodeSection( _leftSelected ))
+    {
+      _actionDelete->setDisabled( true );
+      _actionDelete
+      ->setToolTip( "The first or last node of a section cannot be deleted." );
+    }
+    else
+    {
+      _actionDelete->setDisabled( false );
+      _actionDelete->setToolTip( "" );
+    }
+  }
+  else
+  {
+    _deleteSelection = true;
+    bool firstOrLast = false;
+    for ( auto &node : _selection ) {
+      firstOrLast |= _checkFirstLastNodeSection( node );
+      if ( firstOrLast )
+        break;
+    }
+
+    if ( firstOrLast )
+    {
+      _actionDelete->setDisabled( true );
+      _actionDelete->setToolTip( "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+    }
+    else
+    {
+      _actionDelete->setDisabled( false );
+      _actionDelete->setToolTip( "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+    }
+  }
+
+  menu->addAction( _actionDelete );
+  menu->exec( QCursor::pos() );
 }
 
 void Viewer::resizeGL( int width, int height )
@@ -653,6 +726,7 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
   updateGL ( );
 }
 
+
 //   C u s t o m i z e d   s e l e c t i o n   p r o c e s s
 void Viewer::drawWithNames ( )
 {
@@ -672,8 +746,6 @@ void Viewer::endSelection ( const QPoint & )
 
   if ( nbHits > 0 )
   {
-    if ( _selectionMode == ADD && _selectionInclusionMode == EXCLUSIVE )
-      _selection.clear( );
     for ( int i = 0; i < nbHits; ++i )
     {
       std::vector< int > ids;
@@ -697,15 +769,34 @@ void Viewer::endSelection ( const QPoint & )
             ids.push_back( cNode->id( ));
         break;
       }
+      bool newInserted = false;
       switch ( _selectionMode )
       {
-      case ADD:
-        for ( auto id: ids )
-          _selection.insert( id );
+        case Select:
+          if ( _selectionInclusionMode == EXCLUSIVE )
+          {
+            for( auto id: ids )
+            {
+              newInserted = newInserted ||
+                            _selection.find( id ) == _selection.end( );
+              if( newInserted )
+                break;
+            }
+          }
+
+          if ( newInserted && _selectionInclusionMode == EXCLUSIVE )
+            _selection.clear();
+
+          for ( auto id: ids)
+          {
+            if ( _selection.find( id ) == _selection.end( ))
+              _selection.insert( id );
+            else
+              _selection.erase( id );
+          }
         break;
-      case REMOVE:
-        for ( auto id: ids )
-          _selection.erase( id );
+      case RightSelect:
+        _leftSelected = ids[0];
         break;
       default:
         break;
@@ -1106,3 +1197,81 @@ void Viewer::_changeSelection( void )
   }
   _scene->setSelection( _selection );
 }
+
+void Viewer::_onDelete( void )
+{
+  saveState( );
+  if ( _deleteSelection )
+  {
+    for( const auto nodeId: _selection )
+    {
+      auto node = _morphoStructure->idToNode[ nodeId ];
+      auto& sectionNodes = _morphoStructure->nodeToSection[ node ]->nodes( );
+      for( auto it = sectionNodes.begin( ); it != sectionNodes.end( ); ++it )
+      {
+        if( ( *it ) == node )
+        {
+          sectionNodes.erase( it );
+          break;
+        }
+      }
+    }
+  }
+  else
+  {
+    auto node = _morphoStructure->idToNode[ _leftSelected ];
+    auto& sectionNodes = _morphoStructure->nodeToSection[ node ]->nodes( );
+    for( auto it = sectionNodes.begin( ); it != sectionNodes.end( ); ++it )
+    {
+      if( ( *it ) == node )
+      {
+        sectionNodes.erase( it );
+        break;
+      }
+    }
+  }
+  updateMorphology( );
+}
+
+void Viewer::_onSelect( void )
+{
+
+  _selectionMode = Select;
+  endSelection(QPoint());
+
+}
+
+void Viewer::_selectAll( )
+{
+  for ( auto& neurite : modifiedMorphology->neurites( ))
+    for ( auto& section : neurite->sections( ))
+      for ( auto& node : section->nodes( ))
+        _selection.insert( node->id( ));
+
+  _changeSelection( );
+  Q_EMIT updateSelectionSignal( _selection );
+}
+
+void Viewer::_deSelectAll( void )
+{
+  _selection.clear();
+  _changeSelection( );
+  Q_EMIT updateSelectionSignal( _selection );
+
+
+}
+
+bool Viewer::_checkFirstLastNodeSection( int nodeId )
+{
+  auto node = _morphoStructure->idToNode[ nodeId ];
+  auto section = _morphoStructure->nodeToSection[ node ];
+  auto firstNode = *( section->nodes().begin( ));
+  auto lastNode = *( section->nodes().rbegin( ));
+  return  firstNode == node || lastNode == node ;
+}
+
+
+
+
+
+
