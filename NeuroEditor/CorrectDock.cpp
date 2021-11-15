@@ -27,6 +27,7 @@
 #include <QScrollArea>
 #include <QLabel>
 #include <QPushButton>
+#include <QButtonGroup>
 
 
 TestWidget::TestWidget( neuroeditor::Tester::TTesterMethod testMethod_ )
@@ -120,6 +121,7 @@ void CorrectDock::init( Viewer* viewer_ )
   mainWidget->setLayout( correctDockLayout );
   correctDockLayout->setAlignment( Qt::AlignTop );
 
+
   QGroupBox* selectionGroup = new QGroupBox( );
   QVBoxLayout* selectionGroupLayout = new QVBoxLayout( );
   selectionGroup->setLayout( selectionGroupLayout );
@@ -162,6 +164,16 @@ void CorrectDock::init( Viewer* viewer_ )
 
   _initTestSelector( );
 
+  auto radioLayout = new QHBoxLayout( );
+  _neuronRadio = new QRadioButton( "Complete Neuron" );
+  _selectionRadio = new QRadioButton ("Selection");
+  _selectionRadio->setChecked( true );
+  radioLayout->setAlignment(Qt::AlignHCenter);
+  radioLayout->addWidget( new QLabel( "Test over: " ),0,Qt::AlignRight);
+  radioLayout->addWidget( _neuronRadio );
+  radioLayout->addWidget( _selectionRadio );
+  selectionGroupLayout->addLayout( radioLayout );
+
   QScrollArea* scrollArea = new QScrollArea( );
   scrollArea->setWidgetResizable(true);
   selectionGroupLayout->addWidget( scrollArea );
@@ -178,10 +190,10 @@ void CorrectDock::init( Viewer* viewer_ )
   buttonsWidget->setLayout( buttonsLayout );
   selectionGroupLayout->addWidget( buttonsWidget );
 
-  QPushButton* clearButton = new QPushButton( QString( "clear all" ));
+  QPushButton* clearButton = new QPushButton( QString( "Clear all" ));
   clearButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( clearButton );
-  QPushButton* runButton = new QPushButton( QString( "apply all" ));
+  QPushButton* runButton = new QPushButton( QString( "Apply all" ));
   runButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( runButton );
 
@@ -287,12 +299,14 @@ void CorrectDock::correct( void )
         testResultLayout->setAlignment( Qt::AlignLeft );
         testResultWidget->setLayout( testResultLayout );
         _outputLayout->addWidget( testResultWidget );
-        testOut = std::string( "\tManual correction: ");
+        testOut = std::string( "\tManual correction (Nodes id): ");
         testResultLayout->addWidget( new QLabel( QString( testOut.c_str( ))));
         for( auto indices: fixResult )
         {
-          auto rButton = new ResultButton( indices, _viewer );
+          auto rButton = new ResultButton( indices, _viewer, test->testMethod );
           testResultLayout->addWidget( rButton );
+          QObject::connect(rButton, SIGNAL(fixerApplied(std::vector< int >)),
+                           this, SLOT (_removeAppliedNode( std::vector< int >)));
         }
       }
     }
@@ -374,3 +388,26 @@ void CorrectDock::_addTest( neuroeditor::Tester::TTesterMethod testerMethod_ )
   connect( testWidget, SIGNAL( testToDelete( QWidget* )),
            this, SLOT( removeTest( QWidget* )));
 }
+
+void CorrectDock::_removeAppliedNode( std::vector< int > nodesId)
+{
+  for( int i = 0 ; i < _outputLayout->count( ); ++i )
+  {
+    auto innerWidget = _outputLayout->itemAt( i )->widget( );
+    if( innerWidget != nullptr && !innerWidget->children( ).empty( ) )
+    {
+      for (const auto &child : innerWidget->children( ))
+      {
+        auto rButton = qobject_cast< QPushButton* >( child );
+        if( rButton != nullptr &&
+            std::find( nodesId.begin( ), nodesId.end( ),
+                       rButton->text( ).toInt( ) ) != nodesId.end( ) )
+        {
+          rButton->deleteLater();
+        }
+      }
+    }
+  }
+
+}
+

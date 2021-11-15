@@ -28,6 +28,8 @@
 #include <QToolButton>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QMenu>
+#include <QRadioButton>
 
 #include "viewer.h"
 #include "Tester.h"
@@ -66,7 +68,7 @@ class ResultButton: public QPushButton
 
 public:
 
-  ResultButton( std::vector< int > indices_, Viewer* viewer_ )
+  ResultButton( std::vector< int > indices_, Viewer* viewer_,neuroeditor::Tester::TTesterMethod testMethod )
     : QPushButton( )
     , _viewer( viewer_ )
   {
@@ -78,7 +80,23 @@ public:
       _selection.insert( index );
     this->setMaximumSize( QSize( 40, 40 ));
 
-    connect( this, SIGNAL( pressed( )),
+    auto menu = new QMenu( );
+    auto fixers = neuroeditor::Tester::associatedFixers( testMethod );
+    for ( auto fixer: fixers )
+    {
+      if ( fixer != neuroeditor::Fixer::NODE_TEXT_OUT &&
+           fixer != neuroeditor::Fixer::SECTION_TEXT_OUT &&
+           fixer != neuroeditor::Fixer::NEURITE_TEXT_OUT)
+      {
+        std::string description = neuroeditor::Fixer::description( fixer );
+        menu->addAction( QString( description.c_str( )),
+                         [=](){fixNodes(indices_, fixer );});
+      }
+    }
+
+    this->setMenu( menu );
+
+    connect( menu, SIGNAL( aboutToShow( )),
              this, SLOT( sendSelection( )));
   }
 
@@ -89,11 +107,24 @@ public:
 
 public Q_SLOTS:
 
+
+  void fixNodes ( std::vector< int > indices, neuroeditor::Fixer::TFixerMethod fixerMethod ) {
+    auto fixResult =
+    neuroeditor::Fixer::fix( indices, _viewer->morphologyStructure( ),
+                             fixerMethod  );
+
+    _viewer->updateMorphology( );
+    Q_EMIT fixerApplied( indices );
+  }
+
   void sendSelection( void )
   {
     _viewer->updateSelection( _selection );
     _viewer->focusOnSelection( );
   }
+
+Q_SIGNALS:
+  void fixerApplied( std::vector< int > nodesId );
 
 protected:
 
@@ -128,11 +159,15 @@ public Q_SLOTS:
 
   void clearOutput( void );
 
+  void _removeAppliedNode( std::vector< int > nodesId );
+
+
 protected:
 
   void _initTestSelector( void );
 
   void _addTest( neuroeditor::Tester::TTesterMethod testerMethod_ );
+
 
   Viewer* _viewer;
 
@@ -142,6 +177,8 @@ protected:
   QVBoxLayout* _testsLayout;
   QVBoxLayout* _outputLayout;
   QMessageBox* _testMethodHelpBox;
+  QRadioButton* _neuronRadio;
+  QRadioButton* _selectionRadio;
 };
 
 #endif
