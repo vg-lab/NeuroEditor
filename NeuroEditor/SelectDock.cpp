@@ -66,10 +66,10 @@ void SelectDock::init( Viewer* viewer_ )
   _morphologyTree->setSelectionMode( QTreeView::NoSelection );
   _morphologyTree->setSelectionBehavior( QTreeView::SelectRows );
   _morphologyTree->setExpandsOnDoubleClick( false );
-  auto selectAllButton = new QPushButton( QString( "select all" ));
+  auto selectAllButton = new QPushButton( QString( "Select all" ));
   selectAllButton->setFixedWidth( 105 );
   selectionTreeLayout->addWidget( selectAllButton, 1, 0, 1, 1 );
-  auto clearSelectionButton = new QPushButton( QString( "clear selection" ));
+  auto clearSelectionButton = new QPushButton( QString( "Clear selection" ));
   clearSelectionButton->setFixedWidth( 105 );
   selectionTreeLayout->addWidget( clearSelectionButton, 1, 1, 1, 1 );
 
@@ -94,7 +94,7 @@ void SelectDock::init( Viewer* viewer_ )
   selectDockLayout->addWidget( hline );
 
   QGroupBox* selectionTypeGroup =
-    new QGroupBox( QString( "Select/Deselect in view:" ));
+    new QGroupBox( QString( "Select/Deselect in view (shift + click):" ));
   QGridLayout* selectionTypeLayout = new QGridLayout( );
   selectionTypeGroup->setLayout( selectionTypeLayout );
   selectDockLayout->addWidget( selectionTypeGroup );

@@ -189,6 +189,8 @@ Q_SIGNALS:
   void updateAveragePosSignal( Eigen::Vector3f& pos_ );
   void updateRotationSignal( Eigen::Quaternionf& q_ );
   void updateAverageRadiusSignal( float radius_ );
+  void deleteNodes( std::unordered_set< int > nodes );
+  void modifiedNodes( std::unordered_set< int > nodes );
 
 protected:
 
@@ -284,11 +286,13 @@ protected:
   const static float _colorFactor;
 
   bool _drawAxis;
-  bool _hasMoved;
 
   QAction* _actionDelete;
   QAction* _actionSelect;
   bool _deleteSelection;
+
+  QPoint _lastPoint;
+  int _mouseMovement;
 
 };
 

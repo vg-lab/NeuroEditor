@@ -164,15 +164,6 @@ void CorrectDock::init( Viewer* viewer_ )
 
   _initTestSelector( );
 
-  auto radioLayout = new QHBoxLayout( );
-  _neuronRadio = new QRadioButton( "Complete Neuron" );
-  _selectionRadio = new QRadioButton ("Selection");
-  _selectionRadio->setChecked( true );
-  radioLayout->setAlignment(Qt::AlignHCenter);
-  radioLayout->addWidget( new QLabel( "Test over: " ),0,Qt::AlignRight);
-  radioLayout->addWidget( _neuronRadio );
-  radioLayout->addWidget( _selectionRadio );
-  selectionGroupLayout->addLayout( radioLayout );
 
   QScrollArea* scrollArea = new QScrollArea( );
   scrollArea->setWidgetResizable(true);
@@ -219,8 +210,20 @@ void CorrectDock::init( Viewer* viewer_ )
   scrollArea->setWidget( outputWidget );
   scrollArea->setMaximumHeight( 400 );
 
+  connect(_viewer, &Viewer::deleteNodes,this,
+          [&]( std::unordered_set< int > nodes ){
+           this->_fixerAppliedNode(nodes,neuroeditor::Fixer::DELETE_NODE);
+  });
+
+  connect(_viewer, &Viewer::modifiedNodes,this,
+          [&]( std::unordered_set< int > nodes ){
+    this->_fixerAppliedNode(nodes,neuroeditor::Fixer::DISPLACE_TO_MIDDLE_EDGE);
+  });
+
+
   // connect( _viewer, SIGNAL( morphologyChanged( )),
   //          this, SLOT( clearOutput( )));
+
 }
 
 void CorrectDock::addTest( void )
@@ -305,8 +308,10 @@ void CorrectDock::correct( void )
         {
           auto rButton = new ResultButton( indices, _viewer, test->testMethod );
           testResultLayout->addWidget( rButton );
-          QObject::connect(rButton, SIGNAL(fixerApplied(std::vector< int >)),
-                           this, SLOT (_removeAppliedNode( std::vector< int >)));
+          QObject::connect(rButton, SIGNAL(fixerApplied(std::unordered_set< int>, neuroeditor::Fixer::TFixerMethod)),
+                           this, SLOT (
+                                 _fixerAppliedNode(
+                                 std::unordered_set< int >, neuroeditor::Fixer::TFixerMethod )));
         }
       }
     }
@@ -389,7 +394,7 @@ void CorrectDock::_addTest( neuroeditor::Tester::TTesterMethod testerMethod_ )
            this, SLOT( removeTest( QWidget* )));
 }
 
-void CorrectDock::_removeAppliedNode( std::vector< int > nodesId)
+void CorrectDock::_fixerAppliedNode( std::unordered_set< int > nodesId, neuroeditor::Fixer::TFixerMethod fixerMethod)
 {
   for( int i = 0 ; i < _outputLayout->count( ); ++i )
   {
@@ -398,16 +403,18 @@ void CorrectDock::_removeAppliedNode( std::vector< int > nodesId)
     {
       for (const auto &child : innerWidget->children( ))
       {
-        auto rButton = qobject_cast< QPushButton* >( child );
+        auto rButton = qobject_cast< ResultButton* >( child );
         if( rButton != nullptr &&
             std::find( nodesId.begin( ), nodesId.end( ),
                        rButton->text( ).toInt( ) ) != nodesId.end( ) )
         {
-          rButton->deleteLater();
+          if (fixerMethod == neuroeditor::Fixer::DELETE_NODE)
+            rButton->deleteLater();
+          else
+            rButton->highlight(true);
         }
       }
     }
   }
-
 }
 

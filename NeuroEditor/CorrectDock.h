@@ -114,7 +114,7 @@ public Q_SLOTS:
                              fixerMethod  );
 
     _viewer->updateMorphology( );
-    Q_EMIT fixerApplied( indices );
+    Q_EMIT fixerApplied({ indices.begin( ), indices.end( )} , fixerMethod );
   }
 
   void sendSelection( void )
@@ -123,8 +123,16 @@ public Q_SLOTS:
     _viewer->focusOnSelection( );
   }
 
+  void highlight( bool highlited )
+  {
+    if (highlited)
+      this->setStyleSheet("background-color: rgba(46, 204, 113, 0.4);");
+    else
+      this->setStyleSheet("");
+  }
+
 Q_SIGNALS:
-  void fixerApplied( std::vector< int > nodesId );
+  void fixerApplied( std::unordered_set< int > nodesId, neuroeditor::Fixer::TFixerMethod fixerMethod);
 
 protected:
 
@@ -136,6 +144,7 @@ protected:
 class CorrectDock: public QDockWidget
 {
   Q_OBJECT
+
 
 public:
 
@@ -159,26 +168,25 @@ public Q_SLOTS:
 
   void clearOutput( void );
 
-  void _removeAppliedNode( std::vector< int > nodesId );
+  void _fixerAppliedNode( std::unordered_set< int > nodesId,
+                          neuroeditor::Fixer::TFixerMethod fixerMethod );
 
 
 protected:
 
   void _initTestSelector( void );
 
+
   void _addTest( neuroeditor::Tester::TTesterMethod testerMethod_ );
 
-
   Viewer* _viewer;
-
   QComboBox* _testSelector;
   QToolButton* _testAdder;
   QToolButton* _testAddAll;
   QVBoxLayout* _testsLayout;
   QVBoxLayout* _outputLayout;
   QMessageBox* _testMethodHelpBox;
-  QRadioButton* _neuronRadio;
-  QRadioButton* _selectionRadio;
+
 };
 
 #endif

@@ -151,12 +151,12 @@ void EditDock::init( Viewer* viewer_ )
   
   _initSpinBoxes();
 
-  QGroupBox* inspectorGroup = new QGroupBox( tr( "Location" ) );
+  QGroupBox* inspectorGroup = new QGroupBox( tr( "Translation && Rotation" ) );
   QVBoxLayout* inspectorLayout = new QVBoxLayout( );
   inspectorGroup->setLayout(inspectorLayout);
   editDockLayout->addWidget(inspectorGroup);
 
-  QGroupBox* inspectorGroupOne = new QGroupBox( "One Node" );
+  QGroupBox* inspectorGroupOne = new QGroupBox( "Single Node" );
   QGridLayout* inspectorLayoutOne = new QGridLayout(  );
   inspectorGroupOne->setLayout( inspectorLayoutOne );
   inspectorLayout->addWidget(inspectorGroupOne);
@@ -330,10 +330,10 @@ void EditDock::init( Viewer* viewer_ )
   buttonsWidget->setLayout( buttonsLayout );
   simplifyGroupLayout->addWidget( buttonsWidget );
 
-  QPushButton* clearButton = new QPushButton( QString( "clear all" ));
+  QPushButton* clearButton = new QPushButton( QString( "Clear all" ));
   clearButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( clearButton );
-  QPushButton* applyAllButton = new QPushButton( QString( "apply all" ));
+  QPushButton* applyAllButton = new QPushButton( QString( "Apply all" ));
   applyAllButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( applyAllButton );
 

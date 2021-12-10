@@ -334,6 +334,7 @@ void Viewer::changeAveragePos( Eigen::Vector3f& pos_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
+    Q_EMIT modifiedNodes (_selection);
     updateGL( );
   }
 }
@@ -360,6 +361,7 @@ void Viewer::changeRotation( Eigen::Quaternionf& q_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
+    Q_EMIT modifiedNodes (_selection);
     updateGL( );
   }
 }
@@ -384,6 +386,7 @@ void Viewer::changeAverageRadius( float radius_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
+    Q_EMIT modifiedNodes (_selection);
     updateGL( );
   }
 }
@@ -546,9 +549,9 @@ void Viewer::setModifiedAsOriginal ( )
 //   C u s t o m i z e d   m o u s e   e v e n t s
 void Viewer::mousePressEvent ( QMouseEvent *e )
 {
-  std::cout << "Press" << std::endl;
   // Start selection. Mode is ADD with Shift key and TOGGLE with Alt key.
   _rectangle = QRect ( e->pos ( ), e->pos ( ));
+  _lastPoint = e->pos();
 
   if (( e->button ( ) == Qt::LeftButton )
     && ( e->modifiers ( ) == Qt::ShiftModifier ))
@@ -563,7 +566,9 @@ void Viewer::mousePressEvent ( QMouseEvent *e )
 
 void Viewer::mouseMoveEvent ( QMouseEvent *e )
 {
-  _hasMoved = true;
+  auto auxPoint = e->pos() - _lastPoint;
+  _mouseMovement +=  auxPoint.manhattanLength( );
+
   if ( _selectionMode != NONE )
   {
     _rectangle.setBottomRight ( e->pos ( ) );
@@ -587,7 +592,7 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
 void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 {
 
-  if ( e->button() == Qt::RightButton && !_hasMoved  )
+  if ( e->button() == Qt::RightButton && _mouseMovement < 10 )
     _showContextMenu( e );
 
   if ( _selectionMode != NONE )
@@ -649,7 +654,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
     QGLViewer::mouseReleaseEvent ( e );
   }
 
-  _hasMoved = false;
+  _mouseMovement = 0;
 }
 
 void Viewer::_showContextMenu( const QMouseEvent* e )
@@ -702,6 +707,16 @@ void Viewer::_showContextMenu( const QMouseEvent* e )
   }
 
   menu->addAction( _actionDelete );
+  auto actionMove = new QAction ("Move");
+  actionMove->setToolTip("For move selection press Ctrl+RightMouse");
+  actionMove->setDisabled( true );
+  auto actionRotate = new QAction("Rotate");
+  actionRotate->setToolTip("For rotate selection press Ctrl+LeftMouse");
+  actionRotate->setDisabled( true );
+
+  menu->addSeparator( );
+  menu->addAction( actionMove );
+  menu->addAction( actionRotate );
   menu->exec( QCursor::pos() );
 }
 
@@ -879,6 +894,7 @@ void Viewer::endManipulation( )
 
     Q_EMIT updateAveragePosSignal( _averagePosition );
     Q_EMIT updateRotationSignal( quat );
+    Q_EMIT modifiedNodes (_selection);
     updateGL( );
   }
 }
@@ -1216,6 +1232,8 @@ void Viewer::_onDelete( void )
         }
       }
     }
+
+    Q_EMIT deleteNodes( _selection );
   }
   else
   {
@@ -1229,6 +1247,7 @@ void Viewer::_onDelete( void )
         break;
       }
     }
+    Q_EMIT deleteNodes({_leftSelected});
   }
   updateMorphology( );
 }

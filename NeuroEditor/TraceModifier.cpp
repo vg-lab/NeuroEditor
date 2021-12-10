@@ -279,7 +279,7 @@ namespace neuroeditor
       break;
     case LANG:
       modifierParams[std::string( "threshold" )] = 0.1f;
-      modifierParams[std::string( "size" )] = 0.1f;
+      modifierParams[std::string( "size" )] = 1.0f;
       break;
     case DOUGLASPEUCKER:
       modifierParams[std::string( "threshold" )] = 0.1f;
