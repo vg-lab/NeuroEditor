@@ -156,7 +156,8 @@ void Viewer::draw ( )
   }
   if ( !mSplitScreen )
   {
-    glViewport ( 0, 0, width ( ), height( ));
+    glViewport ( 0, 0, width ( ) * devicePixelRatioF( ),
+                 height( ) * devicePixelRatioF( ));
     _scene->render( _firstLayout.renderModifiedStructure,
                     _firstLayout.renderModifiedMesh,
                     _firstLayout.renderOriginalStructure,
@@ -165,14 +166,17 @@ void Viewer::draw ( )
   }
   else
   {
-    glViewport ( 0, 0, width ( )*0.5, height( ));
+    glViewport ( 0, 0, width ( )*0.5 * devicePixelRatioF( ),
+                 height( ) * devicePixelRatioF( ));
     _scene->render( _firstLayout.renderModifiedStructure,
                     _firstLayout.renderModifiedMesh,
                     _firstLayout.renderOriginalStructure,
                     _firstLayout.renderOriginalMesh );
     renderMorphologyInfo ( morphologyInfo );
 
-    glViewport ( width( )*0.5, 0, width( )*0.5, height( ));
+    glViewport ( width( )*0.5 * devicePixelRatioF( ), 0,
+                 width( )*0.5 * devicePixelRatioF( ),
+                 height( ) * devicePixelRatioF( ));
     _scene->render( _secondLayout.renderModifiedStructure,
                     _secondLayout.renderModifiedMesh,
                     _secondLayout.renderOriginalStructure,
@@ -189,12 +193,15 @@ void Viewer::draw ( )
       glMultMatrixd ( manipulatedFrame ( )->matrix ( ));
       if ( _firstLayout.renderModifiedStructure )
       {
-        glViewport ( 0, 0, width( )*0.5, height( ));
+        glViewport ( 0, 0, width( )*0.5 * devicePixelRatioF( ),
+                     height( ) * devicePixelRatioF( ));
         drawAxis ( axisSize );
       }
       if ( _secondLayout.renderModifiedStructure )
       {
-        glViewport ( width( )*0.5, 0, width( )*0.5, height( ));
+        glViewport ( width( )*0.5 * devicePixelRatioF( ), 0,
+                     width( )*0.5 * devicePixelRatioF( ),
+                     height( ) * devicePixelRatioF( ));
         drawAxis ( axisSize );
       }
       glPopMatrix ( );
@@ -208,7 +215,9 @@ void Viewer::draw ( )
     }
   }
 
-  if ( mSplitScreen ) glViewport ( 0, 0, width ( ), height ( ));
+  if ( mSplitScreen )
+    glViewport ( 0, 0, width ( )  * devicePixelRatioF( ),
+                 height ( )  * devicePixelRatioF( ));
 
   if ( _selectionMode != NONE )
     drawSelectionRectangle ( );
@@ -286,7 +295,7 @@ void Viewer::updateSelection( std::unordered_set< int > selection_ )
   _selection.clear( );
   _selection = selection_;
   _changeSelection( );
-  updateGL ( );
+  updateGL( );
 }
 
 void Viewer::checkSelection( void )
@@ -506,7 +515,7 @@ void Viewer::loadMorphology ( QString pSWCFile )
     delete _treeModel;
     _treeModel = new TreeModel( modifiedMorphology );
     Q_EMIT morphologyChanged( );
-    updateGL ( );
+    updateGL( );
   }
   catch( ... )
   {
@@ -572,7 +581,7 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
   if ( _selectionMode != NONE )
   {
     _rectangle.setBottomRight ( e->pos ( ) );
-    updateGL ( );
+    updateGL( );
   }
   else
     if ( e->modifiers ( ) == Qt::ControlModifier )
@@ -644,7 +653,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
     }
 
     _selectionMode = NONE;
-    updateGL ( );
+    updateGL( );
   }
   else
   {
@@ -738,7 +747,7 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
   }
   else
     QGLViewer::keyPressEvent ( e );
-  updateGL ( );
+  updateGL( );
 }
 
 
@@ -1097,7 +1106,7 @@ void Viewer::selectDendrite ( unsigned int dendriteId_ )
           _selection.insert( node->id( ));
     ++currentDendId;
   }
-  updateGL ( );
+  updateGL( );
 }
 
 void Viewer::selectSection ( unsigned int sectionId_ )
@@ -1111,13 +1120,13 @@ void Viewer::selectSection ( unsigned int sectionId_ )
           _selection.insert( node->id( ));
       ++currentSectionId;
     }
-  updateGL ( );
+  updateGL( );
 }
 
 void Viewer::selectNode ( unsigned int nodeId_ )
 {
   _selection.insert( nodeId_ );
-  updateGL ( );
+  updateGL( );
 }
 
 void Viewer::saveState(  )
@@ -1147,7 +1156,7 @@ void Viewer::undoState ( )
     checkSelection( );
     _changeSelection( );
     Q_EMIT updateSelectionSignal( _selection );
-    updateGL ( );
+    updateGL( );
   }
 }
 
