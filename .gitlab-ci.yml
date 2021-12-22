@@ -9,6 +9,7 @@ Ubuntu-Subproject:
   - uname -a
   - module load libQGLViewer-2.6.3 Qt-5.10.0
   - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
+  - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - export BUILD_GENERATOR="Ninja"
   - bash .gitlab-ci.sh

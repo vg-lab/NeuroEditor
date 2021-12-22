@@ -269,7 +269,7 @@ void EditDock::init( Viewer* viewer_ )
   multiSelectionHelp->setIcon( helpIcon );
   inspectorLayoutMulti->addWidget( multiSelectionHelp,0,6,Qt::AlignRight );
 
-  auto message = QString(" <p> In this area, several nodes can be modified at the same time. Therefore, summary values of the selected nodes are displayed: </p>"
+  auto message = QString("<p>In this area, several nodes can be modified at the same time. Therefore, summary values of the selected nodes are displayed: </p>"
                          "<ul>"
                          " <li><strong>Pivot Position:</strong> displays the average position of all selected nodes (Coordinate axes appear at that point).</li>"
                          " <li><strong>Rotation:</strong> applies a rotation to the selected nodes using the pivot position as rotation point.</li>"

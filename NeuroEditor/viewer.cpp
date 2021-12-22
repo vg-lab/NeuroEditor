@@ -668,6 +668,10 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 
 void Viewer::_showContextMenu( const QMouseEvent* e )
 {
+  if ( _morphoStructure == nullptr )
+    return;
+
+  _leftSelected = -1;
   _selectionMode = RightSelect;
   select( e->pos( ));
   _selectionMode = NONE;
@@ -677,41 +681,51 @@ void Viewer::_showContextMenu( const QMouseEvent* e )
   menu->addAction( _actionSelect );
   menu->addAction("Select all", [&](){ _selectAll();});
   menu->addAction("Deselect all", [&](){ _deSelectAll();});
-
-  if ( _selection.find( _leftSelected ) == _selection.end( ))
-  {
-    _deleteSelection = false;
-    if ( _checkFirstLastNodeSection( _leftSelected ))
-    {
-      _actionDelete->setDisabled( true );
-      _actionDelete
-      ->setToolTip( "The first or last node of a section cannot be deleted." );
-    }
-    else
-    {
-      _actionDelete->setDisabled( false );
-      _actionDelete->setToolTip( "" );
-    }
+  if ( _leftSelected == -1 ) {
+    _actionDelete->setDisabled( true );
+    _actionDelete->setToolTip( "" );
+    _actionSelect->setDisabled( true );
   }
   else
   {
-    _deleteSelection = true;
-    bool firstOrLast = false;
-    for ( auto &node : _selection ) {
-      firstOrLast |= _checkFirstLastNodeSection( node );
-      if ( firstOrLast )
-        break;
-    }
-
-    if ( firstOrLast )
+    _actionSelect->setDisabled( false );
+    if ( _selection.find( _leftSelected ) == _selection.end( ))
     {
-      _actionDelete->setDisabled( true );
-      _actionDelete->setToolTip( "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+      _deleteSelection = false;
+      if ( _checkFirstLastNodeSection( _leftSelected ))
+      {
+        _actionDelete->setDisabled( true );
+        _actionDelete->setToolTip( "The first or last node of a section cannot be deleted." );
+      }
+      else
+      {
+        _actionDelete->setDisabled( false );
+        _actionDelete->setToolTip( "" );
+      }
     }
     else
     {
-      _actionDelete->setDisabled( false );
-      _actionDelete->setToolTip( "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+      _deleteSelection = true;
+      bool firstOrLast = false;
+      for ( auto &node : _selection )
+      {
+        firstOrLast |= _checkFirstLastNodeSection(node);
+        if ( firstOrLast )
+          break;
+      }
+
+      if ( firstOrLast )
+      {
+        _actionDelete->setDisabled( true );
+        _actionDelete->setToolTip(
+                "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+      }
+      else
+      {
+        _actionDelete->setDisabled(false);
+        _actionDelete->setToolTip(
+                "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+      }
     }
   }
 

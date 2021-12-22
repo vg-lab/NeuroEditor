@@ -160,6 +160,18 @@ void SimplificationHelpDialog::showDescription( neuroeditor::TraceModifier::TMod
                 "</ul>"
                 "<p><a href=http://psimpl.sourceforge.net/douglas-peucker.html>More Info</a></p>";
       break;
+    case neuroeditor::TraceModifier::DOUGLASPEUCKERMOD:
+      message = "<p>This method starts from a basic simplification formed by a line"
+                " from the beginning to the end of the polyline that is being refined."
+                " For this refinement the distance of each node to the current simplified"
+                " polyline is calculated and the one with the largest distance is "
+                " added to the simplified polyline. This process continues until the simplified polyline has <em>num_points</em> points</p>"
+                "<p>Parameters</p>"
+                "<ul>"
+                "<li><b>Num_points:</b> This parameter determines the total points of the simplified polyline.</li>"
+                "</ul>"
+                "<p><a href=http://psimpl.sourceforge.net/douglas-peucker.html>More Info</a></p>";
+      break;
     case neuroeditor::TraceModifier::LINEAR_ENHANCE:
       message = "<p>This method adds new nodes to the sections to achieve a uniform"
                 " distribution of nodes in the tracing (This method dont modify the original trajectories).</p>"
@@ -179,6 +191,24 @@ void SimplificationHelpDialog::showDescription( neuroeditor::TraceModifier::TMod
                "</ul>";
       break;
     case neuroeditor::TraceModifier::CUSTOM:
+      message = "<p> This method can be programmed by the user to implement his own correction methods and must follow the"
+                " following structure.</p>"
+                " "
+                " <div class=\"highlight\"><pre style=\"line-height: 125%;\"><span></span><span style=\"color: #008000; font-weight: bold\">from</span> <span style=\"color: #0000FF; font-weight: bold\">CorrectionFramework</span> <span style=\"color: #008000; font-weight: bold\">import</span> <span style=\"color: #666666\">*</span>\n"
+                "\n"
+                "<span style=\"color: #008000; font-weight: bold\">class</span> <span style=\"color: #0000FF; font-weight: bold\">CorrectionMethod</span>(  ):\n"
+                "\n"
+                "  <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">correct</span>(<span style=\"color: #008000\">self</span>):\n"
+                "\n"
+                "    <span style=\"color: #008000; font-weight: bold\">global</span> inNodes\n"
+                "    <span style=\"color: #008000; font-weight: bold\">global</span> outNodes\n"
+                "    \n"
+                "    <span style=\"color: #3D7B7B; font-style: italic\">#Correction method</span>\n"
+                "</pre></div>"
+                ""
+                "<p> Where inNodes are the original nodes of the tracing and outNodes are the nodes resulting from the correction."
+                " Finally, if you want to create a new empty node you must use the TracingNode() function. You can see examples"
+                " on the project <a href= https://vg-lab.es/neuroEditor>page</a></p>";
     default:
       break;
   }
