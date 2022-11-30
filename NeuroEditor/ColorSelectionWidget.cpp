@@ -56,6 +56,7 @@ void ColorSelectionWidget::mousePressEvent( QMouseEvent* /*event*/ )
     _color = newColor;
     _color.setHsv( _color.hsvHue( ), 125, 125 );
     Q_EMIT this->colorChanged( _color );
+    update();
   }
 }
 
@@ -63,4 +64,5 @@ void ColorSelectionWidget::color( const QColor& color_ )
 {
   _color = color_;
   Q_EMIT this->colorChanged( _color );
+  update();
 }

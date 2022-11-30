@@ -78,7 +78,7 @@ public:
     this->setText( QString( buttonName.c_str( )));
     for( auto index: indices_ )
       _selection.insert( index );
-    this->setMaximumSize( QSize( 40, 40 ));
+    this->setMaximumSize( QSize( 50, 40 ));
 
     auto menu = new QMenu( );
     auto fixers = neuroeditor::Tester::associatedFixers( testMethod );
