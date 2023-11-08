@@ -67,6 +67,7 @@ Win7:
   - call %ENVFILESDIR%\Qt-5.12-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - call %ENVFILESDIR%\python-3.8.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
@@ -86,6 +87,7 @@ Win7-tags:
   - call %ENVFILESDIR%\Qt-5.12-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - call %ENVFILESDIR%\python-3.8.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
@@ -108,6 +110,7 @@ Win7-master:
   - call %ENVFILESDIR%\Qt-5.12-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - call %ENVFILESDIR%\python-3.8.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
