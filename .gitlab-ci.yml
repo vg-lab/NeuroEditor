@@ -7,8 +7,9 @@ Ubuntu-Subproject:
   - date
   - hostname
   - uname -a
-  - module load libQGLViewer-2.6.3
+  - module load libQGLViewer-2.6.3 Qt-5.10.0
   - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
+  - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - export BUILD_GENERATOR="Ninja"
   - bash .gitlab-ci.sh
@@ -23,7 +24,7 @@ Ubuntu-Subproject-tags:
   - date
   - hostname
   - uname -a
-  - module load libQGLViewer-2.6.3
+  - module load libQGLViewer-2.6.3 Qt-5.10.0
   - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
   - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
@@ -42,7 +43,7 @@ Ubuntu-Subproject-master:
   - date
   - hostname
   - uname -a
-  - module load libQGLViewer-2.6.3
+  - module load libQGLViewer-2.6.3 Qt-5.10.0
   - export APP_VERSION="git-master"
   - export APPIMAGE_ICON="NeuroEditor/icons/icon.png"
   - export APPIMAGE_REPO="gitlabci@gmrv.es:apps"
@@ -63,9 +64,10 @@ Win7:
   - call %ENVFILESDIR%\glut.bat
   - call %ENVFILESDIR%\glew-2.1.0.bat
   - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
-  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\Qt-5.12-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - call %ENVFILESDIR%\python-3.8.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
@@ -82,9 +84,10 @@ Win7-tags:
   - call %ENVFILESDIR%\glut.bat
   - call %ENVFILESDIR%\glew-2.1.0.bat
   - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
-  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\Qt-5.12-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - call %ENVFILESDIR%\python-3.8.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
@@ -104,9 +107,10 @@ Win7-master:
   - call %ENVFILESDIR%\glut.bat
   - call %ENVFILESDIR%\glew-2.1.0.bat
   - call %ENVFILESDIR%\Boost-1.72-vs14-x64.bat
-  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\Qt-5.12-vs14.bat
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - call %ENVFILESDIR%\QGLViewer-2.6.3-vs14-x64.bat
+  - call %ENVFILESDIR%\python-3.8.bat
   - set BUILD_GENERATOR=Visual Studio 14 Win64
   - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - set PATH=%PATH%;"c:\Program Files\Git\bin"

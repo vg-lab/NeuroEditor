@@ -27,6 +27,7 @@
 #include <QRadioButton>
 #include <QLabel>
 #include <QLineEdit>
+#include <QCheckBox>
 
 #include <iostream>
 
@@ -65,10 +66,10 @@ void SelectDock::init( Viewer* viewer_ )
   _morphologyTree->setSelectionMode( QTreeView::NoSelection );
   _morphologyTree->setSelectionBehavior( QTreeView::SelectRows );
   _morphologyTree->setExpandsOnDoubleClick( false );
-  auto selectAllButton = new QPushButton( QString( "select all" ));
+  auto selectAllButton = new QPushButton( QString( "Select all" ));
   selectAllButton->setFixedWidth( 105 );
   selectionTreeLayout->addWidget( selectAllButton, 1, 0, 1, 1 );
-  auto clearSelectionButton = new QPushButton( QString( "clear selection" ));
+  auto clearSelectionButton = new QPushButton( QString( "Clear selection" ));
   clearSelectionButton->setFixedWidth( 105 );
   selectionTreeLayout->addWidget( clearSelectionButton, 1, 1, 1, 1 );
 
@@ -93,16 +94,16 @@ void SelectDock::init( Viewer* viewer_ )
   selectDockLayout->addWidget( hline );
 
   QGroupBox* selectionTypeGroup =
-    new QGroupBox( QString( "On mouse click select:" ));
+    new QGroupBox( QString( "Select/Deselect in view (shift + click):" ));
   QGridLayout* selectionTypeLayout = new QGridLayout( );
   selectionTypeGroup->setLayout( selectionTypeLayout );
   selectDockLayout->addWidget( selectionTypeGroup );
 
-  auto nodeRadioButton = new QRadioButton( QString( "node" ));
+  auto nodeRadioButton = new QRadioButton( QString( "Node" ));
   selectionTypeLayout->addWidget( nodeRadioButton, 0, 0, 1, 1 );
-  auto sectionRadioButton = new QRadioButton( QString( "section" ));
+  auto sectionRadioButton = new QRadioButton( QString( "Section" ));
   selectionTypeLayout->addWidget( sectionRadioButton, 0, 1, 1, 1 );
-  auto neuriteRadioButton = new QRadioButton( QString( "neurite" ));
+  auto neuriteRadioButton = new QRadioButton( QString( "Neurite" ));
   selectionTypeLayout->addWidget( neuriteRadioButton, 0, 2, 1, 1 );
   nodeRadioButton->setChecked(true);
   connect( nodeRadioButton, SIGNAL( clicked( )),
@@ -112,21 +113,14 @@ void SelectDock::init( Viewer* viewer_ )
   connect( neuriteRadioButton, SIGNAL( clicked( )),
            this, SLOT( neuriteButtonClicked( )));
 
-  QGroupBox* selectionModeGroup =
-    new QGroupBox( QString( "On mouse click accumulate selection:" ));
-  QGridLayout* selectionModeLayout = new QGridLayout( );
-  selectionModeGroup->setLayout( selectionModeLayout );
-  selectDockLayout->addWidget( selectionModeGroup );
 
-  auto inclusiveRadioButton = new QRadioButton( QString( "yes" ));
-  selectionModeLayout->addWidget( inclusiveRadioButton, 0, 0 );
-  auto exclusiveRadioButton = new QRadioButton( QString( "no" ));
-  selectionModeLayout->addWidget( exclusiveRadioButton, 0, 1 );
-  inclusiveRadioButton->setChecked(true);
-  connect( inclusiveRadioButton, SIGNAL( clicked( )),
-           this, SLOT( inclusiveButtonClicked( )));
-  connect( exclusiveRadioButton, SIGNAL( clicked( )),
-           this, SLOT( exclusiveButtonClicked( )));
+  auto multipleSelectionCheckBox = new QCheckBox( "Multiple Selection" );
+  multipleSelectionCheckBox->setCheckState( Qt::Checked );
+  selectionTypeLayout->addWidget(multipleSelectionCheckBox,1,0,1,3);
+
+  connect( multipleSelectionCheckBox, SIGNAL( stateChanged( int )),
+           this, SLOT( multipleSelectionChanged( int )));
+
 
 }
 
@@ -196,14 +190,16 @@ void SelectDock::neuriteButtonClicked( void )
   _viewer->updateSelectionType( Viewer::NEURITE );
 }
 
-void SelectDock::inclusiveButtonClicked( void )
+void SelectDock::multipleSelectionChanged( int state )
 {
-  _viewer->updateSelectionInclusionMode( Viewer::INCLUSIVE );
-}
-
-void SelectDock::exclusiveButtonClicked( void )
-{
-  _viewer->updateSelectionInclusionMode( Viewer::EXCLUSIVE );
+  if ( state == Qt::Checked )
+  {
+    _viewer->updateSelectionInclusionMode( Viewer::INCLUSIVE );
+  }
+  else
+  {
+    _viewer->updateSelectionInclusionMode( Viewer::EXCLUSIVE );
+  }
 }
 
 std::unordered_set< int > SelectDock::_fromTreeToSelection( void )
@@ -220,6 +216,8 @@ std::unordered_set< int > SelectDock::_fromTreeToSelection( void )
 void SelectDock::_fromSelectionToTree( std::unordered_set< int > selection_ )
 {
   _morphologyTree->selectionModel( )->clear( );
+  auto treeModel = dynamic_cast< TreeModel* > ( _morphologyTree->model( ));
+  treeModel->clearPartialSelected( );
 
   for( int i = 0; i < _morphologyTree->model( )->rowCount( ); ++i )
   {
@@ -228,11 +226,11 @@ void SelectDock::_fromSelectionToTree( std::unordered_set< int > selection_ )
   }
 }
 
-bool SelectDock::_recursiveFromSelectionToTree(
+std::pair<bool,bool> SelectDock::_recursiveFromSelectionToTree(
   QModelIndex index_, std::unordered_set< int >& selection_ )
 {
   if ( !index_.isValid( ))
-    return true;
+    return { true, true};
   if ( _morphologyTree->model( )->rowCount( index_ ) == 0 )
   {
     int nodeId = index_.sibling( index_.row( ), 1 ).data( ).toInt( );
@@ -243,18 +241,22 @@ bool SelectDock::_recursiveFromSelectionToTree(
         index_, QItemSelectionModel::Select );
       _morphologyTree->selectionModel( )->select(
         index_.sibling( index_.row( ), 1 ), QItemSelectionModel::Select );
-      return true;
+      return { true, true };
     }
-    return false;
+    return { false, false };
   }
   else
   {
     bool allSelected = true;
+    bool oneSelected = false;
     for ( int i = 0; i < _morphologyTree->model( )->rowCount( index_ ); i++ )
     {
       auto childIndex = _morphologyTree->model( )->index( i, 0, index_ );
-      allSelected = allSelected &
-        _recursiveFromSelectionToTree( childIndex, selection_ );
+      bool rAllSelected, rOneSelected;
+      std::tie( rAllSelected, rOneSelected) = _recursiveFromSelectionToTree( childIndex,
+                                                                             selection_ );
+      allSelected = allSelected && rAllSelected;
+      oneSelected = oneSelected || rOneSelected;
     }
     if ( allSelected )
     {
@@ -263,7 +265,12 @@ bool SelectDock::_recursiveFromSelectionToTree(
       _morphologyTree->selectionModel( )->select(
         index_.sibling( index_.row( ), 1 ), QItemSelectionModel::Select );
     }
-    return allSelected;
+    else if ( oneSelected )
+    {
+      auto treeModel = dynamic_cast< TreeModel* > ( _morphologyTree->model( ));
+      treeModel->setPartialSelected( index_, true );
+    }
+    return { allSelected, oneSelected };
   }
 }
 
@@ -274,9 +281,11 @@ void SelectDock::_recursiveDownSelectDeselectItem(
   if ( !index_.isValid( ))
     return;
   auto model = _morphologyTree->model( );
+  auto treeModel = dynamic_cast< TreeModel* > ( model );
   auto selectionModel = _morphologyTree->selectionModel( );
   selectionModel->select( index_, state_ );
   selectionModel->select( index_.sibling( index_.row( ), 1 ), state_ );
+  treeModel->setPartialSelected( index_, false );
 
   for ( int i = 0; i < model->rowCount( index_ ); i++ )
   {
@@ -292,25 +301,43 @@ void SelectDock::_recursiveUpSelectDeselectItem(
   if ( !index_.isValid( ))
     return;
   auto model = _morphologyTree->model( );
+  auto treeModel = dynamic_cast< TreeModel* > ( model );
   auto selectionModel = _morphologyTree->selectionModel( );
 
-  bool changeState = true;
-
-  if ( state_ == QItemSelectionModel::Select )
+  bool oneSelected = false;
+  bool allSelected = true;
+  for( int i = 0; i < model->rowCount( index_ ); i++ )
   {
-    for ( int i = 0; i < model->rowCount( index_ ); i++ )
-    {
-      auto childIndex = model->index( i, 0, index_ );
-      changeState = changeState && selectionModel->isSelected( childIndex );
-      if ( !changeState )
-        break;
-    }
+    auto childIndex = model->index( i, 0, index_ );
+    bool childSelected = selectionModel->isSelected( childIndex );
+    bool childPartialSelected = treeModel->isPartialSelected( childIndex );
+    oneSelected = oneSelected || childSelected || childPartialSelected;
+    allSelected = allSelected && childSelected;
+    if( !allSelected && oneSelected )
+      break;
   }
-  if ( changeState )
+
+  if( allSelected )
   {
-    selectionModel->select( index_, state_ );
-    selectionModel->select( index_.sibling( index_.row( ), 1 ), state_ );
-    _recursiveUpSelectDeselectItem( index_.parent( ), state_ );
+    selectionModel->select( index_,QItemSelectionModel::Select );
+    selectionModel->select( index_.sibling( index_.row( ),1 ),
+                            QItemSelectionModel::Select );
+    treeModel->setPartialSelected( index_,false );
+  }
+  else
+  {
+    selectionModel->select( index_,QItemSelectionModel::Deselect );
+    selectionModel->select( index_.sibling( index_.row( ),1 ),
+                            QItemSelectionModel::Deselect );
+    if( oneSelected )
+    {
+      treeModel->setPartialSelected( index_,true );
+    }
+    else
+    {
+      treeModel->setPartialSelected( index_,false );
+    }
+    _recursiveUpSelectDeselectItem( index_.parent( ),state_ );
   }
 }
 

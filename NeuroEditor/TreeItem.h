@@ -40,11 +40,14 @@ class TreeItem
     QVariant data ( int column ) const;
     int row ( ) const;
     TreeItem* parentItem ( );
+    bool isPartialSelected( ) const;
+    void setPartialSelected( bool partialSelected );
 
   private:
     QList < TreeItem* > _childItems;
     QList < QVariant > _itemData;
     TreeItem* _parentItem;
+    bool _partialSelected;
 };
 
 #endif //__NEUROEDITOR_TREEITEM__

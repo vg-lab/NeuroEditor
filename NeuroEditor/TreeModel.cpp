@@ -22,6 +22,7 @@
 #include "TreeModel.h"
 
 #include <QStringList>
+#include <QColor>
 
 TreeModel::TreeModel (  nsol::NeuronMorphologyPtr morphology_,
                         QObject* parent )
@@ -50,6 +51,19 @@ QVariant TreeModel::data ( const QModelIndex& index, int role ) const
 {
   if ( !index.isValid ( ))
     return QVariant ( );
+
+  if (role == Qt::TextColorRole)
+  {
+    TreeItem* item = static_cast<TreeItem*>(index.internalPointer ( ));
+    if (item->isPartialSelected( ))
+    {
+      return QColor(Qt::blue);
+    }
+    else
+    {
+      return QColor( Qt::black );
+    }
+  }
 
   if ( role != Qt::DisplayRole )
     return QVariant ( );
@@ -179,4 +193,38 @@ void TreeModel::_setupModelData ( nsol::NeuronMorphologyPtr morphology_ )
       parents.pop_back ( );
     }
   }
+}
+
+void TreeModel::setPartialSelected( const QModelIndex& index, bool partialSelected )
+{
+  TreeItem* item = static_cast<TreeItem*>(index.internalPointer ( ));
+  item->setPartialSelected( partialSelected );
+
+  if( partialSelected )
+  {
+    _partialSelectedItems.emplace( item );
+  }
+  else
+  {
+    _partialSelectedItems.erase( item );
+  }
+
+  Q_EMIT dataChanged(index,index.sibling(index.row(),1));
+}
+
+bool TreeModel::isPartialSelected( const QModelIndex& index )
+{
+  TreeItem* item = static_cast<TreeItem*>(index.internalPointer ( ));
+  return item->isPartialSelected();
+}
+
+void TreeModel::clearPartialSelected( )
+{
+  for (auto & item: _partialSelectedItems)
+  {
+    item->setPartialSelected( false );
+    auto modelIndex = index(item->row(),0);
+    Q_EMIT dataChanged(modelIndex, modelIndex.sibling(modelIndex.row(),1));
+  }
+  _partialSelectedItems.clear();
 }

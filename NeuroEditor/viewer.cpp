@@ -33,6 +33,7 @@
 #include <limits>
 #include <iostream>
 #include <algorithm>
+#include <QMenu>
 
 using namespace std;
 
@@ -47,6 +48,7 @@ Viewer::Viewer ( QWidget *parent )
   , _selectionInclusionMode( INCLUSIVE )
   , _selectionType( NODE )
   , _morphoStructure( nullptr )
+  , _drawAxis( false )
 {
   _morphologyInfoToShow = 0;
 
@@ -75,6 +77,20 @@ Viewer::Viewer ( QWidget *parent )
   _somaSection = new nsol::NeuronMorphologySection( );
   _somaNeurite->firstSection( _somaSection );
   _somaSection->neurite( _somaNeurite );
+
+  _actionDelete = new QAction("Delete",this);
+  _actionDelete->setShortcut(QKeySequence("R"));
+  _actionDelete->setShortcutVisibleInContextMenu( true );
+
+  _actionSelect = new QAction( "Select/Deselect", this );
+  _actionSelect->setToolTip("shift + leftClick ");
+
+
+  QObject::connect(_actionDelete, SIGNAL(triggered( bool )),
+                   this, SLOT( _onDelete( void )));
+
+  QObject::connect(_actionSelect, SIGNAL( triggered( bool )),
+                   this, SLOT(_onSelect( void )));
 }
 
 Viewer::~Viewer ( )
@@ -140,7 +156,8 @@ void Viewer::draw ( )
   }
   if ( !mSplitScreen )
   {
-    glViewport ( 0, 0, width ( ), height( ));
+    glViewport ( 0, 0, width ( ) * devicePixelRatioF( ),
+                 height( ) * devicePixelRatioF( ));
     _scene->render( _firstLayout.renderModifiedStructure,
                     _firstLayout.renderModifiedMesh,
                     _firstLayout.renderOriginalStructure,
@@ -149,14 +166,17 @@ void Viewer::draw ( )
   }
   else
   {
-    glViewport ( 0, 0, width ( )*0.5, height( ));
+    glViewport ( 0, 0, width ( )*0.5 * devicePixelRatioF( ),
+                 height( ) * devicePixelRatioF( ));
     _scene->render( _firstLayout.renderModifiedStructure,
                     _firstLayout.renderModifiedMesh,
                     _firstLayout.renderOriginalStructure,
                     _firstLayout.renderOriginalMesh );
     renderMorphologyInfo ( morphologyInfo );
 
-    glViewport ( width( )*0.5, 0, width( )*0.5, height( ));
+    glViewport ( width( )*0.5 * devicePixelRatioF( ), 0,
+                 width( )*0.5 * devicePixelRatioF( ),
+                 height( ) * devicePixelRatioF( ));
     _scene->render( _secondLayout.renderModifiedStructure,
                     _secondLayout.renderModifiedMesh,
                     _secondLayout.renderOriginalStructure,
@@ -165,7 +185,7 @@ void Viewer::draw ( )
   }
 
   float axisSize = camera( )->distanceToSceneCenter( ) / 10.0f;
-  if ( manipulatedFrame ( )->isManipulated ( ))
+  if ( manipulatedFrame ( )->isManipulated ( ) || _drawAxis)
   {
     if ( mSplitScreen)
     {
@@ -173,12 +193,15 @@ void Viewer::draw ( )
       glMultMatrixd ( manipulatedFrame ( )->matrix ( ));
       if ( _firstLayout.renderModifiedStructure )
       {
-        glViewport ( 0, 0, width( )*0.5, height( ));
+        glViewport ( 0, 0, width( )*0.5 * devicePixelRatioF( ),
+                     height( ) * devicePixelRatioF( ));
         drawAxis ( axisSize );
       }
       if ( _secondLayout.renderModifiedStructure )
       {
-        glViewport ( width( )*0.5, 0, width( )*0.5, height( ));
+        glViewport ( width( )*0.5 * devicePixelRatioF( ), 0,
+                     width( )*0.5 * devicePixelRatioF( ),
+                     height( ) * devicePixelRatioF( ));
         drawAxis ( axisSize );
       }
       glPopMatrix ( );
@@ -192,7 +215,9 @@ void Viewer::draw ( )
     }
   }
 
-  if ( mSplitScreen ) glViewport ( 0, 0, width ( ), height ( ));
+  if ( mSplitScreen )
+    glViewport ( 0, 0, width ( )  * devicePixelRatioF( ),
+                 height ( )  * devicePixelRatioF( ));
 
   if ( _selectionMode != NONE )
     drawSelectionRectangle ( );
@@ -253,7 +278,7 @@ void Viewer::focusOnSelection( )
 
 void Viewer::updateMorphology( void )
 {
-  _morphoStructure->update();
+  _morphoStructure->update( );
   _scene->updateModifiedStructure( );
   _scene->updateModifiedMesh( );
   delete _treeModel;
@@ -318,6 +343,7 @@ void Viewer::changeAveragePos( Eigen::Vector3f& pos_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
+    Q_EMIT modifiedNodes (_selection);
     update( );
   }
 }
@@ -344,6 +370,7 @@ void Viewer::changeRotation( Eigen::Quaternionf& q_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
+    Q_EMIT modifiedNodes (_selection);
     update( );
   }
 }
@@ -368,6 +395,7 @@ void Viewer::changeAverageRadius( float radius_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
+    Q_EMIT modifiedNodes (_selection);
     update( );
   }
 }
@@ -532,13 +560,11 @@ void Viewer::mousePressEvent ( QMouseEvent *e )
 {
   // Start selection. Mode is ADD with Shift key and TOGGLE with Alt key.
   _rectangle = QRect ( e->pos ( ), e->pos ( ));
+  _lastPoint = e->pos();
 
   if (( e->button ( ) == Qt::LeftButton )
     && ( e->modifiers ( ) == Qt::ShiftModifier ))
-    _selectionMode = ADD;
-  else if (( e->button ( ) == Qt::RightButton )
-    && ( e->modifiers ( ) == Qt::ShiftModifier ))
-    _selectionMode = REMOVE;
+    _selectionMode = Select;
   else
   {
     if ( e->modifiers ( ) == Qt::ControlModifier )
@@ -549,6 +575,9 @@ void Viewer::mousePressEvent ( QMouseEvent *e )
 
 void Viewer::mouseMoveEvent ( QMouseEvent *e )
 {
+  auto auxPoint = e->pos() - _lastPoint;
+  _mouseMovement +=  auxPoint.manhattanLength( );
+
   if ( _selectionMode != NONE )
   {
     _rectangle.setBottomRight ( e->pos ( ) );
@@ -571,6 +600,10 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
 
 void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 {
+
+  if ( e->button() == Qt::RightButton && _mouseMovement < 10 )
+    _showContextMenu( e );
+
   if ( _selectionMode != NONE )
   {
     _rectangle = _rectangle.normalized ( );
@@ -629,6 +662,85 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
 
     QGLViewer::mouseReleaseEvent ( e );
   }
+
+  _mouseMovement = 0;
+}
+
+void Viewer::_showContextMenu( const QMouseEvent* e )
+{
+  if ( _morphoStructure == nullptr )
+    return;
+
+  _leftSelected = -1;
+  _selectionMode = RightSelect;
+  select( e->pos( ));
+  _selectionMode = NONE;
+
+  auto menu = new QMenu( );
+  menu->setToolTipsVisible( true );
+  menu->addAction( _actionSelect );
+  menu->addAction("Select all", [&](){ _selectAll();});
+  menu->addAction("Deselect all", [&](){ _deSelectAll();});
+  if ( _leftSelected == -1 ) {
+    _actionDelete->setDisabled( true );
+    _actionDelete->setToolTip( "" );
+    _actionSelect->setDisabled( true );
+  }
+  else
+  {
+    _actionSelect->setDisabled( false );
+    if ( _selection.find( _leftSelected ) == _selection.end( ))
+    {
+      _deleteSelection = false;
+      if ( _checkFirstLastNodeSection( _leftSelected ))
+      {
+        _actionDelete->setDisabled( true );
+        _actionDelete->setToolTip( "The first or last node of a section cannot be deleted." );
+      }
+      else
+      {
+        _actionDelete->setDisabled( false );
+        _actionDelete->setToolTip( "" );
+      }
+    }
+    else
+    {
+      _deleteSelection = true;
+      bool firstOrLast = false;
+      for ( auto &node : _selection )
+      {
+        firstOrLast |= _checkFirstLastNodeSection(node);
+        if ( firstOrLast )
+          break;
+      }
+
+      if ( firstOrLast )
+      {
+        _actionDelete->setDisabled( true );
+        _actionDelete->setToolTip(
+                "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+      }
+      else
+      {
+        _actionDelete->setDisabled(false);
+        _actionDelete->setToolTip(
+                "A node of the selection is the first or last node of a section, therefore, it cannot be deleted.");
+      }
+    }
+  }
+
+  menu->addAction( _actionDelete );
+  auto actionMove = new QAction ("Move");
+  actionMove->setToolTip("For move selection press Ctrl+RightMouse");
+  actionMove->setDisabled( true );
+  auto actionRotate = new QAction("Rotate");
+  actionRotate->setToolTip("For rotate selection press Ctrl+LeftMouse");
+  actionRotate->setDisabled( true );
+
+  menu->addSeparator( );
+  menu->addAction( actionMove );
+  menu->addAction( actionRotate );
+  menu->exec( QCursor::pos() );
 }
 
 void Viewer::resizeGL( int width, int height )
@@ -652,6 +764,7 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
   update( );
 }
 
+
 //   C u s t o m i z e d   s e l e c t i o n   p r o c e s s
 void Viewer::drawWithNames ( )
 {
@@ -671,8 +784,6 @@ void Viewer::endSelection ( const QPoint & )
 
   if ( nbHits > 0 )
   {
-    if ( _selectionMode == ADD && _selectionInclusionMode == EXCLUSIVE )
-      _selection.clear( );
     for ( int i = 0; i < nbHits; ++i )
     {
       std::vector< int > ids;
@@ -696,15 +807,34 @@ void Viewer::endSelection ( const QPoint & )
             ids.push_back( cNode->id( ));
         break;
       }
+      bool newInserted = false;
       switch ( _selectionMode )
       {
-      case ADD:
-        for ( auto id: ids )
-          _selection.insert( id );
+        case Select:
+          if ( _selectionInclusionMode == EXCLUSIVE )
+          {
+            for( auto id: ids )
+            {
+              newInserted = newInserted ||
+                            _selection.find( id ) == _selection.end( );
+              if( newInserted )
+                break;
+            }
+          }
+
+          if ( newInserted && _selectionInclusionMode == EXCLUSIVE )
+            _selection.clear();
+
+          for ( auto id: ids)
+          {
+            if ( _selection.find( id ) == _selection.end( ))
+              _selection.insert( id );
+            else
+              _selection.erase( id );
+          }
         break;
-      case REMOVE:
-        for ( auto id: ids )
-          _selection.erase( id );
+      case RightSelect:
+        _leftSelected = ids[0];
         break;
       default:
         break;
@@ -787,6 +917,7 @@ void Viewer::endManipulation( )
 
     Q_EMIT updateAveragePosSignal( _averagePosition );
     Q_EMIT updateRotationSignal( quat );
+    Q_EMIT modifiedNodes (_selection);
     update( );
   }
 }
@@ -1043,6 +1174,12 @@ void Viewer::undoState ( )
   }
 }
 
+void Viewer::showAxis( bool isVisible )
+{
+  _drawAxis = isVisible;
+  update( );
+}
+
 void Viewer::adjustSelecRegion( int windowWidth_, int windowHeight_,
                                 QPoint& regionCenter_, int& regionWidth_,
                                 int& regionHeight_ )
@@ -1069,6 +1206,7 @@ void Viewer::_changeSelection( void )
   ManipulatedFrameSetConstraint *mfsc =
     ( ManipulatedFrameSetConstraint* )( manipulatedFrame( )->constraint( ));
   mfsc->clearSet( );
+  Q_EMIT updateSelectionSignal( _selection.size( ));
   if ( _selection.size( ) <= 0 )
     Q_EMIT resetInspectorSignal( );
   else
@@ -1098,3 +1236,84 @@ void Viewer::_changeSelection( void )
   }
   _scene->setSelection( _selection );
 }
+
+void Viewer::_onDelete( void )
+{
+  saveState( );
+  if ( _deleteSelection )
+  {
+    for( const auto nodeId: _selection )
+    {
+      auto node = _morphoStructure->idToNode[ nodeId ];
+      auto& sectionNodes = _morphoStructure->nodeToSection[ node ]->nodes( );
+      for( auto it = sectionNodes.begin( ); it != sectionNodes.end( ); ++it )
+      {
+        if( ( *it ) == node )
+        {
+          sectionNodes.erase( it );
+          break;
+        }
+      }
+    }
+
+    Q_EMIT deleteNodes( _selection );
+  }
+  else
+  {
+    auto node = _morphoStructure->idToNode[ _leftSelected ];
+    auto& sectionNodes = _morphoStructure->nodeToSection[ node ]->nodes( );
+    for( auto it = sectionNodes.begin( ); it != sectionNodes.end( ); ++it )
+    {
+      if( ( *it ) == node )
+      {
+        sectionNodes.erase( it );
+        break;
+      }
+    }
+    Q_EMIT deleteNodes({_leftSelected});
+  }
+  updateMorphology( );
+}
+
+void Viewer::_onSelect( void )
+{
+
+  _selectionMode = Select;
+  endSelection(QPoint());
+
+}
+
+void Viewer::_selectAll( )
+{
+  for ( auto& neurite : modifiedMorphology->neurites( ))
+    for ( auto& section : neurite->sections( ))
+      for ( auto& node : section->nodes( ))
+        _selection.insert( node->id( ));
+
+  _changeSelection( );
+  Q_EMIT updateSelectionSignal( _selection );
+}
+
+void Viewer::_deSelectAll( void )
+{
+  _selection.clear();
+  _changeSelection( );
+  Q_EMIT updateSelectionSignal( _selection );
+
+
+}
+
+bool Viewer::_checkFirstLastNodeSection( int nodeId )
+{
+  auto node = _morphoStructure->idToNode[ nodeId ];
+  auto section = _morphoStructure->nodeToSection[ node ];
+  auto firstNode = *( section->nodes().begin( ));
+  auto lastNode = *( section->nodes().rbegin( ));
+  return  firstNode == node || lastNode == node ;
+}
+
+
+
+
+
+

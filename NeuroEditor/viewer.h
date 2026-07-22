@@ -31,6 +31,7 @@
 using namespace qglviewer;
 
 #include <nsol/nsol.h>
+#include <QAction>
 
 #include "Utils.h"
 #include "object.h"
@@ -53,8 +54,8 @@ public:
 
   typedef enum {
     NONE = 0,
-    ADD,
-    REMOVE
+    Select,
+    RightSelect
   } tSelectionMode;
 
   typedef enum {
@@ -150,6 +151,8 @@ public Q_SLOTS://slots:
 
   void undoState( void );
 
+  void showAxis( bool isVisible );
+
   void reset ( );
 
   void focusOnSelection( );
@@ -168,6 +171,12 @@ public Q_SLOTS://slots:
   void changeOriginalMeshAlpha( float alpha_ );
   void changeModifiedMeshAlpha( float alpha_ );
 
+  void _selectAll( void );
+  void _deSelectAll(void );
+
+  void _onDelete( void );
+  void _onSelect( void );
+
 Q_SIGNALS:
 
   void morphologyChanged( void );
@@ -175,10 +184,13 @@ Q_SIGNALS:
   void updateSelectionSignal( std::unordered_set< int > selection_ );
 
   void resetInspectorSignal( void );
+  void updateSelectionSignal( int nSelected );
 
   void updateAveragePosSignal( Eigen::Vector3f& pos_ );
   void updateRotationSignal( Eigen::Quaternionf& q_ );
   void updateAverageRadiusSignal( float radius_ );
+  void deleteNodes( std::unordered_set< int > nodes );
+  void modifiedNodes( std::unordered_set< int > nodes );
 
 protected:
 
@@ -222,6 +234,8 @@ protected:
                           int& regionHegiht_ );
 
   void _changeSelection( void );
+  bool _checkFirstLastNodeSection( int nodeId );
+  void _showContextMenu( const QMouseEvent* e );
 
   Scene* _scene;
   nsol::SwcReader swcReader;
@@ -259,6 +273,7 @@ protected:
   tSelectionInclusionMode _selectionInclusionMode;
   tSelectionType _selectionType;
   std::unordered_set< int > _selection;
+  int _leftSelected;
 
   neuroeditor::MorphologyStructure* _morphoStructure;
 
@@ -269,6 +284,15 @@ protected:
   float _averageRadius;
 
   const static float _colorFactor;
+
+  bool _drawAxis;
+
+  QAction* _actionDelete;
+  QAction* _actionSelect;
+  bool _deleteSelection;
+
+  QPoint _lastPoint;
+  int _mouseMovement;
 
 };
 

@@ -20,6 +20,7 @@ set(NEUROEDITOR_HEADERS
   Tester.h
   TraceModifier.h
   ColorSelectionWidget.h
+  SimplificationHelpDialog.h
 )
 
 # Define source files
@@ -44,6 +45,7 @@ set(NEUROEDITOR_SOURCES
   Tester.cpp
   TraceModifier.cpp
   ColorSelectionWidget.cpp
+  SimplificationHelpDialog.cpp
 )
 
 # # Create the includes strings

@@ -27,6 +27,7 @@
 #include <QScrollArea>
 #include <QLabel>
 #include <QPushButton>
+#include <QButtonGroup>
 
 
 TestWidget::TestWidget( neuroeditor::Tester::TTesterMethod testMethod_ )
@@ -120,6 +121,7 @@ void CorrectDock::init( Viewer* viewer_ )
   mainWidget->setLayout( correctDockLayout );
   correctDockLayout->setAlignment( Qt::AlignTop );
 
+
   QGroupBox* selectionGroup = new QGroupBox( );
   QVBoxLayout* selectionGroupLayout = new QVBoxLayout( );
   selectionGroup->setLayout( selectionGroupLayout );
@@ -162,6 +164,7 @@ void CorrectDock::init( Viewer* viewer_ )
 
   _initTestSelector( );
 
+
   QScrollArea* scrollArea = new QScrollArea( );
   scrollArea->setWidgetResizable(true);
   selectionGroupLayout->addWidget( scrollArea );
@@ -178,10 +181,10 @@ void CorrectDock::init( Viewer* viewer_ )
   buttonsWidget->setLayout( buttonsLayout );
   selectionGroupLayout->addWidget( buttonsWidget );
 
-  QPushButton* clearButton = new QPushButton( QString( "clear all" ));
+  QPushButton* clearButton = new QPushButton( QString( "Clear all" ));
   clearButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( clearButton );
-  QPushButton* runButton = new QPushButton( QString( "apply all" ));
+  QPushButton* runButton = new QPushButton( QString( "Apply all" ));
   runButton->setMaximumSize( QSize( 80, 40 ));
   buttonsLayout->addWidget( runButton );
 
@@ -207,8 +210,20 @@ void CorrectDock::init( Viewer* viewer_ )
   scrollArea->setWidget( outputWidget );
   scrollArea->setMaximumHeight( 400 );
 
+  connect(_viewer, &Viewer::deleteNodes,this,
+          [&]( std::unordered_set< int > nodes ){
+           this->_fixerAppliedNode(nodes,neuroeditor::Fixer::DELETE_NODE);
+  });
+
+  connect(_viewer, &Viewer::modifiedNodes,this,
+          [&]( std::unordered_set< int > nodes ){
+    this->_fixerAppliedNode(nodes,neuroeditor::Fixer::DISPLACE_TO_MIDDLE_EDGE);
+  });
+
+
   // connect( _viewer, SIGNAL( morphologyChanged( )),
   //          this, SLOT( clearOutput( )));
+
 }
 
 void CorrectDock::addTest( void )
@@ -287,12 +302,16 @@ void CorrectDock::correct( void )
         testResultLayout->setAlignment( Qt::AlignLeft );
         testResultWidget->setLayout( testResultLayout );
         _outputLayout->addWidget( testResultWidget );
-        testOut = std::string( "\tManual correction: ");
+        testOut = std::string( "\tManual correction (Nodes id): ");
         testResultLayout->addWidget( new QLabel( QString( testOut.c_str( ))));
         for( auto indices: fixResult )
         {
-          auto rButton = new ResultButton( indices, _viewer );
+          auto rButton = new ResultButton( indices, _viewer, test->testMethod );
           testResultLayout->addWidget( rButton );
+          QObject::connect(rButton, SIGNAL(fixerApplied(std::unordered_set< int>, neuroeditor::Fixer::TFixerMethod)),
+                           this, SLOT (
+                                 _fixerAppliedNode(
+                                 std::unordered_set< int >, neuroeditor::Fixer::TFixerMethod )));
         }
       }
     }
@@ -374,3 +393,28 @@ void CorrectDock::_addTest( neuroeditor::Tester::TTesterMethod testerMethod_ )
   connect( testWidget, SIGNAL( testToDelete( QWidget* )),
            this, SLOT( removeTest( QWidget* )));
 }
+
+void CorrectDock::_fixerAppliedNode( std::unordered_set< int > nodesId, neuroeditor::Fixer::TFixerMethod fixerMethod)
+{
+  for( int i = 0 ; i < _outputLayout->count( ); ++i )
+  {
+    auto innerWidget = _outputLayout->itemAt( i )->widget( );
+    if( innerWidget != nullptr && !innerWidget->children( ).empty( ) )
+    {
+      for (const auto &child : innerWidget->children( ))
+      {
+        auto rButton = qobject_cast< ResultButton* >( child );
+        if( rButton != nullptr &&
+            std::find( nodesId.begin( ), nodesId.end( ),
+                       rButton->text( ).toInt( ) ) != nodesId.end( ) )
+        {
+          if (fixerMethod == neuroeditor::Fixer::DELETE_NODE)
+            rButton->deleteLater();
+          else
+            rButton->highlight(true);
+        }
+      }
+    }
+  }
+}
+

@@ -124,7 +124,7 @@ namespace neuroeditor
 
 
                 //First section node
-                auto node = previousNodes[0];
+                auto node = new nsol::Node();
                 auto oNode = outNodes[0];
                 node->point( Eigen::Vector3f( oNode.position.x,
                         oNode.position.y, oNode.position.z ));
@@ -155,7 +155,7 @@ namespace neuroeditor
                 }
 
                 //Last section node
-                node = previousNodes[previousNodes.size() - 1];
+                node = new nsol::Node();
                 oNode = outNodes[outNodes.size() - 1];
                 node->point( Eigen::Vector3f( oNode.position.x,
                         oNode.position.y, oNode.position.z ));
@@ -268,7 +268,7 @@ namespace neuroeditor
       modifierParams[std::string( "distance" )] = 0.1f;
       break;
     case PERPDIST:
-      modifierParams[std::string( "distance" )] = 0.1f;
+      modifierParams[std::string( "dist_threshold" )] = 0.1f;
       break;
     case REUMANNWITKAM:
       modifierParams[std::string( "distance" )] = 0.1f;
@@ -279,7 +279,7 @@ namespace neuroeditor
       break;
     case LANG:
       modifierParams[std::string( "threshold" )] = 0.1f;
-      modifierParams[std::string( "size" )] = 0.1f;
+      modifierParams[std::string( "size" )] = 1.0f;
       break;
     case DOUGLASPEUCKER:
       modifierParams[std::string( "threshold" )] = 0.1f;
@@ -330,7 +330,7 @@ namespace neuroeditor
   bool TraceModifier::_perpdist( nsol::Section* section_,
                                  TModifierParams modifierParams_ )
   {
-    float value = modifierParams_["distance"];
+    float value = modifierParams_["dist_threshold"];
     std::vector< float > vecNodes = _vectorizeSection( section_ );
     std::vector< float > simplVecNodes;
 

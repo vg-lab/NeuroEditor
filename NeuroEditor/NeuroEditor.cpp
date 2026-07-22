@@ -36,6 +36,11 @@ NeuroEditor::NeuroEditor ( QWidget* parent )
   _viewer->setupViewer ( );
   _viewer->show( );
 
+  auto undoShorcut = new QShortcut(QKeySequence(tr("Ctrl+z", "Undo")),this);
+
+
+  QObject::connect(undoShorcut, SIGNAL( activated( )),
+                   _viewer, SLOT(undoState()));
 
   QObject::connect( _ui->actionQuit, SIGNAL( triggered( )),
                     QApplication::instance( ), SLOT( quit( )));

@@ -30,6 +30,9 @@
 #include <QToolButton>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QDoubleSpinBox>
+#include <QCheckBox>
+#include <QGroupBox>
 #include "viewer.h"
 #include "TraceModifier.h"
 
@@ -97,6 +100,15 @@ public Q_SLOTS:
   void apply( ModifierWidget* modifierWidget_ );
   void applyAll( void );
   void clear( void );
+  void autoApplyChanged( int state );
+  void updateSelection ( int nSelected );
+  void onVisibilityChanged ( bool isVisible );
+
+  Q_SIGNALS:
+
+  void showAxisSignal( bool b );
+
+
 
 protected:
 
@@ -106,31 +118,63 @@ protected:
 
   void _initMethodSelector( void );
 
+  void _initSpinBoxes( void );
+
+  void _initSpinBoxesConnections( void );
+
   bool _apply( ModifierWidget* modifierWidget_,
                std::unordered_set< nsol::Section* >& sections_ );
 
+  bool _setBlockedSpinBoxSignals( bool isBlocked );
+
+  void _disableMultiLocation( );
+
+  void _disableOneLocation( );
+
   std::unordered_set< nsol::Section* > _uniqueSections( void );
+
+
 
   Viewer* _viewer;
 
-  QLineEdit* _xTextBoxPosition;
-  QLineEdit* _yTextBoxPosition;
-  QLineEdit* _zTextBoxPosition;
+  QCheckBox* _checkBoxAutoApply;
 
-  QLineEdit* _xTextBoxRotation;
-  QLineEdit* _yTextBoxRotation;
-  QLineEdit* _zTextBoxRotation;
+  QDoubleSpinBox* _xSpinBoxOnePosition;
+  QDoubleSpinBox* _ySpinBoxOnePosition;
+  QDoubleSpinBox* _zSpinBoxOnePosition;
 
-  QLineEdit* _radiusTextBox;
+  QDoubleSpinBox* _radiusOneSpinBox;
+
+  QPushButton* _applyOnePosButton;
+  QPushButton* _applyOneRadButton;
+
+  QDoubleSpinBox* _xSpinBoxMultiPosition;
+  QDoubleSpinBox* _ySpinBoxMultiPosition;
+  QDoubleSpinBox* _zSpinBoxMultiPosition;
+
+  QDoubleSpinBox* _xSpinBoxMultiRotation;
+  QDoubleSpinBox* _ySpinBoxMultiRotation;
+  QDoubleSpinBox* _zSpinBoxMultiRotation;
+
+  QDoubleSpinBox* _radiusMultiSpinBox;
+
+  QPushButton* _applyMultiPosButton;
+  QPushButton* _applyMultiRadButton;
+  QPushButton* _applyMultiRotButton;
+
+  QGroupBox* _inspectorGroupMulti;
+
+
 
   bool _activeManipulation;
+  int _nSelected;
 
-  QMessageBox* _positionHelpBox;
-  QMessageBox* _rotationHelpBox;
-  QMessageBox* _radiusHelpBox;
-
+  QMessageBox* _multiSelectionHelpBox;
   QComboBox* _methodSelector;
+
   QVBoxLayout* _methodsLayout;
+
+
   QMessageBox* _simplifyMethodHelpBox;
 
 
