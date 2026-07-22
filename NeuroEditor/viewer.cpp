@@ -248,12 +248,12 @@ void Viewer::focusOnSelection( )
   camera( )->setPivotPoint( pivot );
   camera( )->setPosition( pivot - axis * radius );
 
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateMorphology( void )
 {
-  _morphoStructure->update( );
+  _morphoStructure->update();
   _scene->updateModifiedStructure( );
   _scene->updateModifiedMesh( );
   delete _treeModel;
@@ -262,7 +262,7 @@ void Viewer::updateMorphology( void )
   checkSelection( );
   _changeSelection( );
   Q_EMIT updateSelectionSignal( _selection );
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateSelection( std::unordered_set< int > selection_ )
@@ -270,7 +270,7 @@ void Viewer::updateSelection( std::unordered_set< int > selection_ )
   _selection.clear( );
   _selection = selection_;
   _changeSelection( );
-  updateGL ( );
+  update( );
 }
 
 void Viewer::checkSelection( void )
@@ -318,7 +318,7 @@ void Viewer::changeAveragePos( Eigen::Vector3f& pos_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
-    updateGL( );
+    update( );
   }
 }
 
@@ -344,7 +344,7 @@ void Viewer::changeRotation( Eigen::Quaternionf& q_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
-    updateGL( );
+    update( );
   }
 }
 
@@ -368,20 +368,20 @@ void Viewer::changeAverageRadius( float radius_ )
     }
     _scene->updateModifiedStructure( );
     _scene->updateModifiedMesh( );
-    updateGL( );
+    update( );
   }
 }
 
 void Viewer::changeOriginalMeshAlpha( float alpha_ )
 {
   _scene->originalMeshAlpha( alpha_ );
-  updateGL( );
+  update( );
 }
 
 void Viewer::changeModifiedMeshAlpha( float alpha_ )
 {
   _scene->modifiedMeshAlpha( alpha_ );
-  updateGL( );
+  update( );
 }
 
 QString Viewer::helpString ( ) const
@@ -487,7 +487,7 @@ void Viewer::loadMorphology ( QString pSWCFile )
     delete _treeModel;
     _treeModel = new TreeModel( modifiedMorphology );
     Q_EMIT morphologyChanged( );
-    updateGL ( );
+    update( );
   }
   catch( ... )
   {
@@ -522,7 +522,7 @@ void Viewer::setModifiedAsOriginal ( )
 {
   originalMorphology = modifiedMorphology->clone ( );
   _scene->originalMorphology( originalMorphology );
-  updateGL( );
+  update( );
 }
 
 //Manipulated methods
@@ -552,7 +552,7 @@ void Viewer::mouseMoveEvent ( QMouseEvent *e )
   if ( _selectionMode != NONE )
   {
     _rectangle.setBottomRight ( e->pos ( ) );
-    updateGL ( );
+    update( );
   }
   else
     if ( e->modifiers ( ) == Qt::ControlModifier )
@@ -620,7 +620,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent *e )
     }
 
     _selectionMode = NONE;
-    updateGL ( );
+    update( );
   }
   else
   {
@@ -649,7 +649,7 @@ void Viewer::keyPressEvent ( QKeyEvent *e )
   }
   else
     QGLViewer::keyPressEvent ( e );
-  updateGL ( );
+  update( );
 }
 
 //   C u s t o m i z e d   s e l e c t i o n   p r o c e s s
@@ -757,7 +757,7 @@ void Viewer::whileManipulation( )
 
     Q_EMIT updateAveragePosSignal( aPos );
     Q_EMIT updateRotationSignal( quat );
-    updateGL( );
+    update( );
   }
 }
 
@@ -787,7 +787,7 @@ void Viewer::endManipulation( )
 
     Q_EMIT updateAveragePosSignal( _averagePosition );
     Q_EMIT updateRotationSignal( quat );
-    updateGL( );
+    update( );
   }
 }
 
@@ -829,56 +829,56 @@ void Viewer::updateSideBySide( bool sideBySideState_ )
   else
     camera( )->setScreenWidthAndHeight( width( )/2, height( ));
 
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateFLROriginalStructure( bool state_ )
 {
   _firstLayout.renderOriginalStructure = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateFLROriginalMesh( bool state_ )
 {
   _firstLayout.renderOriginalMesh = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateFLRModifiedStructure( bool state_ )
 {
   _firstLayout.renderModifiedStructure = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateFLRModifiedMesh( bool state_ )
 {
   _firstLayout.renderModifiedMesh = state_;
-  updateGL( );
+  update( );
 }
 
 
 void Viewer::updateSLROriginalStructure( bool state_ )
 {
   _secondLayout.renderOriginalStructure = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateSLROriginalMesh( bool state_ )
 {
   _secondLayout.renderOriginalMesh = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateSLRModifiedStructure( bool state_ )
 {
   _secondLayout.renderModifiedStructure = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::updateSLRModifiedMesh( bool state_ )
 {
   _secondLayout.renderModifiedMesh = state_;
-  updateGL( );
+  update( );
 }
 
 void Viewer::changeBackgroundColor( QColor color_ )
@@ -887,7 +887,7 @@ void Viewer::changeBackgroundColor( QColor color_ )
     Eigen::Vector3f( float( color_.red( )) * _colorFactor,
                      float( color_.green( )) * _colorFactor,
                      float( color_.blue( )) * _colorFactor ));
-  updateGL( );
+  update( );
 }
 
 void Viewer::changeOriginalStructureColor( QColor color_ )
@@ -896,7 +896,7 @@ void Viewer::changeOriginalStructureColor( QColor color_ )
     Eigen::Vector3f( float( color_.red( )) * _colorFactor,
                      float( color_.green( )) * _colorFactor,
                      float( color_.blue( )) * _colorFactor ));
-  updateGL( );
+  update( );
 }
 
 void Viewer::changeOriginalMeshColor( QColor color_ )
@@ -905,7 +905,7 @@ void Viewer::changeOriginalMeshColor( QColor color_ )
     Eigen::Vector3f( float( color_.red( )) * _colorFactor,
                      float( color_.green( )) * _colorFactor,
                      float( color_.blue( )) * _colorFactor ));
-  updateGL( );
+  update( );
 }
 
 void Viewer::changeModifiedStructureColor( QColor color_ )
@@ -914,7 +914,7 @@ void Viewer::changeModifiedStructureColor( QColor color_ )
     Eigen::Vector3f( float( color_.red( )) * _colorFactor,
                      float( color_.green( )) * _colorFactor,
                      float( color_.blue( )) * _colorFactor ));
-  updateGL( );
+  update( );
 }
 
 void Viewer::changeModifiedMeshColor( QColor color_ )
@@ -923,7 +923,7 @@ void Viewer::changeModifiedMeshColor( QColor color_ )
     Eigen::Vector3f( float( color_.red( )) * _colorFactor,
                      float( color_.green( )) * _colorFactor,
                      float( color_.blue( )) * _colorFactor ));
-  updateGL( );
+  update( );
 }
 
 void Viewer::setCameraViewFront( void )
@@ -934,7 +934,7 @@ void Viewer::setCameraViewFront( void )
 
   camera( )->setPosition( pivot - axis * radius );
   camera( )->setOrientation( Quaternion( Vec( 0.0, 1.0, 0.0 ), 0.0 ));
-  updateGL( );
+  update( );
 }
 void Viewer::setCameraViewTop( void )
 {
@@ -944,7 +944,7 @@ void Viewer::setCameraViewTop( void )
 
   camera( )->setPosition( pivot - axis * radius );
   camera( )->setOrientation( Quaternion( Vec( -1.0, 0.0, 0.0 ),  3.1416f/2.0f));
-  updateGL( );
+  update( );
 }
 void Viewer::setCameraViewBottom( void )
 {
@@ -954,7 +954,7 @@ void Viewer::setCameraViewBottom( void )
 
   camera( )->setPosition( pivot - axis * radius );
   camera( )->setOrientation( Quaternion( Vec( 1.0, 0.0, 0.0 ),  3.1416f/2.0f));
-  updateGL( );
+  update( );
 }
 void Viewer::setCameraViewLeft( void )
 {
@@ -964,7 +964,7 @@ void Viewer::setCameraViewLeft( void )
 
   camera( )->setPosition( pivot - axis * radius );
   camera( )->setOrientation( Quaternion( Vec( 0.0, -1.0, 0.0 ),  3.1416f/2.0f));
-  updateGL( );
+  update( );
 }
 void Viewer::setCameraViewRight( void )
 {
@@ -974,7 +974,7 @@ void Viewer::setCameraViewRight( void )
 
   camera( )->setPosition( pivot - axis * radius );
   camera( )->setOrientation( Quaternion( Vec( 0.0, 1.0, 0.0 ),  3.1416f/2.0f));
-  updateGL( );
+  update( );
 }
 
 void Viewer::selectDendrite ( unsigned int dendriteId_ )
@@ -989,7 +989,7 @@ void Viewer::selectDendrite ( unsigned int dendriteId_ )
           _selection.insert( node->id( ));
     ++currentDendId;
   }
-  updateGL ( );
+  update( );
 }
 
 void Viewer::selectSection ( unsigned int sectionId_ )
@@ -1003,13 +1003,13 @@ void Viewer::selectSection ( unsigned int sectionId_ )
           _selection.insert( node->id( ));
       ++currentSectionId;
     }
-  updateGL ( );
+  update( );
 }
 
 void Viewer::selectNode ( unsigned int nodeId_ )
 {
   _selection.insert( nodeId_ );
-  updateGL ( );
+  update( );
 }
 
 void Viewer::saveState(  )
@@ -1039,7 +1039,7 @@ void Viewer::undoState ( )
     checkSelection( );
     _changeSelection( );
     Q_EMIT updateSelectionSignal( _selection );
-    updateGL ( );
+    update( );
   }
 }
 

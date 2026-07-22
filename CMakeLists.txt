@@ -1,75 +1,201 @@
-cmake_minimum_required (VERSION 3.2)
-project (NeuroEditor VERSION 0.0.1)
-set( NeuroEditor_VERSION_ABI 1 )
+cmake_minimum_required(VERSION 3.25)
 
+project(NeuroEditor
+  VERSION 0.0.1
+  LANGUAGES CXX
+  DESCRIPTION "Neuro morphological tracings editor"
+)
+string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+# Prevent in-source builds
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR "In-source builds are not allowed. Please create a separate build directory.")
+endif()
+
+# Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug)
-endif(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC ")
+# Include custom modules
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-if( "${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}" )
- message( FATAL "no in source building allowed." )
-endif( )
+# Options
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(BUILD_DOCS "Build documentation" ON)
+# option(NEUROEDITOR_WITH_EXAMPLES "Build examples" ON)
+# option(NEUROEDITOR_WITH_TESTS "Build tests" ON)
+option(NEUROEDITOR_OPTIONALS_AS_REQUIRED "Force optional dependencies as required" OFF)
 
-list( APPEND CMAKE_MODULE_PATH
- ${PROJECT_SOURCE_DIR}/CMake
- ${CMAKE_SOURCE_DIR}/CMake/common )
+# Dependencies
+# find_package(Boost CONFIG COMPONENTS unit_test_framework)
+find_package(Qt5 REQUIRED CONFIG COMPONENTS Core Gui Widgets OpenGL Xml)
+find_package(GLEW REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(Eigen3 REQUIRED NO_MODULE)
+# find_package(QGLViewer SYSTEM REQUIRED)
+# find_package(neurolots REQUIRED)
+# find_package(nsol REQUIRED)
+# find_package(pygems REQUIRED)
 
-if( NOT EXISTS ${CMAKE_SOURCE_DIR}/CMake/common/Common.cmake )
- message( FATAL_ERROR "CMake/common missing, run: git submodule update --init")
-endif( )
+include(FetchContent)
 
-include( GitExternal )
+FetchContent_Declare(
+    neurolots
+    GIT_REPOSITORY https://github.com/vg-lab/neurolots.git
+    GIT_SHALLOW ON
+    FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(neurolots)
 
-set( NEUROEDITOR_DESCRIPTION "NeuroEditor - Editor of neuro morphological tracings." )
-set( NEUROEDITOR_LICENSE LGPL )
-set( NEUROEDITOR_MAINTAINER "Juan Pedro Brito <juanpedro.brito@upm.es>" )
-set( COMMON_PROJECT_DOMAIN es.gmrv )
+FetchContent_Declare(
+    nsol
+    GIT_REPOSITORY https://github.com/vg-lab/nsol.git
+    GIT_SHALLOW ON
+    FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(nsol)
 
-include( Common )
+FetchContent_Declare(
+    pygems
+    GIT_REPOSITORY https://github.com/vg-lab/pygems.git
+    GIT_SHALLOW ON
+    FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(pygems)
 
-add_definitions(-DQT_NO_KEYWORDS)
+# FetchContent_Declare(
+#     libQGLViewer
+#     GIT_REPOSITORY https://github.com/GillesDebunne/libQGLViewer.git
+#     GIT_TAG v2.9.1
+#     GIT_SHALLOW ON
+#     GIT_SUBMODULES_RECURSE OFF
+# )
+# FetchContent_MakeAvailable(libQGLViewer)
 
-common_find_package(Qt5Widgets SYSTEM REQUIRED)
-common_find_package(Qt5Core SYSTEM REQUIRED)
-common_find_package(Qt5Gui SYSTEM REQUIRED)
-common_find_package(OpenGL SYSTEM REQUIRED)
-common_find_package(GLUT SYSTEM REQUIRED)
-common_find_package(GLEW SYSTEM REQUIRED)
-common_find_package(QGLViewer SYSTEM REQUIRED)
-common_find_package(nsol REQUIRED)
-common_find_package(neurolots REQUIRED)
-common_find_package(Eigen3 REQUIRED SYSTEM)
-common_find_package(pygems REQUIRED)
+if(NOT IS_DIRECTORY "${CMAKE_BINARY_DIR}/_deps/libqglviewer-src")
+  find_package(Git)
+  FetchContent_Declare(
+      libQGLViewer
+      GIT_REPOSITORY https://github.com/GillesDebunne/libQGLViewer.git
+      GIT_TAG v2.6.4
+      GIT_SHALLOW ON
+      GIT_SUBMODULES_RECURSE OFF
+      PATCH_COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${PROJECT_SOURCE_DIR}/libQGLViewer-cmake.patch
+  )
+  FetchContent_MakeAvailable(libQGLViewer)
+endif()
 
-list(APPEND NEUROEDITOR_DEPENDENT_LIBRARIES Qt5Core Qt5Widget Qt5Gui GLUT GLEW
-        OpenGL nsol neurolots Eigen3 pygems)
+# Optional dependencies
+set(NEUROEDITOR_OPTS_FIND_ARGS "")
+if(NEUROEDITOR_OPTIONALS_AS_REQUIRED)
+  set(NEUROEDITOR_OPTS_FIND_ARGS REQUIRED)
+endif()
 
-common_find_package_post( )
+# find_package(Foo ${NEUROEDITOR_OPTS_FIND_ARGS} QUIET)
 
+# Definitions
+# option(NEUROEDITOR_USE_Foo "" ${Foo_FOUND})
 
-include_directories(
-        ${Boost_INCLUDE_DIRS}
-        ${PYTHON_INCLUDE_DIRS}
+# Add subdirectories
+add_subdirectory(${PROJECT_NAME})
+
+# Define installation directory variables
+include(GNUInstallDirs)
+
+# Create an export
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  # INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  # PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME_LOWER}
+  # FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  # FILE_SET public_headers_generated DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-add_definitions( -DPYGEMS_USE_PYTHON3 )
-add_subdirectory( NeuroEditor )
+# # Install the project targets file
+# install(EXPORT ${PROJECT_NAME}Targets
+#   FILE ${PROJECT_NAME_LOWER}-targets.cmake
+#   NAMESPACE ${PROJECT_NAME}::
+#   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER}
+# )
 
-file(GLOB ICONS "NeuroEditor/icons/*")
-file(COPY ${ICONS} DESTINATION "${CMAKE_BINARY_DIR}/bin/icons")
+# # Include the CMake module that provides helpers for creating package config files
+# include(CMakePackageConfigHelpers)
 
-#if ( ${USE_BOOST_PYTHON_VERSION} EQUAL 3 )
-#  file(COPY "${COMMON_SOURCE_DIR}/PyGEmS/scripts/Strategies-Python3.py" DESTINATION "${CMAKE_BINARY_DIR}/bin")
-#endif( )
+# # Generate the project-specific cmake config file
+# configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project-config.cmake.in
+#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config.cmake"
+#   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER}
+# )
 
-set(DOCS README.md LICENSE.txt)
-install(FILES ${DOCS} DESTINATION share/NeuroEditor COMPONENT dev)
+# # Generate the project-specific cmake config version file
+# write_basic_package_version_file(
+#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config-version.cmake"
+#   VERSION ${PROJECT_VERSION}
+#   COMPATIBILITY SameMajorVersion
+# )
 
-set(DOXYGEN_MAINPAGE_MD README.md)
-set(DOXYGEN_EXTRA_INPUT ${PROJECT_SOURCE_DIR}/README.md)
-include(DoxygenRule)
+# # Install the cmake config files
+# install(FILES
+#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config.cmake"
+#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config-version.cmake"
+#   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER}
+# )
 
-include(CPackConfig)
-include(CTest)
+# # Install repo data
+# install(FILES
+#   "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
+#   DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME_LOWER}
+# )
+
+# # Allow the configured project-config.cmake in the build directory to be used by
+# # other projects, without needing it to be installed
+# export(EXPORT ${PROJECT_NAME}Targets
+#   NAMESPACE ${PROJECT_NAME}::
+#   FILE ${PROJECT_NAME_LOWER}-targets.cmake
+# )
+
+# Generate documentation
+find_package(Doxygen)
+if(DOXYGEN_FOUND AND BUILD_DOCS)
+  set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/docs_doxygen)
+  set(DOXYFILE_IN ${PROJECT_SOURCE_DIR}/cmake/Doxyfile.in)
+  set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+  configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+
+  doxygen_add_docs(
+    ${PROJECT_NAME}_doxygen
+    CONFIG_FILE ${DOXYFILE_OUT}
+  )
+
+  install(DIRECTORY
+    ${DOXYGEN_OUTPUT_DIR}/html
+    DESTINATION ${CMAKE_INSTALL_DOCDIR}
+    COMPONENT ${PROJECT_NAME}_documentation
+    OPTIONAL
+  )
+endif()
+
+# Packaging
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES
+  /.git
+  /.cache
+  /build
+  /.DS_Store
+  /.idea
+  /.vscode
+)
+include(CPack)

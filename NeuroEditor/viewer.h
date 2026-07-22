@@ -81,7 +81,7 @@ public:
   void setMorphologyInfoToShow ( short int morphologyInfoToShow_ )
   {
     _morphologyInfoToShow = morphologyInfoToShow_;
-    updateGL( );
+    update( );
   };
   void setShowText ( bool pShowText ) { _ShowText = pShowText; };
   void setShowTextValues ( int pShowTextIniValue, int pShowTextFinValue )
