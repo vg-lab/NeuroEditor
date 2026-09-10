@@ -83,7 +83,7 @@ if(NOT IS_DIRECTORY "${CMAKE_BINARY_DIR}/_deps/libqglviewer-src")
       GIT_TAG v2.6.4
       GIT_SHALLOW ON
       GIT_SUBMODULES_RECURSE OFF
-      PATCH_COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${PROJECT_SOURCE_DIR}/libQGLViewer-cmake.patch
+      PATCH_COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${PROJECT_SOURCE_DIR}/cmake/libQGLViewer-cmake.patch
   )
   FetchContent_MakeAvailable(libQGLViewer)
 endif()
