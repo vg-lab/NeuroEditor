@@ -43,12 +43,12 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 include(FetchContent)
 
 FetchContent_Declare(
-    neurolots
-    GIT_REPOSITORY https://github.com/vg-lab/neurolots.git
+    pygems
+    GIT_REPOSITORY https://github.com/vg-lab/pygems.git
     GIT_SHALLOW ON
     FIND_PACKAGE_ARGS
 )
-FetchContent_MakeAvailable(neurolots)
+FetchContent_MakeAvailable(pygems)
 
 option(NSOL_USE_BRION "" OFF)
 FetchContent_Declare(
@@ -60,12 +60,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(nsol)
 
 FetchContent_Declare(
-    pygems
-    GIT_REPOSITORY https://github.com/vg-lab/pygems.git
+    neurolots
+    GIT_REPOSITORY https://github.com/vg-lab/neurolots.git
     GIT_SHALLOW ON
     FIND_PACKAGE_ARGS
 )
-FetchContent_MakeAvailable(pygems)
+FetchContent_MakeAvailable(neurolots)
 
 # FetchContent_Declare(
 #     libQGLViewer
