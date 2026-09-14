@@ -50,6 +50,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(neurolots)
 
+option(NSOL_USE_BRION "" OFF)
 FetchContent_Declare(
     nsol
     GIT_REPOSITORY https://github.com/vg-lab/nsol.git
