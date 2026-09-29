@@ -35,10 +35,6 @@ find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
-# find_package(QGLViewer SYSTEM REQUIRED)
-# find_package(neurolots REQUIRED)
-# find_package(nsol REQUIRED)
-# find_package(pygems REQUIRED)
 
 include(FetchContent)
 
@@ -98,55 +94,7 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  # INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  # PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME_LOWER}
-  # FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  # FILE_SET public_headers_generated DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
-# # Install the project targets file
-# install(EXPORT ${PROJECT_NAME}Targets
-#   FILE ${PROJECT_NAME_LOWER}-targets.cmake
-#   NAMESPACE ${PROJECT_NAME}::
-#   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER}
-# )
-
-# # Include the CMake module that provides helpers for creating package config files
-# include(CMakePackageConfigHelpers)
-
-# # Generate the project-specific cmake config file
-# configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project-config.cmake.in
-#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config.cmake"
-#   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER}
-# )
-
-# # Generate the project-specific cmake config version file
-# write_basic_package_version_file(
-#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config-version.cmake"
-#   VERSION ${PROJECT_VERSION}
-#   COMPATIBILITY SameMajorVersion
-# )
-
-# # Install the cmake config files
-# install(FILES
-#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config.cmake"
-#   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config-version.cmake"
-#   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER}
-# )
-
-# # Install repo data
-# install(FILES
-#   "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
-#   "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
-#   DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME_LOWER}
-# )
-
-# # Allow the configured project-config.cmake in the build directory to be used by
-# # other projects, without needing it to be installed
-# export(EXPORT ${PROJECT_NAME}Targets
-#   NAMESPACE ${PROJECT_NAME}::
-#   FILE ${PROJECT_NAME_LOWER}-targets.cmake
-# )
 
 # Generate documentation
 find_package(Doxygen)
