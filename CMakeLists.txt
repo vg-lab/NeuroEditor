@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 project(NeuroEditor
-  VERSION 1.0.0
+  VERSION 1.0.1
   LANGUAGES CXX
   DESCRIPTION "Neuro morphological tracings editor"
 )
