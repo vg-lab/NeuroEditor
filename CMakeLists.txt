@@ -58,7 +58,7 @@ FetchContent_MakeAvailable(nsol)
 FetchContent_Declare(
     neurolots
     GIT_REPOSITORY https://github.com/vg-lab/neurolots.git
-    GIT_TAG b8b21e78bd9df2a12fd50433348d7e95a8ce8e25 # v1.0.0
+    GIT_TAG ab9c65911a8ea13c29ff45d6fdee6269989c171f # v1.0.1
     FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(neurolots)
