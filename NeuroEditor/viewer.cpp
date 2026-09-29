@@ -102,7 +102,7 @@ Viewer::~Viewer ( )
 void Viewer::init ( )
 {
   nlrender::Config::init( );
-  _scene = new Scene( 0, 600, 600 );
+  _scene = new Scene( defaultFramebufferObject( ), 600, 600 );
 
   camera ( )->setZClippingCoefficient ( 500.0f );
   camera ( )->setZNearCoefficient ( 0.000001f );
@@ -131,6 +131,8 @@ void Viewer::animate ( )
 //  D r a w i n g   f u n c t i o n
 void Viewer::draw ( )
 {
+  _scene->defaultFbo( defaultFramebufferObject( ) );
+
   glLineWidth( 1.0f );
   std::vector< float > viewVec( 16 );
   camera( )->getModelViewMatrix( viewVec.data( ));
@@ -472,6 +474,8 @@ void Viewer::renderMorphologyInfo ( nsol::NeuronMorphologyPtr morphology_,
 
 void Viewer::loadMorphology ( QString pSWCFile )
 {
+  makeCurrent( );
+
   try{
 
     auto loadedMorphology =

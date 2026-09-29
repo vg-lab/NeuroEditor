@@ -45,6 +45,8 @@ public:
 
   void size( unsigned int width_, unsigned int height_ );
 
+  void defaultFbo( unsigned int defaultFbo_ ) { _defaultFbo = defaultFbo_; }
+
   void alpha( float alpha_ );
 
   void viewMatrix( Eigen::Matrix4f& view_ );

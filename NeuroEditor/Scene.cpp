@@ -63,8 +63,8 @@ Scene::Scene( unsigned int defaultFbo_, unsigned int width_,
   _format[1] = nlgeometry::TAttribType::COLOR;
   _format[2] = nlgeometry::TAttribType::CENTER;
 
-  glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-  glBindBuffer( GL_ARRAY_BUFFER, 0 );
+  glBindFramebuffer( GL_FRAMEBUFFER, _defaultFbo );
+  glBindBuffer( GL_ARRAY_BUFFER, _defaultFbo );
   glBindVertexArray( 0 );
 }
 
@@ -130,7 +130,7 @@ void Scene::render( bool renderModifiedStructure_, bool renderModifiedMesh_,
   _renderer->composeTransparencyScene( _defaultFbo );
 
   glUseProgram( 0 );
-  glBindBuffer( GL_ARRAY_BUFFER, 0 );
+  glBindBuffer( GL_ARRAY_BUFFER, _defaultFbo );
   glBindVertexArray( 0 );
 }
 

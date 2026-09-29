@@ -67,27 +67,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(neurolots)
 
-# FetchContent_Declare(
-#     libQGLViewer
-#     GIT_REPOSITORY https://github.com/GillesDebunne/libQGLViewer.git
-#     GIT_TAG v2.9.1
-#     GIT_SHALLOW ON
-#     GIT_SUBMODULES_RECURSE OFF
-# )
-# FetchContent_MakeAvailable(libQGLViewer)
-
-if(NOT IS_DIRECTORY "${CMAKE_BINARY_DIR}/_deps/libqglviewer-src")
-  find_package(Git)
-  FetchContent_Declare(
-      libQGLViewer
-      GIT_REPOSITORY https://github.com/GillesDebunne/libQGLViewer.git
-      GIT_TAG v2.6.4
-      GIT_SHALLOW ON
-      GIT_SUBMODULES_RECURSE OFF
-      PATCH_COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${PROJECT_SOURCE_DIR}/cmake/libQGLViewer-cmake.patch
-  )
-  FetchContent_MakeAvailable(libQGLViewer)
-endif()
+FetchContent_Declare(
+    libQGLViewer
+    GIT_REPOSITORY https://github.com/GillesDebunne/libQGLViewer.git
+    GIT_TAG c8bb8810e70f0c902cbf5c222ee6fc1e4cd11d34 # v3.0.0
+    GIT_SUBMODULES_RECURSE OFF
+)
+FetchContent_MakeAvailable(libQGLViewer)
 
 # Optional dependencies
 set(NEUROEDITOR_OPTS_FIND_ARGS "")
