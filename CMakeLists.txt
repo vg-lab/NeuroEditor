@@ -41,7 +41,7 @@ include(FetchContent)
 FetchContent_Declare(
     pygems
     GIT_REPOSITORY https://github.com/vg-lab/pygems.git
-    GIT_SHALLOW ON
+    GIT_TAG bdb06a56d2d400bd9872bfc6656210ef3b0ac265 # v1.0.0
     FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(pygems)
@@ -50,7 +50,7 @@ option(NSOL_USE_BRION "" OFF)
 FetchContent_Declare(
     nsol
     GIT_REPOSITORY https://github.com/vg-lab/nsol.git
-    GIT_SHALLOW ON
+    GIT_TAG d5ca1e20592847b9475c277d7cc79ff915bc99d2 # v1.0.0
     FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(nsol)
@@ -58,7 +58,7 @@ FetchContent_MakeAvailable(nsol)
 FetchContent_Declare(
     neurolots
     GIT_REPOSITORY https://github.com/vg-lab/neurolots.git
-    GIT_SHALLOW ON
+    GIT_TAG b8b21e78bd9df2a12fd50433348d7e95a8ce8e25 # v1.0.0
     FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(neurolots)
