@@ -21,64 +21,63 @@
 
 #include "TreeItem.h"
 
-TreeItem::TreeItem ( const QList < QVariant >& data, TreeItem* parent )
+TreeItem::TreeItem(const QList<QVariant>& data, TreeItem* parent)
 {
-  _parentItem = parent;
-  _itemData = data;
-  _partialSelected = false;
+    _parentItem = parent;
+    _itemData = data;
+    _partialSelected = false;
 }
 
-TreeItem::~TreeItem ( )
+TreeItem::~TreeItem()
 {
-  qDeleteAll ( _childItems );
+    qDeleteAll(_childItems);
 }
 
-void TreeItem::appendChild ( TreeItem* item )
+void TreeItem::appendChild(TreeItem* item)
 {
-  _childItems.append ( item );
+    _childItems.append(item);
 }
 
-TreeItem* TreeItem::child ( int row )
+TreeItem* TreeItem::child(int row)
 {
-  return _childItems.value ( row );
+    return _childItems.value(row);
 }
 
-int TreeItem::childCount ( ) const
+int TreeItem::childCount() const
 {
-  return _childItems.count ( );
+    return _childItems.count();
 }
 
-int TreeItem::columnCount ( ) const
+int TreeItem::columnCount() const
 {
-  return _itemData.count ( );
+    return _itemData.count();
 }
 
-QVariant TreeItem::data ( int column ) const
+QVariant TreeItem::data(int column) const
 {
-  return _itemData.value ( column );
+    return _itemData.value(column);
 }
 
-TreeItem* TreeItem::parentItem ( )
+TreeItem* TreeItem::parentItem()
 {
-  return _parentItem;
+    return _parentItem;
 }
 
-int TreeItem::row ( ) const
+int TreeItem::row() const
 {
-  if ( _parentItem )
-    return _parentItem->_childItems.indexOf ( const_cast<TreeItem*>(this));
+    if (_parentItem) {
+        return _parentItem->_childItems.indexOf(const_cast<TreeItem*>(this));
+    }
 
-  return 0;
+    return 0;
 }
 
-bool TreeItem::isPartialSelected( ) const
+bool TreeItem::isPartialSelected() const
 {
-  return _partialSelected;
+    return _partialSelected;
 }
 
-void TreeItem::setPartialSelected( bool partialSelected )
+void TreeItem::setPartialSelected(bool partialSelected)
 {
-  _partialSelected = partialSelected;
+    _partialSelected = partialSelected;
 }
-
-

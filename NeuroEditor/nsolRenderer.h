@@ -36,23 +36,26 @@ class nsolRenderer
     unsigned int resolution;
 
   public:
+    nsolRenderer(void);
+    nsolRenderer(const nsol::NeuronMorphologyPtr morphology);
 
-    nsolRenderer ( void );
-    nsolRenderer ( const nsol::NeuronMorphologyPtr morphology );
+    ~nsolRenderer(void);
 
-    ~nsolRenderer ( void );
-
-    void setMorphology ( const nsol::NeuronMorphologyPtr& morphology )
+    void setMorphology(const nsol::NeuronMorphologyPtr& morphology)
     {
-      _morphology = morphology;
+        _morphology = morphology;
     };
 
-    const nsol::NeuronMorphologyPtr& getMorphology ( ) { return _morphology; }
-    void renderMorphology ( );
-    void setNodeColor ( const nsol::Vec3f& color );
-    void setLinkColor ( const nsol::Vec3f& color );
-    void setIncrement ( float inc );
-    void setResolution ( unsigned int resol );
+    const nsol::NeuronMorphologyPtr& getMorphology()
+    {
+        return _morphology;
+    }
+
+    void renderMorphology();
+    void setNodeColor(const nsol::Vec3f& color);
+    void setLinkColor(const nsol::Vec3f& color);
+    void setIncrement(float inc);
+    void setResolution(unsigned int resol);
 };
 
 #endif

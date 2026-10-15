@@ -26,8 +26,8 @@
 
 class Object
 {
-  public :
-    void draw ( ) const;
+  public:
+    void draw() const;
 
     qglviewer::Frame frame;
     int id;

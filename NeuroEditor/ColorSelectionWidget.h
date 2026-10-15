@@ -25,30 +25,26 @@
 #include <QWidget>
 #include <QColor>
 
-class ColorSelectionWidget:
-  public QWidget
+class ColorSelectionWidget : public QWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    ColorSelectionWidget(QWidget* parent = 0);
 
-  ColorSelectionWidget( QWidget* parent = 0 );
+    void paintEvent(QPaintEvent* e);
 
-  void paintEvent( QPaintEvent* e );
+    void mousePressEvent(QMouseEvent* e);
 
-  void mousePressEvent( QMouseEvent* e );
+    void paint(QPainter* painter);
 
-  void paint( QPainter* painter );
+    void color(const QColor& color_);
 
-  void color( const QColor& color_ );
+  Q_SIGNALS:
+    void colorChanged(QColor color);
 
-Q_SIGNALS:
-  void colorChanged( QColor color );
-
-private:
-
-  QColor _color;
-
+  private:
+    QColor _color;
 };
 
 #endif

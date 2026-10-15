@@ -8,20 +8,18 @@
 #include "TraceModifier.h"
 #include <QDialog>
 
-
-class SimplificationHelpDialog: public QDialog
+class SimplificationHelpDialog : public QDialog
 {
-  Q_OBJECT
-public:
-  explicit SimplificationHelpDialog(QWidget* parent = 0);
+    Q_OBJECT
+  public:
+    explicit SimplificationHelpDialog(QWidget* parent = 0);
 
-public Q_SLOTS:
-  void showDescription( neuroeditor::TraceModifier::TModifierMethod modifierMethod );
+  public Q_SLOTS:
+    void showDescription(
+        neuroeditor::TraceModifier::TModifierMethod modifierMethod);
 
-
-protected:
-  std::vector<QPushButton* > _buttons;
+  protected:
+    std::vector<QPushButton*> _buttons;
 };
-
 
 #endif //__SIMPLIFICATIONHELPDIALOG__

@@ -34,159 +34,150 @@
 #include "viewer.h"
 #include "Tester.h"
 
-class TestWidget: public QWidget
+class TestWidget : public QWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    TestWidget(neuroeditor::Tester::TTesterMethod testMethod_);
 
-  TestWidget( neuroeditor::Tester::TTesterMethod testMethod_ );
+    ~TestWidget(void);
 
-  ~TestWidget( void );
+    neuroeditor::Tester::TTesterMethod testMethod;
+    neuroeditor::Fixer::TFixerMethod fixerMethod;
 
-  neuroeditor::Tester::TTesterMethod testMethod;
-  neuroeditor::Fixer::TFixerMethod fixerMethod;
+  public Q_SLOTS:
 
-public Q_SLOTS:
+    void sendRemoveSignal(void);
 
-  void sendRemoveSignal( void );
+    void changeFixerMethod(int index_);
 
-  void changeFixerMethod( int index_ );
+  Q_SIGNALS:
+    void testToDelete(QWidget* widget_);
 
-Q_SIGNALS:
-  void testToDelete( QWidget* widget_ );
-
-protected:
-
-  QComboBox* _fixerCombo;
-
+  protected:
+    QComboBox* _fixerCombo;
 };
 
-class ResultButton: public QPushButton
+class ResultButton : public QPushButton
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
-
-  ResultButton( std::vector< int > indices_, Viewer* viewer_,neuroeditor::Tester::TTesterMethod testMethod )
-    : QPushButton( )
-    , _viewer( viewer_ )
-  {
-    std::string buttonName( std::to_string( indices_[0]));
-    if ( indices_.size( ) > 1 )
-      buttonName.append( ",..." );
-    this->setText( QString( buttonName.c_str( )));
-    for( auto index: indices_ )
-      _selection.insert( index );
-    this->setMaximumSize( QSize( 50, 40 ));
-
-    auto menu = new QMenu( );
-    auto fixers = neuroeditor::Tester::associatedFixers( testMethod );
-    for ( auto fixer: fixers )
+  public:
+    ResultButton(std::vector<int> indices_, Viewer* viewer_,
+                 neuroeditor::Tester::TTesterMethod testMethod) :
+        QPushButton(),
+        _viewer(viewer_)
     {
-      if ( fixer != neuroeditor::Fixer::NODE_TEXT_OUT &&
-           fixer != neuroeditor::Fixer::SECTION_TEXT_OUT &&
-           fixer != neuroeditor::Fixer::NEURITE_TEXT_OUT)
-      {
-        std::string description = neuroeditor::Fixer::description( fixer );
-        menu->addAction( QString( description.c_str( )),
-                         [=](){fixNodes(indices_, fixer );});
-      }
+        std::string buttonName(std::to_string(indices_[0]));
+        if (indices_.size() > 1) {
+            buttonName.append(",...");
+        }
+        this->setText(QString(buttonName.c_str()));
+        for (auto index : indices_) {
+            _selection.insert(index);
+        }
+        this->setMaximumSize(QSize(50, 40));
+
+        auto menu = new QMenu();
+        auto fixers = neuroeditor::Tester::associatedFixers(testMethod);
+        for (auto fixer : fixers) {
+            if (fixer != neuroeditor::Fixer::NODE_TEXT_OUT
+                && fixer != neuroeditor::Fixer::SECTION_TEXT_OUT
+                && fixer != neuroeditor::Fixer::NEURITE_TEXT_OUT) {
+                std::string description =
+                    neuroeditor::Fixer::description(fixer);
+                menu->addAction(QString(description.c_str()),
+                                [=]() { fixNodes(indices_, fixer); });
+            }
+        }
+
+        this->setMenu(menu);
+
+        connect(menu, SIGNAL(aboutToShow()), this, SLOT(sendSelection()));
     }
 
-    this->setMenu( menu );
+    ~ResultButton(void)
+    {
+        _selection.clear();
+    }
 
-    connect( menu, SIGNAL( aboutToShow( )),
-             this, SLOT( sendSelection( )));
-  }
+  public Q_SLOTS:
 
-  ~ResultButton( void )
-  {
-    _selection.clear( );
-  }
+    void fixNodes(std::vector<int> indices,
+                  neuroeditor::Fixer::TFixerMethod fixerMethod)
+    {
+        auto fixResult = neuroeditor::Fixer::fix(
+            indices, _viewer->morphologyStructure(), fixerMethod);
 
-public Q_SLOTS:
+        _viewer->updateMorphology();
+        Q_EMIT fixerApplied({indices.begin(), indices.end()}, fixerMethod);
+    }
 
+    void sendSelection(void)
+    {
+        _viewer->updateSelection(_selection);
+        _viewer->focusOnSelection();
+    }
 
-  void fixNodes ( std::vector< int > indices, neuroeditor::Fixer::TFixerMethod fixerMethod ) {
-    auto fixResult =
-    neuroeditor::Fixer::fix( indices, _viewer->morphologyStructure( ),
-                             fixerMethod  );
+    void highlight(bool highlited)
+    {
+        if (highlited) {
+            this->setStyleSheet("background-color: rgba(46, 204, 113, 0.4);");
+        } else {
+            this->setStyleSheet("");
+        }
+    }
 
-    _viewer->updateMorphology( );
-    Q_EMIT fixerApplied({ indices.begin( ), indices.end( )} , fixerMethod );
-  }
+  Q_SIGNALS:
+    void fixerApplied(std::unordered_set<int> nodesId,
+                      neuroeditor::Fixer::TFixerMethod fixerMethod);
 
-  void sendSelection( void )
-  {
-    _viewer->updateSelection( _selection );
-    _viewer->focusOnSelection( );
-  }
-
-  void highlight( bool highlited )
-  {
-    if (highlited)
-      this->setStyleSheet("background-color: rgba(46, 204, 113, 0.4);");
-    else
-      this->setStyleSheet("");
-  }
-
-Q_SIGNALS:
-  void fixerApplied( std::unordered_set< int > nodesId, neuroeditor::Fixer::TFixerMethod fixerMethod);
-
-protected:
-
-  Viewer* _viewer;
-  std::unordered_set< int > _selection;
-
+  protected:
+    Viewer* _viewer;
+    std::unordered_set<int> _selection;
 };
 
-class CorrectDock: public QDockWidget
+class CorrectDock : public QDockWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
+  public:
+    CorrectDock(void);
 
-public:
+    ~CorrectDock(void);
 
-  CorrectDock( void );
+    void init(Viewer* viewer_);
 
-  ~CorrectDock( void );
+  public Q_SLOTS:
 
-  void init( Viewer* viewer_ );
+    void addTest(void);
 
-public Q_SLOTS:
+    void addAllTests(void);
 
-  void addTest( void );
+    void removeTest(QWidget* testWidget_);
 
-  void addAllTests( void );
+    void clearTests(void);
 
-  void removeTest( QWidget* testWidget_ );
+    void correct(void);
 
-  void clearTests( void );
+    void clearOutput(void);
 
-  void correct( void );
+    void _fixerAppliedNode(std::unordered_set<int> nodesId,
+                           neuroeditor::Fixer::TFixerMethod fixerMethod);
 
-  void clearOutput( void );
+  protected:
+    void _initTestSelector(void);
 
-  void _fixerAppliedNode( std::unordered_set< int > nodesId,
-                          neuroeditor::Fixer::TFixerMethod fixerMethod );
+    void _addTest(neuroeditor::Tester::TTesterMethod testerMethod_);
 
-
-protected:
-
-  void _initTestSelector( void );
-
-
-  void _addTest( neuroeditor::Tester::TTesterMethod testerMethod_ );
-
-  Viewer* _viewer;
-  QComboBox* _testSelector;
-  QToolButton* _testAdder;
-  QToolButton* _testAddAll;
-  QVBoxLayout* _testsLayout;
-  QVBoxLayout* _outputLayout;
-  QMessageBox* _testMethodHelpBox;
-
+    Viewer* _viewer;
+    QComboBox* _testSelector;
+    QToolButton* _testAdder;
+    QToolButton* _testAddAll;
+    QVBoxLayout* _testsLayout;
+    QVBoxLayout* _outputLayout;
+    QMessageBox* _testMethodHelpBox;
 };
 
 #endif

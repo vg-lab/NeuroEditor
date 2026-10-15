@@ -28,52 +28,63 @@
 
 enum SIMP_METHOD
 {
-  NTHPOINT,
-  RADIAL,
-  PERPDIST,
-  PTOPDIST,
-  REUMANNWITKAM,
-  OPHEIN,
-  LANG,
-  DOUGLASPEUCKER,
-  DOUGLASPEUCKERMOD,
-  CUSTOM_SIMP
+    NTHPOINT,
+    RADIAL,
+    PERPDIST,
+    PTOPDIST,
+    REUMANNWITKAM,
+    OPHEIN,
+    LANG,
+    DOUGLASPEUCKER,
+    DOUGLASPEUCKERMOD,
+    CUSTOM_SIMP
 };
 
-enum ENHANCE_METHOD { LINEAR, SPLINE, CUSTOM_ENHANCE };
-enum OBJECT_TYPE { NEURITE, SECTION, NODE, SOMA };
+enum ENHANCE_METHOD
+{
+    LINEAR,
+    SPLINE,
+    CUSTOM_ENHANCE
+};
 
-typedef std::unordered_map< int, nsol::NodePtr > IdToNode;
-typedef std::unordered_map< nsol::NodePtr, nsol::SectionPtr > NodeToSection;
+enum OBJECT_TYPE
+{
+    NEURITE,
+    SECTION,
+    NODE,
+    SOMA
+};
+
+typedef std::unordered_map<int, nsol::NodePtr> IdToNode;
+typedef std::unordered_map<nsol::NodePtr, nsol::SectionPtr> NodeToSection;
 
 namespace neuroeditor //Probably this code must be in nsol in the future
 {
 
-  class MorphologyStructure
-  {
+    class MorphologyStructure
+    {
+      public:
+        typedef QList<Object*> Objects;
+        typedef std::unordered_map<int, Object*> IdToObject;
+        typedef std::unordered_map<int, nsol::NodePtr> IdToNode;
+        typedef std::unordered_map<nsol::NodePtr, nsol::SectionPtr>
+            NodeToSection;
 
-  public:
+        MorphologyStructure(nsol::NeuronMorphologyPtr morphology_);
 
-    typedef QList< Object* > Objects;
-    typedef std::unordered_map< int, Object* > IdToObject;
-    typedef std::unordered_map< int, nsol::NodePtr > IdToNode;
-    typedef std::unordered_map< nsol::NodePtr, nsol::SectionPtr > NodeToSection;
+        ~MorphologyStructure(void);
 
-    MorphologyStructure( nsol::NeuronMorphologyPtr morphology_ );
+        void clear(void);
+        void update(void);
+        void changeMorphology(nsol::NeuronMorphologyPtr morphology_);
 
-    ~MorphologyStructure( void );
-
-    void clear( void );
-    void update( void );
-    void changeMorphology( nsol::NeuronMorphologyPtr morphology_ );
-
-    nsol::NeuronMorphologyPtr morphology;
-    nsol::NeuritePtr somaNeurite;
-    nsol::NeuronMorphologySectionPtr somaSection;
-    Objects objects;
-    IdToObject idToObject;
-    IdToNode idToNode;
-    NodeToSection nodeToSection;
-  };
-}
+        nsol::NeuronMorphologyPtr morphology;
+        nsol::NeuritePtr somaNeurite;
+        nsol::NeuronMorphologySectionPtr somaSection;
+        Objects objects;
+        IdToObject idToObject;
+        IdToNode idToNode;
+        NodeToSection nodeToSection;
+    };
+} // namespace neuroeditor
 #endif // __NEUROEDITOR_UTILS__

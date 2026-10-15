@@ -23,56 +23,48 @@
 #include <QApplication>
 #include <QErrorMessage>
 
+bool setFormat(int ctxOpenGLMajor, int ctxOpenGLMinor, int ctxOpenGLSamples,
+               int ctxOpenGLVSync);
 
-bool setFormat( int ctxOpenGLMajor, int ctxOpenGLMinor,
-                int ctxOpenGLSamples, int ctxOpenGLVSync );
-
-int main ( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-  QApplication a ( argc, argv );
+    QApplication a(argc, argv);
 
+    if (setFormat(4, 0, 16, 1)) {
+        NeuroEditor w;
+        w.show();
 
-  if ( setFormat( 4, 0, 16, 1 ))
-  {
-    NeuroEditor w;
-    w.show ( );
+        if (argc > 1) {
+            QString swcFile(argv[1]);
+            w.viewer()->loadMorphology(swcFile);
+        }
 
-    if ( argc > 1 )
-    {
-      QString swcFile( argv[1] );
-      w.viewer( )->loadMorphology( swcFile );
+        w.init();
+
+        return a.exec();
+    } else {
+        std::cout << "Error required OpenGL version 4.0 not supported"
+                  << std::endl;
+        return 0;
     }
-
-    w.init( );
-
-    return a.exec( );
-  }
-  else
-  {
-    std::cout << "Error required OpenGL version 4.0 not supported" << std::endl;
-    return 0;
-  }
 }
 
-
-bool setFormat( int ctxOpenGLMajor,
-                int ctxOpenGLMinor,
-                int ctxOpenGLSamples,
-                int ctxOpenGLVSync )
+bool setFormat(int ctxOpenGLMajor, int ctxOpenGLMinor, int ctxOpenGLSamples,
+               int ctxOpenGLVSync)
 {
-  QSurfaceFormat format;
-  format.setVersion( ctxOpenGLMajor, ctxOpenGLMinor);
-  format.setProfile( QSurfaceFormat::CoreProfile );
+    QSurfaceFormat format;
+    format.setVersion(ctxOpenGLMajor, ctxOpenGLMinor);
+    format.setProfile(QSurfaceFormat::CoreProfile);
 
-  if ( ctxOpenGLSamples != 0 )
-    format.setSamples( ctxOpenGLSamples );
+    if (ctxOpenGLSamples != 0) {
+        format.setSamples(ctxOpenGLSamples);
+    }
 
-  format.setSwapInterval( ctxOpenGLVSync );
+    format.setSwapInterval(ctxOpenGLVSync);
 
+    QSurfaceFormat::setDefaultFormat(format);
+    format.setProfile(QSurfaceFormat::CompatibilityProfile);
 
-  QSurfaceFormat::setDefaultFormat( format );
-  format.setProfile( QSurfaceFormat::CompatibilityProfile );
-
-  return ( format.majorVersion() >= ctxOpenGLMajor ) &&
-    ( format.minorVersion( ) >= ctxOpenGLMinor );
+    return (format.majorVersion() >= ctxOpenGLMajor)
+           && (format.minorVersion() >= ctxOpenGLMinor);
 }

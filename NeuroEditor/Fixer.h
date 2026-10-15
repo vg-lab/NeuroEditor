@@ -26,55 +26,52 @@
 
 namespace neuroeditor
 {
-  class Fixer
-  {
-
-  public:
-    typedef enum
+    class Fixer
     {
-      NODE_TEXT_OUT = 0,
-      SECTION_TEXT_OUT,
-      NEURITE_TEXT_OUT,
-      DELETE_NODE,
-      DISPLACE_TO_MIDDLE_EDGE,
-      DISPLACE_TO_SOMA_SURFACE
-    } TFixerMethod;
+      public:
+        typedef enum
+        {
+            NODE_TEXT_OUT = 0,
+            SECTION_TEXT_OUT,
+            NEURITE_TEXT_OUT,
+            DELETE_NODE,
+            DISPLACE_TO_MIDDLE_EDGE,
+            DISPLACE_TO_SOMA_SURFACE
+        } TFixerMethod;
 
-    typedef std::vector< int > (*TFixerFunc)( int, MorphologyStructure* ) ;
+        typedef std::vector<int> (*TFixerFunc)(int, MorphologyStructure*);
 
-    static std::vector< std::vector < int >> fix( std::vector< int > indices_,
-                     MorphologyStructure* morphoStructure_,
-                     TFixerMethod fixerMethod_ );
+        static std::vector<std::vector<int>> fix(
+            std::vector<int> indices_, MorphologyStructure* morphoStructure_,
+            TFixerMethod fixerMethod_);
 
-    static int numFixers( void )
-    {
-      return 5;
-    }
+        static int numFixers(void)
+        {
+            return 5;
+        }
 
-    static std::string description( TFixerMethod testerMethod_ );
+        static std::string description(TFixerMethod testerMethod_);
 
-  protected:
+      protected:
+        static std::vector<int> _nodeTextOut(
+            int index_, MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _nodeTextOut(
-      int index_, MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _sectionTextOut(
+            int index_, MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _sectionTextOut(
-      int index_, MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _neuriteTextOut(
+            int index_, MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _neuriteTextOut(
-      int index_, MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _deleteNode(
+            int index_, MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _deleteNode(
-      int index_, MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _displaceToMiddleSegment(
+            int index_, MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _displaceToMiddleSegment(
-      int index_, MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _displaceToSomaSurface(
+            int index_, MorphologyStructure* morphoStructure_);
+    };
 
-    static std::vector< int > _displaceToSomaSurface(
-      int index_, MorphologyStructure* morphoStructure_ );
-
-  };
-
-}
+} // namespace neuroeditor
 
 #endif

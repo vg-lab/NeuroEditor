@@ -32,49 +32,44 @@
 
 namespace Ui
 {
-  class NeuroEditor;
+    class NeuroEditor;
 }
 
-class NeuroEditor
-  : public QMainWindow
+class NeuroEditor : public QMainWindow
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    explicit NeuroEditor(QWidget* parent = 0);
 
-  explicit NeuroEditor( QWidget* parent = 0 );
+    ~NeuroEditor();
 
-  ~NeuroEditor( );
+    Viewer* viewer(void)
+    {
+        return _viewer;
+    }
 
-  Viewer* viewer( void )
-  {
-    return _viewer;
-  }
+    void init(void);
 
-  void init( void );
+  private Q_SLOTS:
 
-private Q_SLOTS:
+    void importMorphology(void);
+    void exportMorphology(void);
+    void exportMesh(void);
 
-  void importMorphology( void );
-  void exportMorphology( void );
-  void exportMesh( void );
+    void updateViewDock(void);
+    void updateSelectDock(void);
+    void updateEditDock(void);
+    void updateCorrectDock(void);
 
-  void updateViewDock( void );
-  void updateSelectDock( void );
-  void updateEditDock( void );
-  void updateCorrectDock( void );
+  private:
+    Ui::NeuroEditor* _ui;
+    Viewer* _viewer;
 
-private:
-
-  Ui::NeuroEditor* _ui;
-  Viewer* _viewer;
-
-
-  ViewDock* _viewDock;
-  SelectDock* _selectDock;
-  EditDock* _editDock;
-  CorrectDock* _correctDock;
-
+    ViewDock* _viewDock;
+    SelectDock* _selectDock;
+    EditDock* _editDock;
+    CorrectDock* _correctDock;
 };
 
 #endif // __NEUROEDITOR_H__

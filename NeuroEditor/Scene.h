@@ -31,92 +31,94 @@
 
 class Scene
 {
-public:
+  public:
+    Scene(unsigned int defaultFbo_, unsigned int width_, unsigned int height_);
 
-  Scene( unsigned int defaultFbo_, unsigned int width_,
-         unsigned int height_ );
+    ~Scene(void);
 
-  ~Scene( void );
+    void render(bool renderModifiedStruture_ = false,
+                bool renderModifiedMesh_ = false,
+                bool renderOriginalStructure_ = false,
+                bool renderOriginalMesh_ = false);
 
-  void render( bool renderModifiedStruture_ = false,
-               bool renderModifiedMesh_ = false,
-               bool renderOriginalStructure_ = false,
-               bool renderOriginalMesh_ = false );
+    void size(unsigned int width_, unsigned int height_);
 
-  void size( unsigned int width_, unsigned int height_ );
+    void defaultFbo(unsigned int defaultFbo_)
+    {
+        _defaultFbo = defaultFbo_;
+    }
 
-  void defaultFbo( unsigned int defaultFbo_ ) { _defaultFbo = defaultFbo_; }
+    void alpha(float alpha_);
 
-  void alpha( float alpha_ );
+    void viewMatrix(Eigen::Matrix4f& view_);
 
-  void viewMatrix( Eigen::Matrix4f& view_ );
+    void projectionMatrix(Eigen::Matrix4f& projection_);
 
-  void projectionMatrix( Eigen::Matrix4f& projection_ );
+    void originalMorphology(nsol::NeuronMorphologyPtr originalMorphology_);
 
-  void originalMorphology( nsol::NeuronMorphologyPtr originalMorphology_ );
+    void modifiedMorphology(nsol::NeuronMorphologyPtr modifiedMorphology_);
 
-  void modifiedMorphology( nsol::NeuronMorphologyPtr modifiedMorphology_ );
+    void updateModifiedStructure(void);
 
-  void updateModifiedStructure( void );
+    void updateModifiedMesh(void);
 
-  void updateModifiedMesh( void );
+    void setSelection(const std::unordered_set<int>& selectedNodes_);
 
-  void setSelection( const std::unordered_set< int >& selectedNodes_ );
+    nlgeometry::AxisAlignedBoundingBox aabb(void)
+    {
+        return _aabb;
+    }
 
-  nlgeometry::AxisAlignedBoundingBox aabb( void ){ return _aabb; }
+    void changeBackgroundColor(Eigen::Vector3f color_);
+    void changeOriginalStructureColor(const Eigen::Vector3f& color_);
+    void changeOriginalMeshColor(const Eigen::Vector3f& color_);
+    void changeModifiedStructureColor(const Eigen::Vector3f& color_);
+    void changeModifiedMeshColor(const Eigen::Vector3f& color_);
 
-  void changeBackgroundColor( Eigen::Vector3f color_ );
-  void changeOriginalStructureColor( const Eigen::Vector3f& color_ );
-  void changeOriginalMeshColor( const Eigen::Vector3f& color_ );
-  void changeModifiedStructureColor( const Eigen::Vector3f& color_ );
-  void changeModifiedMeshColor( const Eigen::Vector3f& color_ );
+    void exportModifiedMesh(const std::string& path_);
 
-  void exportModifiedMesh( const std::string& path_  );
+    void originalMeshAlpha(float alpha_);
+    void modifiedMeshAlpha(float alpha_);
 
-  void originalMeshAlpha( float alpha_ );
-  void modifiedMeshAlpha( float alpha_ );
+  protected:
+    void _updateSelectedNodes(void);
+    Eigen::Vector3f _convertToSelected(Eigen::Vector3f color_);
 
-protected:
+    unsigned int _defaultFbo;
 
-  void _updateSelectedNodes( void );
-  Eigen::Vector3f _convertToSelected( Eigen::Vector3f color_ );
+    unsigned int _width;
 
-  unsigned int _defaultFbo;
+    unsigned int _height;
 
-  unsigned int _width;
+    nlrender::Renderer* _renderer;
 
-  unsigned int _height;
+    nsol::NeuronMorphologyPtr _originalMorphology;
+    nsol::NeuronMorphologyPtr _modifiedMorphology;
 
-  nlrender::Renderer* _renderer;
+    nlgeometry::MeshPtr _originalStructure;
+    nlgeometry::MeshPtr _modifiedStructure;
 
-  nsol::NeuronMorphologyPtr _originalMorphology;
-  nsol::NeuronMorphologyPtr _modifiedMorphology;
+    nlgeometry::MeshPtr _originalMesh;
+    nlgeometry::MeshPtr _modifiedMesh;
 
-  nlgeometry::MeshPtr _originalStructure;
-  nlgeometry::MeshPtr _modifiedStructure;
+    nlgenerator::NodeIdToVertices _nodeIdToVertices;
+    nlgenerator::NodeIdToVerticesIds _nodeIdToVerticesIds;
 
-  nlgeometry::MeshPtr _originalMesh;
-  nlgeometry::MeshPtr _modifiedMesh;
+    nlgeometry::AttribsFormat _format;
 
-  nlgenerator::NodeIdToVertices _nodeIdToVertices;
-  nlgenerator::NodeIdToVerticesIds _nodeIdToVerticesIds;
+    nlgeometry::AxisAlignedBoundingBox _aabb;
 
-  nlgeometry::AttribsFormat _format;
+    std::vector<unsigned int> _selection;
 
-  nlgeometry::AxisAlignedBoundingBox _aabb;
+    Eigen::Vector3f _backgroundColor;
+    Eigen::Vector3f _originalStructureColor;
+    Eigen::Vector3f _originalMeshColor;
+    Eigen::Vector3f _modifiedStructureColor;
+    Eigen::Vector3f _modifiedStructureSelectedColor;
+    Eigen::Vector3f _modifiedMeshColor;
 
-  std::vector< unsigned int > _selection;
-
-  Eigen::Vector3f _backgroundColor;
-  Eigen::Vector3f _originalStructureColor;
-  Eigen::Vector3f _originalMeshColor;
-  Eigen::Vector3f _modifiedStructureColor;
-  Eigen::Vector3f _modifiedStructureSelectedColor;
-  Eigen::Vector3f _modifiedMeshColor;
-
-  float _originalMeshAlpha;
-  float _modifiedMeshAlpha;
-
+    float _originalMeshAlpha;
+    float _modifiedMeshAlpha;
 };
 
 #endif

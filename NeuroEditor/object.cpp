@@ -24,14 +24,14 @@
 
 using namespace qglviewer;
 
-void Object::draw ( ) const
+void Object::draw() const
 {
-  static GLUquadric* quad = gluNewQuadric ( );
+    static GLUquadric* quad = gluNewQuadric();
 
-  glPushMatrix ( );
-  glMultMatrixd ( frame.matrix ( ));
-  glColor3f ( 1, 1, 0 );
-  gluSphere ( quad, radius, 10, 6 );
-  gluCylinder ( quad, 0.03, 0.0, 0.09, 10, 1 );
-  glPopMatrix ( );
+    glPushMatrix();
+    glMultMatrixd(frame.matrix());
+    glColor3f(1, 1, 0);
+    gluSphere(quad, radius, 10, 6);
+    gluCylinder(quad, 0.03, 0.0, 0.09, 10, 1);
+    glPopMatrix();
 }

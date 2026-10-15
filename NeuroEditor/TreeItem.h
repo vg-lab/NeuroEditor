@@ -28,24 +28,23 @@
 class TreeItem
 {
   public:
-    explicit TreeItem ( const QList < QVariant >& data,
-                        TreeItem* parentItem = 0 );
-    ~TreeItem ( );
+    explicit TreeItem(const QList<QVariant>& data, TreeItem* parentItem = 0);
+    ~TreeItem();
 
-    void appendChild ( TreeItem* child );
+    void appendChild(TreeItem* child);
 
-    TreeItem* child ( int row );
-    int childCount ( ) const;
-    int columnCount ( ) const;
-    QVariant data ( int column ) const;
-    int row ( ) const;
-    TreeItem* parentItem ( );
-    bool isPartialSelected( ) const;
-    void setPartialSelected( bool partialSelected );
+    TreeItem* child(int row);
+    int childCount() const;
+    int columnCount() const;
+    QVariant data(int column) const;
+    int row() const;
+    TreeItem* parentItem();
+    bool isPartialSelected() const;
+    void setPartialSelected(bool partialSelected);
 
   private:
-    QList < TreeItem* > _childItems;
-    QList < QVariant > _itemData;
+    QList<TreeItem*> _childItems;
+    QList<QVariant> _itemData;
     TreeItem* _parentItem;
     bool _partialSelected;
 };

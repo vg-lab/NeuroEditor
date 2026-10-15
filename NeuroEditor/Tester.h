@@ -27,65 +27,62 @@
 
 namespace neuroeditor
 {
-  class Tester
-  {
-
-  public:
-    typedef enum
+    class Tester
     {
-      DUPLICATE_NODES = 0,
-      OVERSAMPLING,
-      NODES_IN_SOMA,
-      NODES_FAR_SOMA,
-      LESS_90_DEGREES,
-      GREATER_RADIUS,
-      NEURITE_SAME_RADIUS,
-      BIFURCATION_COLLISION
-    } TTesterMethod;
+      public:
+        typedef enum
+        {
+            DUPLICATE_NODES = 0,
+            OVERSAMPLING,
+            NODES_IN_SOMA,
+            NODES_FAR_SOMA,
+            LESS_90_DEGREES,
+            GREATER_RADIUS,
+            NEURITE_SAME_RADIUS,
+            BIFURCATION_COLLISION
+        } TTesterMethod;
 
-    typedef std::vector< int > (*TTesterFunc)( MorphologyStructure* ) ;
+        typedef std::vector<int> (*TTesterFunc)(MorphologyStructure*);
 
-    static std::vector< int > test( MorphologyStructure* morphoStructure_,
-                                    TTesterMethod testerMethod_ );
+        static std::vector<int> test(MorphologyStructure* morphoStructure_,
+                                     TTesterMethod testerMethod_);
 
-    static int numTesters( void )
-    {
-      return 8;
-    }
+        static int numTesters(void)
+        {
+            return 8;
+        }
 
-    static std::string description( TTesterMethod testerMethod_ );
+        static std::string description(TTesterMethod testerMethod_);
 
-    static std::vector< Fixer::TFixerMethod > associatedFixers(
-      TTesterMethod testerMethod_ );
+        static std::vector<Fixer::TFixerMethod> associatedFixers(
+            TTesterMethod testerMethod_);
 
-  protected:
+      protected:
+        static std::vector<int> _duplicateNodes(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _duplicateNodes(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _oversampling(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _oversampling(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _nodesInSoma(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _nodesInSoma(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _nodesFarSoma(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _nodesFarSoma(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _less90Degrees(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _less90Degrees(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _greaterRadius(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _greaterRadius(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _neuriteSameRadius(
+            MorphologyStructure* morphoStructure_);
 
-    static std::vector< int > _neuriteSameRadius(
-      MorphologyStructure* morphoStructure_ );
+        static std::vector<int> _bifurcationCollision(
+            MorphologyStructure* morphoStructure_);
+    };
 
-    static std::vector< int > _bifurcationCollision(
-      MorphologyStructure* morphoStructure_ );
-
-  };
-
-}
+} // namespace neuroeditor
 
 #endif

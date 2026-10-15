@@ -22,31 +22,28 @@
 #ifndef __VIEW_DOCK__
 #define __VIEW_DOCK__
 
-
 #include <QDockWidget>
 #include <QObject>
 #include "viewer.h"
 
-class ViewDock: public QDockWidget
+class ViewDock : public QDockWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    ViewDock();
 
-  ViewDock( );
+    ~ViewDock(void) {};
 
-  ~ViewDock( void ){ };
+    void init(Viewer* viewer_);
 
-  void init( Viewer* viewer_ );
+  public Q_SLOTS:
 
-public Q_SLOTS:
+    void originalAlphaChanged(int value);
+    void modifiedAlphaChanged(int value);
 
-  void originalAlphaChanged( int value );
-  void modifiedAlphaChanged( int value );
-
-protected:
-  Viewer* _viewer;
-
+  protected:
+    Viewer* _viewer;
 };
 
 #endif

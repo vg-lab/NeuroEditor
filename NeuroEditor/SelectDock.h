@@ -32,65 +32,62 @@
 #include <QMessageBox>
 #include "viewer.h"
 
-class SelectDock: public QDockWidget
+class SelectDock : public QDockWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    SelectDock(void);
 
-  SelectDock( void );
+    ~SelectDock(void) {};
 
-  ~SelectDock( void ){ };
+    void init(Viewer* viewer_);
 
-  void init( Viewer* viewer_ );
+  public Q_SLOTS:
 
-public Q_SLOTS:
+    void updateMorphology(void);
 
-  void updateMorphology( void );
+    void clicked(const QModelIndex& index_);
 
-  void clicked( const QModelIndex& index_ );
+    void updateSelection(std::unordered_set<int> selection_);
 
-  void updateSelection( std::unordered_set< int > selection_ );
+    void selectAll(void);
 
-  void selectAll( void );
+    void clearSelection(void);
 
-  void clearSelection( void );
+    void nodeButtonClicked(void);
 
-  void nodeButtonClicked( void );
+    void sectionButtonClicked(void);
 
-  void sectionButtonClicked( void );
+    void neuriteButtonClicked(void);
 
-  void neuriteButtonClicked( void );
+    void multipleSelectionChanged(int state);
 
-  void multipleSelectionChanged( int state );
+  Q_SIGNALS:
 
-Q_SIGNALS:
+    void updateSelectionSignal(std::unordered_set<int> selection_);
 
- void updateSelectionSignal( std::unordered_set< int > selection_ );
+  protected:
+    std::unordered_set<int> _fromTreeToSelection(void);
 
-protected:
+    void _fromSelectionToTree(std::unordered_set<int> selection_);
 
-  std::unordered_set< int > _fromTreeToSelection( void );
+    std::pair<bool, bool> _recursiveFromSelectionToTree(
+        QModelIndex index_, std::unordered_set<int>& selection_);
 
-  void _fromSelectionToTree( std::unordered_set< int > selection_ );
+    void _recursiveDownSelectDeselectItem(
+        const QModelIndex& index_,
+        const QItemSelectionModel::SelectionFlag state_);
 
-  std::pair<bool,bool> _recursiveFromSelectionToTree( QModelIndex index_,
-                                      std::unordered_set< int >& selection_ );
+    void _recursiveUpSelectDeselectItem(
+        const QModelIndex& index_,
+        const QItemSelectionModel::SelectionFlag state_);
 
-  void _recursiveDownSelectDeselectItem(
-    const QModelIndex& index_,
-    const QItemSelectionModel::SelectionFlag state_ );
+    void _recursiveSelectAll(QModelIndex index_,
+                             std::unordered_set<int>& selection_);
 
-  void _recursiveUpSelectDeselectItem(
-    const QModelIndex& index_,
-    const QItemSelectionModel::SelectionFlag state_ );
-
-  void _recursiveSelectAll( QModelIndex index_,
-                            std::unordered_set< int >& selection_ );
-
-  Viewer* _viewer;
-  QTreeView* _morphologyTree;
-
+    Viewer* _viewer;
+    QTreeView* _morphologyTree;
 };
 
 #endif

@@ -36,148 +36,134 @@
 #include "viewer.h"
 #include "TraceModifier.h"
 
-class ModifierWidget: public QWidget
+class ModifierWidget : public QWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    ModifierWidget(neuroeditor::TraceModifier::TModifierMethod modifierMethod_);
 
-  ModifierWidget( neuroeditor::TraceModifier::TModifierMethod modifierMethod_ );
+    ~ModifierWidget(void);
 
-  ~ModifierWidget( void );
+    neuroeditor::TraceModifier::TModifierMethod modifierMethod;
+    neuroeditor::TraceModifier::TModifierParams modifierParams;
+    std::vector<std::string> paramNames;
+    std::vector<QLineEdit*> paramLineEdits;
+    std::string scriptPath;
 
-  neuroeditor::TraceModifier::TModifierMethod modifierMethod;
-  neuroeditor::TraceModifier::TModifierParams modifierParams;
-  std::vector< std::string > paramNames;
-  std::vector< QLineEdit*> paramLineEdits;
-  std::string scriptPath;
+  public Q_SLOTS:
 
-public Q_SLOTS:
+    void loadPath(void);
 
-  void loadPath( void );
+    void apply(void);
 
-  void apply( void );
+    void sendRemoveSignal(void);
 
-  void sendRemoveSignal( void );
+  Q_SIGNALS:
+    void modifierToDelete(QWidget* widget_);
 
-Q_SIGNALS:
-  void modifierToDelete( QWidget* widget_ );
+    void applyModifier(ModifierWidget* modifierWidget_);
 
-  void applyModifier( ModifierWidget* modifierWidget_ );
-
-protected:
-
-  QLineEdit* _scriptPathLine;
-
+  protected:
+    QLineEdit* _scriptPathLine;
 };
 
-class EditDock: public QDockWidget
+class EditDock : public QDockWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    EditDock(void);
 
-  EditDock( void );
+    ~EditDock(void) {};
 
-  ~EditDock( void ){ };
+    void init(Viewer* viewer_);
 
-  void init( Viewer* viewer_ );
+  public Q_SLOTS:
 
-public Q_SLOTS:
+    void resetInspector(void);
 
-  void resetInspector( void );
+    void updatePosition(Eigen::Vector3f& pos_);
+    void updateRotation(Eigen::Quaternionf& q_);
+    void updateRadius(float radius_);
 
-  void updatePosition( Eigen::Vector3f& pos_ );
-  void updateRotation( Eigen::Quaternionf& q_ );
-  void updateRadius( float radius_ );
+    void applyPosition(void);
+    void applyRotation(void);
+    void applyRadius(void);
 
-  void applyPosition( void );
-  void applyRotation( void );
-  void applyRadius( void );
-
-  void addMethod( void );
-  void removeMethod( QWidget* modifierWidget_ );
-  void apply( ModifierWidget* modifierWidget_ );
-  void applyAll( void );
-  void clear( void );
-  void autoApplyChanged( int state );
-  void updateSelection ( int nSelected );
-  void onVisibilityChanged ( bool isVisible );
+    void addMethod(void);
+    void removeMethod(QWidget* modifierWidget_);
+    void apply(ModifierWidget* modifierWidget_);
+    void applyAll(void);
+    void clear(void);
+    void autoApplyChanged(int state);
+    void updateSelection(int nSelected);
+    void onVisibilityChanged(bool isVisible);
 
   Q_SIGNALS:
 
-  void showAxisSignal( bool b );
+    void showAxisSignal(bool b);
 
+  protected:
+    Eigen::Quaternionf _rotToQuat(Eigen::Vector3f& rot_);
 
+    Eigen::Vector3f _quatToRot(Eigen::Quaternionf& q_);
 
-protected:
+    void _initMethodSelector(void);
 
-  Eigen::Quaternionf _rotToQuat( Eigen::Vector3f& rot_ );
+    void _initSpinBoxes(void);
 
-  Eigen::Vector3f _quatToRot( Eigen::Quaternionf& q_ );
+    void _initSpinBoxesConnections(void);
 
-  void _initMethodSelector( void );
+    bool _apply(ModifierWidget* modifierWidget_,
+                std::unordered_set<nsol::Section*>& sections_);
 
-  void _initSpinBoxes( void );
+    bool _setBlockedSpinBoxSignals(bool isBlocked);
 
-  void _initSpinBoxesConnections( void );
+    void _disableMultiLocation();
 
-  bool _apply( ModifierWidget* modifierWidget_,
-               std::unordered_set< nsol::Section* >& sections_ );
+    void _disableOneLocation();
 
-  bool _setBlockedSpinBoxSignals( bool isBlocked );
+    std::unordered_set<nsol::Section*> _uniqueSections(void);
 
-  void _disableMultiLocation( );
+    Viewer* _viewer;
 
-  void _disableOneLocation( );
+    QCheckBox* _checkBoxAutoApply;
 
-  std::unordered_set< nsol::Section* > _uniqueSections( void );
+    QDoubleSpinBox* _xSpinBoxOnePosition;
+    QDoubleSpinBox* _ySpinBoxOnePosition;
+    QDoubleSpinBox* _zSpinBoxOnePosition;
 
+    QDoubleSpinBox* _radiusOneSpinBox;
 
+    QPushButton* _applyOnePosButton;
+    QPushButton* _applyOneRadButton;
 
-  Viewer* _viewer;
+    QDoubleSpinBox* _xSpinBoxMultiPosition;
+    QDoubleSpinBox* _ySpinBoxMultiPosition;
+    QDoubleSpinBox* _zSpinBoxMultiPosition;
 
-  QCheckBox* _checkBoxAutoApply;
+    QDoubleSpinBox* _xSpinBoxMultiRotation;
+    QDoubleSpinBox* _ySpinBoxMultiRotation;
+    QDoubleSpinBox* _zSpinBoxMultiRotation;
 
-  QDoubleSpinBox* _xSpinBoxOnePosition;
-  QDoubleSpinBox* _ySpinBoxOnePosition;
-  QDoubleSpinBox* _zSpinBoxOnePosition;
+    QDoubleSpinBox* _radiusMultiSpinBox;
 
-  QDoubleSpinBox* _radiusOneSpinBox;
+    QPushButton* _applyMultiPosButton;
+    QPushButton* _applyMultiRadButton;
+    QPushButton* _applyMultiRotButton;
 
-  QPushButton* _applyOnePosButton;
-  QPushButton* _applyOneRadButton;
+    QGroupBox* _inspectorGroupMulti;
 
-  QDoubleSpinBox* _xSpinBoxMultiPosition;
-  QDoubleSpinBox* _ySpinBoxMultiPosition;
-  QDoubleSpinBox* _zSpinBoxMultiPosition;
+    bool _activeManipulation;
+    int _nSelected;
 
-  QDoubleSpinBox* _xSpinBoxMultiRotation;
-  QDoubleSpinBox* _ySpinBoxMultiRotation;
-  QDoubleSpinBox* _zSpinBoxMultiRotation;
+    QMessageBox* _multiSelectionHelpBox;
+    QComboBox* _methodSelector;
 
-  QDoubleSpinBox* _radiusMultiSpinBox;
+    QVBoxLayout* _methodsLayout;
 
-  QPushButton* _applyMultiPosButton;
-  QPushButton* _applyMultiRadButton;
-  QPushButton* _applyMultiRotButton;
-
-  QGroupBox* _inspectorGroupMulti;
-
-
-
-  bool _activeManipulation;
-  int _nSelected;
-
-  QMessageBox* _multiSelectionHelpBox;
-  QComboBox* _methodSelector;
-
-  QVBoxLayout* _methodsLayout;
-
-
-  QMessageBox* _simplifyMethodHelpBox;
-
-
+    QMessageBox* _simplifyMethodHelpBox;
 };
 
 #endif
