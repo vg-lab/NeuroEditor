@@ -20,14 +20,46 @@
  */
 
 #include "NeuroEditor.h"
+#include <neuroeditor/version.h>
 #include <QApplication>
 #include <QErrorMessage>
+#include <cstring>
+#include <iostream>
 
 bool setFormat(int ctxOpenGLMajor, int ctxOpenGLMinor, int ctxOpenGLSamples,
                int ctxOpenGLVSync);
 
+static void printUsage(const char* program)
+{
+    std::cout
+        << "Usage: " << program << " [OPTION] [FILE]\n"
+        << "\n"
+        << "NeuroEditor: visualization and edition of morphological tracings.\n"
+        << "\n"
+        << "Arguments:\n"
+        << "  FILE           SWC morphology file to load at startup "
+           "(optional)\n"
+        << "\n"
+        << "Options:\n"
+        << "  -h, --help     Print this help message and exit\n"
+        << "  -v, --version  Print the version and exit\n";
+}
+
 int main(int argc, char* argv[])
 {
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "-h") == 0
+            || std::strcmp(argv[i], "--help") == 0) {
+            printUsage(argv[0]);
+            return 0;
+        }
+        if (std::strcmp(argv[i], "-v") == 0
+            || std::strcmp(argv[i], "--version") == 0) {
+            std::cout << "NeuroEditor " << NEUROEDITOR_REV_STRING << std::endl;
+            return 0;
+        }
+    }
+
     QApplication a(argc, argv);
 
     if (setFormat(4, 0, 16, 1)) {
